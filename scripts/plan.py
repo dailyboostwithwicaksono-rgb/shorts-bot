@@ -56,9 +56,10 @@ Video latar berasal dari Pexels dengan deskripsi: {bg.get('description') or them
 
 Tugas:
 1. Tulis tepat {defaults['lines']} baris teks yang akan muncul BERTAHAP di tengah video.
-   - Setiap baris maksimal 12 kata, Bahasa Indonesia, mudah dipahami.
-   - Tanpa emoji, tanpa tanda kutip, tanpa titik di akhir.
-   - Baris 1 adalah hook, baris 2 isi, baris 3 ajakan/penutup.
+   - Setiap baris maksimal 6 kata dan 32 karakter, Bahasa Indonesia, mudah dipahami.
+   - Baris 2 boleh sangat pendek, misalnya: terus bergerak,
+   - Tanpa emoji dan tanpa tanda kutip. Hindari titik di akhir.
+   - Baris 1 hook, baris 2 jembatan, baris 3 ajakan/penutup. Susun seperti tangga yang bertumpuk.
 2. Buat judul YouTube maksimal 100 karakter.
 3. Buat caption/hook description maksimal 140 karakter.
 4. Buat tepat 6 hashtag, mayoritas Bahasa Indonesia, sertakan #Shorts.
@@ -84,9 +85,9 @@ Balas HANYA JSON:
     except Exception as exc:  # noqa: BLE001
         print(f"[warn] AI gagal ({exc}); pakai teks fallback.")
         lines = [
-            "TIGA HAL YANG SERING TERLEWAT",
-            "KONSISTEN ITU LEBIH PENTING",
-            "COBA SATU HAL HARI INI",
+            "KOTA TIDUR, SEMANGATMU TIDAK",
+            "TERUS BERGERAK,",
+            "SATU LANGKAH DEMI SATU LANGKAH",
         ][: defaults["lines"]]
         title = "Tiga hal singkat yang bikin beda"
         caption = "Satu ide sederhana untuk hari ini. Setuju?"
@@ -97,8 +98,8 @@ Balas HANYA JSON:
         hashtags = ["#Shorts", "#Ide", "#Tips", "#FYP", "#Viral", "#Indonesia"]
 
     attribution = (
-        f"Video latar: {bg['url']} oleh {bg['photographer']} / Pexels\n"
-        f"Musik: {music['title']} - {music['url']} (Free To Use)"
+        f"Video latar: {bg['photographer']} / Pexels — {bg['url']}\n"
+        f"Musik: {music['title']} — {music['url']} (Free To Use)"
     )
     description = f"{caption}\n\n{' '.join(hashtags)}\n\n{attribution}"
 
@@ -108,6 +109,13 @@ Balas HANYA JSON:
         "duration": int(defaults["duration_seconds"]),
         "lines": lines,
         "font_size": int(defaults["font_size"]),
+        "min_font_size": int(defaults["min_font_size"]),
+        "fade_in_min": float(defaults["fade_in_min"]),
+        "fade_in_max": float(defaults["fade_in_max"]),
+        "fade_in_per_word": float(defaults["fade_in_per_word"]),
+        "read_words_per_sec": float(defaults["read_words_per_sec"]),
+        "read_chars_per_sec": float(defaults["read_chars_per_sec"]),
+        "read_buffer": float(defaults["read_buffer"]),
         "band_top": int(defaults["band_top"]),
         "band_height": int(defaults["band_height"]),
         "overlay_opacity": float(defaults["overlay_opacity"]),

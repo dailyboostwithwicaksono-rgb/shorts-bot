@@ -170,6 +170,15 @@ Judul + URL track otomatis masuk deskripsi YouTube, jadi atribusi tetap benar un
 
 Free License freetouse **mewajibkan atribusi**, jadi judul + URL track otomatis masuk ke deskripsi YouTube. Lisensi ini juga melarang "Commercial Content" — aman untuk video YouTube biasa yang dimonetisasi asal atribusi benar, tapi baca kembali syaratnya di https://freetouse.com/license sebelum dipakai untuk iklan/konten sponsor.
 
+Format deskripsi yang dipakai:
+
+```text
+Video latar: David Saurik / Pexels — https://www.pexels.com/video/.../
+Musik: Unstoppable — https://freetouse.com/music/aylex/unstoppable (Free To Use)
+```
+
+PENTING: deskripsi YouTube **tidak mendukung markdown** `[nama](https://...)`, sehingga nama saja tidak bisa dijadikan tautan tersembunyi. URL polos akan otomatis jadi link yang bisa diklik — itulah sebabnya URL tetap ditampilkan setelah nama.
+
 ---
 
 ## 5. Konfigurasi tema (`config/themes.json`)
@@ -180,6 +189,13 @@ Free License freetouse **mewajibkan atribusi**, jadi judul + URL track otomatis 
     "duration_seconds": 30,
     "lines": 3,
     "font_size": 72,
+    "min_font_size": 34,
+    "fade_in_min": 0.7,
+    "fade_in_max": 1.4,
+    "fade_in_per_word": 0.12,
+    "read_words_per_sec": 2.5,
+    "read_chars_per_sec": 6.0,
+    "read_buffer": 0.6,
     "band_top": 680,
     "band_height": 560,
     "overlay_opacity": 0.55,
@@ -227,6 +243,9 @@ Free License freetouse **mewajibkan atribusi**, jadi judul + URL track otomatis 
 
 - `duration_seconds`: durasi video akhir.
 - `lines`: jumlah baris teks bertahap (default 3; render mendukung maksimal 3).
+- `font_size` / `min_font_size`: ukuran font maksimal dan minimal. Render otomatis mengecilkan font sampai teks muat di lebar 920 px, jadi tidak terpotong.
+- `fade_in_min` / `fade_in_max` / `fade_in_per_word`: durasi fade in dihitung dari jumlah kata, dibatasi 0,7–1,4 detik. **Tidak ada fade out** — teks bertahan setelah muncul.
+- `read_words_per_sec` / `read_chars_per_sec` / `read_buffer`: tempo baca untuk menentukan kapan baris berikutnya muncul. Default 2,5 kata/detik atau 6 karakter/detik + buffer 0,6 detik, sengaja lebih lambat dari membaca biasa.
 - `band_top` / `band_height`: posisi dan tinggi shape hitam (koordinat 1080x1920).
 - `overlay_opacity`: kegelapan shape hitam (`0.55` = 55%).
 - `brightness` / `saturation`: menggelap dan meredupkan latar.

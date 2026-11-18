@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Shorts 1080x1920: latar gelap + shape hitam + 3 baris teks bertahap + musik."""
+"""Shorts 1080x1920: latar gelap + shape hitam + 3 baris teks fade + musik."""
 import json
 import subprocess
 from pathlib import Path
+
+from PIL import ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 PLAN = ROOT / "render_plan.json"
 OUT = ROOT / "out"
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+MAX_TEXT_WIDTH = 920  # 1080 - margin 80 px di tiap sisi
 
 
 def esc(text: str) -> str:
@@ -21,13 +24,111 @@ def esc(text: str) -> str:
     )
 
 
-def main() -> None:
-    p = json.loads(PLAN.read_text(encoding="utf-8"))
+def fit_font_size(text: str, p: dict) -> int:
+    """Turunkan font sampai teks muat di MAX_TEXT_WIDTH."""
+    max_size = int(p.get("font_size", 72))
+    min_size = int(p.get("min_font_size", 34))
+    for size in range(max_size, min_size - 1, -2):
+        font = ImageFont.truetype(FONT, size)
+        bbox = font.getbbox(text)
+        if bbox[2] - bbox[0] <= MAX_TEXT_WIDTH:
+            return size
+    return min_size
+
+
+def _text_layer(
+    index: int,
+    text: str,
+    size: int,
+    y: int,
+    start: float,
+    fade_in: float,
+    duration: int,
+) -> str:
+    """Layer transparan: fade in sekali, lalu teks tetap tampil sampai akhir."""
+    return (
+        f"color=c=black@0:s=1080x1920:r=30:d={duration},format=rgba,"
+        f"drawtext=fontfile='{FONT}':text='{esc(text)}':"
+        f"fontcolor=white:fontsize={size}:"
+        f"x=(w-text_w)/2:y={y},"
+        f"fade=t=in:st={start}:d={fade_in}:alpha=1[t{index}]"
+    )
+
+
+def fade_and_read_time(text: str, p: dict) -> tuple[float, float]:
+    """Fade in mengikuti jumlah kata; jeda berikutnya mengikuti tempo baca lambat."""
+    words = max(1, len(str(text).split()))
+    chars = max(1, len(str(text)))
+    fade_in = min(
+        float(p.get("fade_in_max", 1.4)),
+        max(
+            float(p.get("fade_in_min", 0.7)),
+            float(p.get("fade_in_min", 0.7)) + words * float(p.get("fade_in_per_word", 0.12)),
+        ),
+    )
+    read_time = max(
+        words / float(p.get("read_words_per_sec", 2.5)),
+        chars / float(p.get("read_chars_per_sec", 6.0)),
+    ) + float(p.get("read_buffer", 0.6))
+    return round(fade_in, 2), round(read_time, 2)
+
+
+def build_graph(p: dict) -> str:
     dur = int(p["duration"])
-    lines = p["lines"]
+    lines = list(p["lines"])[:3]
     top = int(p["band_top"])
     band_h = int(p["band_height"])
 
+    video_filters = [
+        "trim=duration=%d,setpts=PTS-STARTPTS" % dur,
+        "scale=1080:1920:force_original_aspect_ratio=increase",
+        "crop=1080:1920",
+        "fps=30,setsar=1",
+        "eq=brightness=%s:saturation=%s:contrast=1.05"
+        % (p["brightness"], p["saturation"]),
+        "drawbox=x=0:y=%d:w=1080:h=%d:color=black@%s:t=fill"
+        % (top, band_h, p["overlay_opacity"]),
+    ]
+
+    parts = ["[0:v]" + ",".join(video_filters) + "[base]"]
+    layers: list[str] = []
+    overlays: list[str] = []
+    current = "base"
+    centers = [
+        top + band_h * 0.22,
+        top + band_h * 0.50,
+        top + band_h * 0.78,
+    ]
+
+    start = 1.0
+    for i, line in enumerate(lines):
+        size = fit_font_size(line, p)
+        y = int(centers[i] - size / 2)
+        fade_in, read_time = fade_and_read_time(line, p)
+        start = min(round(start, 2), float(max(1, dur - 3)))
+        layers.append(
+            _text_layer(i, line, size, y, start, fade_in, dur)
+        )
+        next_label = "v" if i == len(lines) - 1 else f"b{i + 1}"
+        overlays.append(
+            f"[{current}][t{i}]overlay=0:0:format=auto[{next_label}]"
+        )
+        current = next_label
+        start += read_time
+
+    audio = (
+        f"[1:a]atrim=duration={dur},volume={p['music_volume']},"
+        f"afade=t=out:st={dur - 2}:d=2[a]"
+    )
+    parts.extend(layers)
+    parts.extend(overlays)
+    parts.append(audio)
+    return ";".join(parts)
+
+
+def main() -> None:
+    p = json.loads(PLAN.read_text(encoding="utf-8"))
+    dur = int(p["duration"])
     OUT.mkdir(parents=True, exist_ok=True)
     final = OUT / "final.mp4"
 
@@ -35,36 +136,7 @@ def main() -> None:
         "ffmpeg", "-y", "-v", "error", "-stats",
         "-stream_loop", "-1", "-i", p["background"],
         "-stream_loop", "-1", "-i", p["music"],
-    ]
-
-    video_filters = [
-        f"trim=duration={dur},setpts=PTS-STARTPTS",
-        "scale=1080:1920:force_original_aspect_ratio=increase",
-        "crop=1080:1920",
-        "fps=30,setsar=1",
-        f"eq=brightness={p['brightness']}:saturation={p['saturation']}:contrast=1.05",
-        f"drawbox=x=0:y={top}:w=1080:h={band_h}:"
-        f"color=black@{p['overlay_opacity']}:t=fill",
-    ]
-
-    starts = [1.0, 2.2, 3.4]
-    ys = [top + 90, top + band_h // 2 - 45, top + band_h - 135]
-    for i, line in enumerate(lines[:3]):
-        video_filters.append(
-            f"drawtext=fontfile='{FONT}':text='{esc(line)}':"
-            f"fontcolor=white:fontsize={p['font_size']}:"
-            f"shadowcolor=black@0.8:shadowx=2:shadowy=2:"
-            f"x=(w-text_w)/2:y={ys[i]}:enable='gte(t,{starts[i]})'"
-        )
-
-    audio_filter = (
-        f"[1:a]atrim=duration={dur},volume={p['music_volume']},"
-        f"afade=t=out:st={dur - 2}:d=2[a]"
-    )
-    graph = "[0:v]" + ",".join(video_filters) + "[v];" + audio_filter
-
-    cmd += [
-        "-filter_complex", graph,
+        "-filter_complex", build_graph(p),
         "-map", "[v]", "-map", "[a]",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
         "-pix_fmt", "yuv420p", "-r", "30",
@@ -93,7 +165,7 @@ def main() -> None:
         "height": video.get("height"),
         "size_bytes": final.stat().st_size,
         "theme": p["theme"],
-        "lines": lines,
+        "lines": p["lines"],
         "title": p["title"],
         "caption": p["caption"],
         "hashtags": p["hashtags"],
