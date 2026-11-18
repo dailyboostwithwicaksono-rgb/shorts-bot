@@ -1,29 +1,15 @@
 #!/usr/bin/env python3
 """Upload video ke YouTube lewat refresh token (resumable upload)."""
 import json
-import os
 from pathlib import Path
 
 import requests
 
+from gauth import get_access_token
+
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "out" / "manifest.json"
 CHUNK = 8 * 1024 * 1024
-
-
-def get_access_token() -> str:
-    r = requests.post(
-        "https://oauth2.googleapis.com/token",
-        data={
-            "client_id": os.environ["YT_CLIENT_ID"],
-            "client_secret": os.environ["YT_CLIENT_SECRET"],
-            "refresh_token": os.environ["YT_REFRESH_TOKEN"],
-            "grant_type": "refresh_token",
-        },
-        timeout=30,
-    )
-    r.raise_for_status()
-    return r.json()["access_token"]
 
 
 def resumable_upload(token: str, video: Path, metadata: dict) -> str:

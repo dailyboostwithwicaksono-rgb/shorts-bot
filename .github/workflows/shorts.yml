@@ -71,13 +71,14 @@ jobs:
       - name: Render dengan ffmpeg
         run: python scripts/render.py
 
-      - name: Arsipkan hasil ke Drive
+      - name: Arsipkan hasil ke Drive (OAuth user)
         env:
-          OUT: ${{ secrets.GDRIVE_OUTPUTS_FOLDER_ID }}
-        run: |
-          DAY=$(TZ=Asia/Jakarta date +%Y-%m-%d)
-          rclone copy out "gdrive:$OUT/$DAY" --transfers 2 --retries 3
-          echo "Arsip Drive selesai: $OUT/$DAY"
+          TZ: Asia/Jakarta
+          GDRIVE_OUTPUTS_FOLDER_ID: ${{ secrets.GDRIVE_OUTPUTS_FOLDER_ID }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: python scripts/archive_drive.py
 
       - name: Upload ke YouTube
         env:

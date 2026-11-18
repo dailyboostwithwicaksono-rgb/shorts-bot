@@ -8,7 +8,7 @@ Drive /music --rclone-->  |
                           +-- AI: 3 baris teks + judul + caption (TEKS SAJA, tanpa gambar)
                           +-- ffmpeg: gelap + black band + teks bertahap + musik
                           |
-                          +--rclone--> Drive /outputs/<tanggal>  (arsip + caption.txt)
+                          +--OAuth--> Drive /outputs/<tanggal>  (arsip + caption.txt)
                           +--API----> YouTube Shorts
 ```
 
@@ -65,14 +65,14 @@ Jadwal default: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` dala
 
 Bedakan dua folder:
 
-| Folder | Isi | Peran service account |
+| Folder | Isi | Akses |
 | --- | --- | --- |
-| `shorts-music` | File MP3 dari freetouse | **Viewer** |
-| `shorts-outputs` | Hasil render (dibuat otomatis per tanggal) | **Editor** |
+| `shorts-music` | File MP3 dari freetouse | Service account sebagai **Viewer** |
+| `shorts-outputs` | Hasil render (dibuat otomatis per tanggal) | Di-upload lewat **OAuth user**, bukan service account |
 
 1. Buat kedua folder di Google Drive.
 2. Share `shorts-music` ke email service account dengan peran **Viewer**.
-3. Share `shorts-outputs` ke email service account dengan peran **Editor**.
+3. `shorts-outputs` **tidak perlu** di-share ke service account. Service account Google tidak punya storage quota, jadi tidak bisa menulis ke Drive pribadi. Upload arsip memakai token OAuth-mu sendiri.
 4. Ambil ID folder dari URL. Contoh:
    `https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrSt`
    -> ID-nya `1AbCdEfGhIjKlMnOpQrSt`.
@@ -85,7 +85,9 @@ Bedakan dua folder:
 1. `APIs & Services -> OAuth consent screen`.
 2. User Type: **External** -> Create.
 3. App name `shorts-bot`, User support email dan Developer email pakai Gmail-mu sendiri.
-4. Scopes: tambahkan `https://www.googleapis.com/auth/youtube.upload`.
+4. Scopes: tambahkan dua scope ini:
+   - `https://www.googleapis.com/auth/youtube.upload` (upload Shorts)
+   - `https://www.googleapis.com/auth/drive` (arsip hasil ke Drive pribadi)
 5. **Test users**: tambahkan Gmail-mu sendiri.
 6. Status biarkan **Testing** (cukup untuk akun pribadi, tidak perlu verifikasi Google).
 
@@ -109,9 +111,9 @@ Bedakan dua folder:
    ```
 
 5. Browser terbuka. Kalau muncul "Google hasn't verified this app", klik **Advanced -> Go to shorts-bot (unsafe)**. Normal karena status Testing dan kamu test user.
-6. Terminal mencetak refresh token. Simpan sebagai Secret `YT_REFRESH_TOKEN`.
+6. Script menyimpan refresh token ke `.env` dan clipboard. Tempel sebagai Secret `YT_REFRESH_TOKEN`. Karena token dipakai untuk **YouTube + Drive**, consent harus disetujui ulang jika scope diubah.
 
-PENTING: refresh token aplikasi berstatus **Testing** kedaluwarsa dalam **7 hari**. Kalau upload gagal dengan `invalid_grant`, ulangi langkah 2.5 dan ganti Secret `YT_REFRESH_TOKEN`.
+PENTING: refresh token aplikasi berstatus **Testing** kedaluwarsa dalam **7 hari**. Kalau upload/arsip gagal dengan `invalid_grant`, ulangi langkah 2.5 dan ganti Secret `YT_REFRESH_TOKEN`.
 
 ---
 
@@ -291,7 +293,8 @@ Variables (opsional, tab **Variables**):
 ## 9. Troubleshooting
 
 - `rclone` gagal konek: cek `GDRIVE_SA_JSON` (base64 satu baris tanpa spasi) dan pastikan folder di-share ke email service account.
-- `403 insufficientPermissions`: peran share salah (music cukup Viewer, outputs harus Editor) atau Drive API belum aktif.
+- `403 insufficientPermissions`: `shorts-music` belum di-share ke service account (Viewer) atau Drive API belum aktif.
+- `storageQuotaExceeded`: service account dipakai untuk write. Arsip sekarang lewat `scripts/archive_drive.py` dengan OAuth user; jangan pakai `rclone copy` ke `shorts-outputs`.
 - `Tidak ada file musik ...`: nama/Cek ekstensi MP3 dan `GDRIVE_MUSIC_FOLDER_ID`.
 - `File musik tidak ditemukan: work/music/...`: nama file di Drive beda dengan `music.file` di `config/themes.json`.
 - Unduhan Pexels gagal / `404`: `file_url` di `pexels_backgrounds` sudah kedaluwarsa atau salah. Buka halaman video, ambil URL MP4 terbaru, lalu commit ulang config.

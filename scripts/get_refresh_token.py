@@ -20,7 +20,11 @@ import requests
 
 PORT = 8080
 REDIRECT_URI = f"http://localhost:{PORT}"
-SCOPE = "https://www.googleapis.com/auth/youtube.upload"
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    "https://www.googleapis.com/auth/drive",
+]
+SCOPE = " ".join(SCOPES)
 
 
 def _read_env() -> dict[str, str]:
