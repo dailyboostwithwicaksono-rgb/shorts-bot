@@ -38,16 +38,38 @@ jobs:
         env:
           GDRIVE_SA_JSON: ${{ secrets.GDRIVE_SA_JSON }}
         run: |
+          python - <<'PY'
+          import base64, json, os
+          raw = os.environ.get("GDRIVE_SA_JSON", "").strip()
+          if not raw:
+              raise SystemExit("GDRIVE_SA_JSON kosong. Paste base64 sa.json sebagai Repository Secret.")
+          try:
+              sa = json.loads(base64.b64decode(raw))
+          except Exception as exc:
+              raise SystemExit(f"GDRIVE_SA_JSON bukan base64 JSON valid: {exc}")
+          print(f"[ok] Service account terbaca: {sa.get('client_email')}")
+          PY
           echo "$GDRIVE_SA_JSON" | base64 -d > /tmp/shorts-sa.json
           rclone config create gdrive drive \
             service_account_file /tmp/shorts-sa.json \
             scope drive
-          rclone lsjson gdrive: --max-depth 1 | head -n 5 || true
 
       - name: Unduh musik dari Drive
         env:
           MUSIC: ${{ secrets.GDRIVE_MUSIC_FOLDER_ID }}
         run: |
+          MUSIC=$(printf '%s' "$MUSIC" | tr -d '[:space:]')
+          if [ -z "$MUSIC" ]; then
+            echo "GDRIVE_MUSIC_FOLDER_ID kosong."
+            exit 1
+          fi
+          if ! [[ "$MUSIC" =~ ^[A-Za-z0-9_-]+$ ]]; then
+            echo "GDRIVE_MUSIC_FOLDER_ID harus berupa ID saja, bukan URL lengkap."
+            exit 1
+          fi
+          echo "Membuka folder musik (panjang ID: ${#MUSIC})..."
+          rclone lsjson "gdrive:$MUSIC" --max-depth 1 \
+            || { echo "Gagal membuka folder. Cek GDRIVE_MUSIC_FOLDER_ID dan sharing ke service account."; exit 1; }
           mkdir -p work/music out
           rclone copy "gdrive:$MUSIC" work/music \
             --include "*.mp3" --include "*.wav" --include "*.m4a" --include "*.ogg" \
