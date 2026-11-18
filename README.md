@@ -193,9 +193,7 @@ PENTING: deskripsi YouTube **tidak mendukung markdown** `[nama](https://...)`, s
     "fade_in_min": 0.7,
     "fade_in_max": 1.4,
     "fade_in_per_word": 0.12,
-    "read_words_per_sec": 3.75,
-    "read_chars_per_sec": 9.0,
-    "read_buffer": 0.3,
+    "line_gap": 0.3,
     "band_top": 680,
     "band_height": 560,
     "overlay_opacity": 0.55,
@@ -245,7 +243,7 @@ PENTING: deskripsi YouTube **tidak mendukung markdown** `[nama](https://...)`, s
 - `lines`: jumlah baris teks bertahap (default 3; render mendukung maksimal 3).
 - `font_size` / `min_font_size`: ukuran font maksimal dan minimal. Render otomatis mengecilkan font sampai teks muat di lebar 920 px, jadi tidak terpotong.
 - `fade_in_min` / `fade_in_max` / `fade_in_per_word`: durasi fade in dihitung dari jumlah kata, dibatasi 0,7–1,4 detik. **Tidak ada fade out** — teks bertahan setelah muncul.
-- `read_words_per_sec` / `read_chars_per_sec` / `read_buffer`: tempo baca untuk menentukan kapan baris berikutnya muncul. Default 3,75 kata/detik atau 9 karakter/detik — sekitar 2/3 dari tempo konservatif sebelumnya — dengan **jeda tetap 0,3 detik** setelah waktu baca tiap baris.
+- `line_gap`: **jeda tetap 0,3 detik** setelah fade in sebuah baris selesai; setelah itu baris berikutnya mulai fade in. Waktu baca tidak lagi dipakai untuk menjadwalkan kemunculan, jadi ketiga baris akan tampil dalam beberapa detik lalu tetap bertumpuk sampai video selesai.
 - `band_top` / `band_height`: posisi dan tinggi shape hitam (koordinat 1080x1920).
 - `overlay_opacity`: kegelapan shape hitam (`0.55` = 55%).
 - `brightness` / `saturation`: menggelap dan meredupkan latar.

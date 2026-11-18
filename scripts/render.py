@@ -55,10 +55,9 @@ def _text_layer(
     )
 
 
-def fade_and_read_time(text: str, p: dict) -> tuple[float, float]:
-    """Fade in mengikuti jumlah kata; jeda berikutnya mengikuti tempo baca lambat."""
+def fade_in_time(text: str, p: dict) -> float:
+    """Durasi fade in dihitung dari jumlah kata, dibatasi 0,7–1,4 detik."""
     words = max(1, len(str(text).split()))
-    chars = max(1, len(str(text)))
     fade_in = min(
         float(p.get("fade_in_max", 1.4)),
         max(
@@ -66,11 +65,7 @@ def fade_and_read_time(text: str, p: dict) -> tuple[float, float]:
             float(p.get("fade_in_min", 0.7)) + words * float(p.get("fade_in_per_word", 0.12)),
         ),
     )
-    read_time = max(
-        words / float(p.get("read_words_per_sec", 2.5)),
-        chars / float(p.get("read_chars_per_sec", 6.0)),
-    ) + float(p.get("read_buffer", 0.6))
-    return round(fade_in, 2), round(read_time, 2)
+    return round(fade_in, 2)
 
 
 def build_graph(p: dict) -> str:
@@ -100,11 +95,12 @@ def build_graph(p: dict) -> str:
         top + band_h * 0.78,
     ]
 
+    line_gap = float(p.get("line_gap", 0.3))
     start = 1.0
     for i, line in enumerate(lines):
         size = fit_font_size(line, p)
         y = int(centers[i] - size / 2)
-        fade_in, read_time = fade_and_read_time(line, p)
+        fade_in = fade_in_time(line, p)
         start = min(round(start, 2), float(max(1, dur - 3)))
         layers.append(
             _text_layer(i, line, size, y, start, fade_in, dur)
@@ -114,7 +110,7 @@ def build_graph(p: dict) -> str:
             f"[{current}][t{i}]overlay=0:0:format=auto[{next_label}]"
         )
         current = next_label
-        start += read_time
+        start = round(start + fade_in + line_gap, 2)
 
     audio = (
         f"[1:a]atrim=duration={dur},volume={p['music_volume']},"
