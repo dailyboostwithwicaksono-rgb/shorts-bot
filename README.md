@@ -245,7 +245,7 @@ PENTING: deskripsi YouTube **tidak mendukung markdown** `[nama](https://...)`, s
 - `lines`: jumlah baris teks bertahap (default 3; render mendukung maksimal 3).
 - `font_size` / `min_font_size`: ukuran font maksimal dan minimal. Render otomatis mengecilkan font sampai teks muat di lebar 920 px, jadi tidak terpotong.
 - `fade_in_min` / `fade_in_max` / `fade_in_per_word`: durasi fade in dihitung dari jumlah kata, dibatasi 0,7–1,4 detik. **Tidak ada fade out** — teks bertahan setelah muncul.
-- `read_words_per_sec` / `read_chars_per_sec` / `read_buffer`: tempo baca untuk menentukan kapan baris berikutnya muncul. Default 2,5 kata/detik atau 6 karakter/detik + buffer 0,6 detik, sengaja lebih lambat dari membaca biasa.
+- `read_words_per_sec` / `read_chars_per_sec` / `read_buffer`: tempo baca untuk menentukan kapan baris berikutnya muncul. Default 3,75 kata/detik atau 9 karakter/detik + buffer 0,4 detik — sekitar 2/3 dari tempo konservatif sebelumnya, tapi masih cukup untuk membaca satu baris pendek.
 - `band_top` / `band_height`: posisi dan tinggi shape hitam (koordinat 1080x1920).
 - `overlay_opacity`: kegelapan shape hitam (`0.55` = 55%).
 - `brightness` / `saturation`: menggelap dan meredupkan latar.
