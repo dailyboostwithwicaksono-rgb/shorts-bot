@@ -7,7 +7,7 @@
     "fade_in_min": 0.7,
     "fade_in_max": 1.4,
     "fade_in_per_word": 0.12,
-    "line_gap": 0.3,
+    "line_gap": 0.7,
     "band_top": 680,
     "band_height": 560,
     "overlay_opacity": 0.55,
