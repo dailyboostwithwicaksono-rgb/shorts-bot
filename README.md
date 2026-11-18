@@ -242,12 +242,23 @@ Karena hanya ada **satu tema**, prompt AI jadi lebih pendek dan biaya token maki
 
 ## 6. Secrets dan Variables
 
+### 6.1 Mulai dengan OpenRouter free tier
+
+1. Daftar/login di https://openrouter.ai.
+2. Buat API key di https://openrouter.ai/keys.
+3. Masukkan sebagai **Repository Secret** `OPENROUTER_API_KEY` di repo `shorts-bot`.
+4. Tidak perlu menaruhnya di `.env` lokal —yang membaca key adalah GitHub Actions, bukan laptopmu.
+5. Biarkan `AI_PROVIDER = openrouter` dan `OPENROUTER_MODEL = inclusionai/ling-3.2-flash:free` (atau ganti Variable model ke `:free` lain).
+
 Secrets (`Settings -> Secrets and variables -> Actions -> New repository secret`):
 
 | Nama | Wajib | Keterangan |
 | --- | --- | --- |
-| `GEMINI_API_KEY` | Ya | Google AI Studio API key. |
-| `DEEPSEEK_API_KEY` | Tidak | Fallback otomatis kalau Gemini error. |
+| `OPENROUTER_API_KEY` | Ya* | API key OpenRouter. Pakai model `:free`, cukup untuk 2 video/hari. |
+| `GEMINI_API_KEY` | Tidak | Fallback otomatis kalau OpenRouter error. |
+| `DEEPSEEK_API_KEY` | Tidak | Fallback otomatis terakhir. |
+
+\* **Cukup salah satu** dari tiga key AI di atas. Rekomendasi: isi `OPENROUTER_API_KEY` saja untuk mulai dengan free tier.
 | `GDRIVE_SA_JSON` | Ya | Service account JSON (base64 satu baris). |
 | `GDRIVE_MUSIC_FOLDER_ID` | Ya | ID folder berisi MP3. |
 | `GDRIVE_OUTPUTS_FOLDER_ID` | Ya | ID folder arsip hasil. |
@@ -259,7 +270,8 @@ Variables (opsional, tab **Variables**):
 
 | Nama | Default | Keterangan |
 | --- | --- | --- |
-| `AI_PROVIDER` | `gemini` | Isi `deepseek` untuk pakai DeepSeek sebagai utama. |
+| `AI_PROVIDER` | `openrouter` | Bisa diisi `gemini` atau `deepseek`. Urutan fallback: OpenRouter → Gemini → DeepSeek. |
+| `OPENROUTER_MODEL` | `inclusionai/ling-3.2-flash:free` | Ganti ke model `:free` lain dari https://openrouter.ai/models bila perlu. |
 | `YT_PRIVACY` | `public` | Pakai `unlisted` saat uji coba. |
 
 ---
@@ -285,7 +297,7 @@ Variables (opsional, tab **Variables**):
 - GitHub Actions repo public: gratis unlimited, 4 core / 16 GB.
 - Pexels: unduhan MP4 langsung, tanpa API key dan tanpa kuota API.
 - Google Drive pribadi: gratis 15 GB.
-- Gemini 3.5 Flash-Lite: text-only, biaya sangat kecil (kemungkinan besar $0 untuk 2 video/hari).
+- OpenRouter free tier: model `:free` Rp $0 untuk teks, text-only. Punya limit harian sendiri (biasanya puluhan request/hari), aman untuk 2 video/hari. Gemini/DeepSeek hanya fallback.
 - YouTube Data API: `videos.insert` punya bucket sendiri **100 upload/hari**, biaya 1 kuota per call. Kuota lain 10.000 unit/hari. Aman.
 
 ---
@@ -299,6 +311,9 @@ Variables (opsional, tab **Variables**):
 - `File musik tidak ditemukan: work/music/...`: nama file di Drive beda dengan `music.file` di `config/themes.json`.
 - Unduhan Pexels gagal / `404`: `file_url` di `pexels_backgrounds` sudah kedaluwarsa atau salah. Buka halaman video, ambil URL MP4 terbaru, lalu commit ulang config.
 - `Tidak ada 'pexels_backgrounds'`: config belum punya pool background; tambahkan entri seperti di bagian 3.
+- OpenRouter `401`: Secret `OPENROUTER_API_KEY` salah/belum terisi. Buat key di https://openrouter.ai/keys.
+- OpenRouter `429` / `402`: limit free tier tercapai atau model bukan `:free`. Ganti `OPENROUTER_MODEL` ke model `:free` lain, atau tunggu reset harian.
+- `Semua provider AI gagal`: semua key AI tidak ada/salah. Isi minimal `OPENROUTER_API_KEY`.
 - `invalid_grant` saat upload: refresh token kedaluwarsa (7 hari). Ulangi langkah 2.5.
 - `quotaExceeded`: cek halaman Quotas di Google Cloud.
 - Hasil video terlalu besar: turunkan `-crf 23` ke `-crf 26` di `scripts/render.py`.
