@@ -62,7 +62,6 @@ jobs:
       - name: Rencana (Pexels + AI teks saja)
         env:
           TZ: Asia/Jakarta
-          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'gemini' }}

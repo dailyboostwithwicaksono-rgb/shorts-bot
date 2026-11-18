@@ -3,7 +3,7 @@
 Automasi Shorts Bahasa Indonesia dengan konsep **teks dulu, gambar belakang**. Latar video diambil dari Pexels, digelap dan diberi shape hitam supaya teks terbaca, lalu 3 baris teks muncul bertahap. Musik dari freetouse.com. Semua proses di GitHub Actions (repo public = gratis unlimited), hasil diarsipkan ke Google Drive, lalu di-upload ke YouTube Shorts.
 
 ```
-Pexels API --latar--> Runner GitHub (4 core / 16 GB)
+Pexels MP4 langsung --latar--> Runner GitHub (4 core / 16 GB)
 Drive /music --rclone-->  |
                           +-- AI: 3 baris teks + judul + caption (TEKS SAJA, tanpa gambar)
                           +-- ffmpeg: gelap + black band + teks bertahap + musik
@@ -18,7 +18,7 @@ Jadwal default: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` dala
 
 - **Mengulang video latar dan backsound TIDAK menghemat token AI.** Token dibayar dari teks yang dikirim, bukan dari file video/musik.
 - Yang benar-benar menghemat token adalah **tidak mengirim thumbnail/gambar ke AI**. Rencana lama mengirim 8 thumbnail per run; rencana ini **nol gambar**, jadi biaya AI turun drastis.
-- Supaya konten tidak terasa statis, tiap tema punya **pool kecil** `pexels_video_ids`. Skrip memilih satu secara deterministik berdasarkan tanggal, jadi latar bisa berulang tapi tidak selalu sama persis.
+- Supaya konten tidak terasa statis, tiap tema punya **pool kecil** `pexels_backgrounds` berisi URL MP4 langsung dari Pexels. Skrip memilih satu secara deterministik berdasarkan tanggal, jadi latar bisa berulang tapi tidak selalu sama persis.
 
 ---
 
@@ -115,15 +115,35 @@ PENTING: refresh token aplikasi berstatus **Testing** kedaluwarsa dalam **7 hari
 
 ---
 
-## 3. Pexels API key
+## 3. Latar Pexels tanpa API key
 
-1. Buat/ login akun Pexels, buka https://www.pexels.com/api/.
-2. Ajukan API key — biasanya langsung diberikan.
-3. Simpan sebagai Secret `PEXELS_API_KEY`.
+Pexels saat ini **tidak memberikan API key baru**, jadi pipeline ini tidak memakai API sama sekali. Background diambil dari **URL MP4 langsung** `videos.pexels.com` yang sudah diverifikasi, dan daftarnya disimpan di `config/themes.json` pada `pexels_backgrounds`.
 
-Kuota: **200 request/jam, 20.000/bulan**. Pipeline ini pakai 1 request per run, jadi jauh di bawah batas.
+Field tiap entri:
 
-Lisensi Pexels memperbolehkan penggunaan komersial tanpa atribusi wajib, tapi **guideline API meminta tautan ke Pexels dan kredit fotografer**. Itu sudah ditambahkan otomatis ke deskripsi YouTube oleh `scripts/plan.py`.
+| Field | Fungsi |
+| --- | --- |
+| `id` | ID video Pexels, dipakai untuk rotasi deterministik. |
+| `description` | Dipakai prompt AI supaya teks relevan dengan visual. |
+| `url` | Halaman video Pexels, masuk atribusi deskripsi. |
+| `photographer` | Nama kreator, masuk atribusi deskripsi. |
+| `file_url` | URL MP4 langsung yang diunduh runner. |
+
+Cara menambah background baru:
+
+1. Buka halaman video di Pexels, misalnya `https://www.pexels.com/video/30508832/`.
+2. Ambil URL MP4 langsungnya (biasanya terlihat di network tab/devtools atau dari source video).
+3. Cek cepat dengan `Invoke-WebRequest -Method Head <url>`; pastikan status `200` dan `Content-Type: video/mp4`.
+4. Tambahkan objek baru ke array `pexels_backgrounds`. Tidak perlu ubah kode Python atau menambah Secret.
+
+Lisensi Pexels memperbolehkan penggunaan komersial tanpa atribusi wajib, tapi **guideline meminta tautan ke Pexels dan kredit fotografer**. Itu sudah ditambahkan otomatis ke deskripsi YouTube oleh `scripts/plan.py`.
+
+Pool yang terpakai sekarang:
+
+| ID | Deskripsi | Fotografer | Halaman |
+| --- | --- | --- | --- |
+| `30508832` | Night city traffic from above with bokeh lights | David Saurik | https://www.pexels.com/video/night-city-traffic-from-above-with-bokeh-lights-30508832/ |
+| `37779530` | Dynamic city night traffic timelapse | Sapol Churanon | https://www.pexels.com/video/dynamic-city-night-traffic-timelapse-37779530/ |
 
 ---
 
@@ -170,7 +190,22 @@ Free License freetouse **mewajibkan atribusi**, jadi judul + URL track otomatis 
       "id": "motivasi-malam",
       "niche": "Motivasi produktivitas dan semangat kerja, Bahasa Indonesia. Nada optimistis, singkat, dan konkret.",
       "pexels_query": "city night lights timelapse portrait",
-      "pexels_video_ids": [30508832, 37779530, 37700770, 40480291, 31521814],
+      "pexels_backgrounds": [
+        {
+          "id": 30508832,
+          "description": "night city traffic from above with bokeh lights",
+          "url": "https://www.pexels.com/video/night-city-traffic-from-above-with-bokeh-lights-30508832/",
+          "photographer": "David Saurik",
+          "file_url": "https://videos.pexels.com/video-files/30508832/13071300_1440_2560_30fps.mp4"
+        },
+        {
+          "id": 37779530,
+          "description": "dynamic city night traffic timelapse",
+          "url": "https://www.pexels.com/video/dynamic-city-night-traffic-timelapse-37779530/",
+          "photographer": "Sapol Churanon",
+          "file_url": "https://videos.pexels.com/video-files/37779530/16024710_1440_2560_30fps.mp4"
+        }
+      ],
       "music": [
         {
           "file": "unstoppable.mp3",
@@ -195,9 +230,9 @@ Free License freetouse **mewajibkan atribusi**, jadi judul + URL track otomatis 
 - `brightness` / `saturation`: menggelap dan meredupkan latar.
 - `music_volume`: volume musik (0–1).
 - `music`: array track. Skrip memilih satu per tanggal, tapi hanya dari file yang benar-benar tersedia di `work/music`.
-- `pexels_video_ids`: pool ID video Pexels. Skrip memilih satu per hari secara deterministik (berdasarkan tanggal), jadi latar bergilir tapi bisa diprediksi. Kode juga otomatis memfilter yang portrait; kalau tidak ada yang portrait, tetap dipakai dan di-crop 9:16. Kosongkan `[]` jika ingin mencari otomatis lewat `pexels_query`.
+- `pexels_backgrounds`: pool video Pexels berupa URL MP4 langsung. Skrip memilih satu per hari secara deterministik (berdasarkan tanggal), jadi latar bergilir tapi bisa diprediksi. Semua video di pool sudah portrait 9:16; render tetap di-crop ke 1080x1920.
 
-Pool yang terisi sekarang adalah video **kota malam / lalu lintas bokeh** portrait 9:16 (mis. `30508832` = 2160x3840, 30 detik). Cara menambah ID: buka halaman video di Pexels, URL-nya seperti `https://www.pexels.com/video/2499611/` — ID-nya `2499611`.
+Pool yang terisi sekarang adalah video **kota malam / lalu lintas bokeh** portrait 9:16, 30 fps. Cara menambah: lihat bagian **3. Latar Pexels tanpa API key**. Field `pexels_query` tetap dipakai sebagai fallback deskripsi untuk prompt AI.
 
 Karena hanya ada **satu tema**, prompt AI jadi lebih pendek dan biaya token makin kecil.
 
@@ -209,7 +244,6 @@ Secrets (`Settings -> Secrets and variables -> Actions -> New repository secret`
 
 | Nama | Wajib | Keterangan |
 | --- | --- | --- |
-| `PEXELS_API_KEY` | Ya | API key Pexels. |
 | `GEMINI_API_KEY` | Ya | Google AI Studio API key. |
 | `DEEPSEEK_API_KEY` | Tidak | Fallback otomatis kalau Gemini error. |
 | `GDRIVE_SA_JSON` | Ya | Service account JSON (base64 satu baris). |
@@ -247,7 +281,7 @@ Variables (opsional, tab **Variables**):
 ## 8. Biaya dan kuota
 
 - GitHub Actions repo public: gratis unlimited, 4 core / 16 GB.
-- Pexels API: gratis, 200 req/jam + 20.000/bulan.
+- Pexels: unduhan MP4 langsung, tanpa API key dan tanpa kuota API.
 - Google Drive pribadi: gratis 15 GB.
 - Gemini 3.5 Flash-Lite: text-only, biaya sangat kecil (kemungkinan besar $0 untuk 2 video/hari).
 - YouTube Data API: `videos.insert` punya bucket sendiri **100 upload/hari**, biaya 1 kuota per call. Kuota lain 10.000 unit/hari. Aman.
@@ -260,8 +294,8 @@ Variables (opsional, tab **Variables**):
 - `403 insufficientPermissions`: peran share salah (music cukup Viewer, outputs harus Editor) atau Drive API belum aktif.
 - `Tidak ada file musik ...`: nama/Cek ekstensi MP3 dan `GDRIVE_MUSIC_FOLDER_ID`.
 - `File musik tidak ditemukan: work/music/...`: nama file di Drive beda dengan `music.file` di `config/themes.json`.
-- Pexels `401`: API key salah atau belum terisi.
-- Pexels `429`: kuota terlampaui; tunggu sampai reset.
+- Unduhan Pexels gagal / `404`: `file_url` di `pexels_backgrounds` sudah kedaluwarsa atau salah. Buka halaman video, ambil URL MP4 terbaru, lalu commit ulang config.
+- `Tidak ada 'pexels_backgrounds'`: config belum punya pool background; tambahkan entri seperti di bagian 3.
 - `invalid_grant` saat upload: refresh token kedaluwarsa (7 hari). Ulangi langkah 2.5.
 - `quotaExceeded`: cek halaman Quotas di Google Cloud.
 - Hasil video terlalu besar: turunkan `-crf 23` ke `-crf 26` di `scripts/render.py`.
@@ -273,6 +307,6 @@ Variables (opsional, tab **Variables**):
 
 YouTube punya kebijakan **reused content**. Video dengan latar yang persis sama dan hanya beda teks berisiko dianggap repetitif. Mitigasi yang sudah disiapkan:
 
-- Gunakan **beberapa ID Pexels** per tema (misal 3–5) supaya latar berganti.
+- Gunakan **beberapa entri `pexels_backgrounds`** per tema (mulai 2, tambahkan sampai 3–5) supaya latar berganti.
 - Bedakan judul/caption tiap run lewat AI.
 - Hindari mengupload lebih dari 2 video/hari dengan tema identik.

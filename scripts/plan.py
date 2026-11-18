@@ -52,7 +52,7 @@ def main() -> None:
     prompt = f"""Kamu penulis konten Shorts Bahasa Indonesia.
 
 Tema kanal: {theme['niche']}
-Video latar berasal dari Pexels dengan query/deskripsi: {theme.get('pexels_query', '')}
+Video latar berasal dari Pexels dengan deskripsi: {bg.get('description') or theme.get('pexels_query', '')}
 
 Tugas:
 1. Tulis tepat {defaults['lines']} baris teks yang akan muncul BERTAHAP di tengah video.
