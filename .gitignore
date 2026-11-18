@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+work/
+out/
+render_plan.json
+sa.json
+*.log
