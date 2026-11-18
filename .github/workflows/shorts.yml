@@ -37,6 +37,7 @@ jobs:
       - name: Siapkan kredensial Google Drive
         env:
           GDRIVE_SA_JSON: ${{ secrets.GDRIVE_SA_JSON }}
+          MUSIC: ${{ secrets.GDRIVE_MUSIC_FOLDER_ID }}
         run: |
           python - <<'PY'
           import base64, json, os
@@ -56,15 +57,6 @@ jobs:
               )
           print(f"[ok] Service account terbaca: {email}")
           PY
-          echo "$GDRIVE_SA_JSON" | base64 -d > /tmp/shorts-sa.json
-          rclone config create gdrive drive \
-            service_account_file /tmp/shorts-sa.json \
-            scope drive
-
-      - name: Unduh musik dari Drive
-        env:
-          MUSIC: ${{ secrets.GDRIVE_MUSIC_FOLDER_ID }}
-        run: |
           MUSIC=$(printf '%s' "$MUSIC" | tr -d '[:space:]')
           if [ -z "$MUSIC" ]; then
             echo "GDRIVE_MUSIC_FOLDER_ID kosong."
@@ -74,11 +66,20 @@ jobs:
             echo "GDRIVE_MUSIC_FOLDER_ID harus berupa ID saja, bukan URL lengkap."
             exit 1
           fi
-          echo "Membuka folder musik (panjang ID: ${#MUSIC}, prefix: ${MUSIC:0:6}...)..."
-          rclone lsjson "gdrive:$MUSIC" --max-depth 1 \
-            || { echo "Gagal membuka folder. Cek GDRIVE_MUSIC_FOLDER_ID dan sharing ke service account."; exit 1; }
+          echo "$GDRIVE_SA_JSON" | base64 -d > /tmp/shorts-sa.json
+          rclone config create gdrive drive \
+            service_account_file /tmp/shorts-sa.json \
+            scope drive \
+            root_folder_id "$MUSIC"
+          echo "[ok] rclone root_folder_id diset (panjang ID: ${#MUSIC})"
+
+      - name: Unduh musik dari Drive
+        run: |
+          echo "Membuka root musik..."
+          rclone lsjson gdrive: --max-depth 1 \
+            || { echo "Gagal membuka folder musik. Cek GDRIVE_MUSIC_FOLDER_ID dan sharing ke service account."; exit 1; }
           mkdir -p work/music out
-          rclone copy "gdrive:$MUSIC" work/music \
+          rclone copy gdrive: work/music \
             --include "*.mp3" --include "*.wav" --include "*.m4a" --include "*.ogg" \
             --transfers 2 --retries 3
           ls -lh work/music

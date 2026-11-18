@@ -304,7 +304,7 @@ Variables (opsional, tab **Variables**):
 
 ## 9. Troubleshooting
 
-- `rclone` gagal konek: cek `GDRIVE_SA_JSON` (base64 satu baris tanpa spasi) dan pastikan folder di-share ke email service account.
+- `rclone` gagal konek / `directory not found`: cek `GDRIVE_SA_JSON` (base64 satu baris tanpa spasi) dan pastikan `shorts-music` di-share ke email service account. Untuk service account, folder ID harus diset sebagai `root_folder_id` dan path-nya memakai `gdrive:` (bukan `gdrive:<id>`) — ini sudah diterapkan di workflow.
 - `403 insufficientPermissions`: `shorts-music` belum di-share ke service account (Viewer) atau Drive API belum aktif.
 - `storageQuotaExceeded`: service account dipakai untuk write. Arsip sekarang lewat `scripts/archive_drive.py` dengan OAuth user; jangan pakai `rclone copy` ke `shorts-outputs`.
 - `Tidak ada file musik ...`: nama/Cek ekstensi MP3 dan `GDRIVE_MUSIC_FOLDER_ID`.
