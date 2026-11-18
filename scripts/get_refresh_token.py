@@ -11,8 +11,10 @@ import http.server
 import os
 import secrets
 import socketserver
+import subprocess
 import urllib.parse
 import webbrowser
+from pathlib import Path
 
 import requests
 
@@ -32,6 +34,26 @@ def _read_env() -> dict[str, str]:
             k, v = line.split("=", 1)
             env[k.strip()] = v.strip().strip('"').strip("'")
     return env
+
+
+def _save_env_value(key: str, value: str) -> None:
+    """Simpan/memperbarui satu key di .env tanpa mencetak nilai."""
+    path = Path(__file__).resolve().parent.parent / ".env"
+    lines: list[str] = []
+    if path.exists():
+        lines = path.read_text(encoding="utf-8").splitlines()
+    prefix = f"{key}="
+    kept = [line for line in lines if not line.strip().startswith(prefix)]
+    kept.append(f"{prefix}{value}")
+    path.write_text("\n".join(kept) + "\n", encoding="utf-8")
+
+
+def _copy_to_clipboard(value: str) -> None:
+    """Salin ke clipboard Windows via perintah clip (stdin, bukan argumen)."""
+    try:
+        subprocess.run(["clip"], input=value, text=True, check=True)
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def main() -> None:
@@ -98,9 +120,17 @@ def main() -> None:
     response.raise_for_status()
     tokens = response.json()
 
-    print("\n=== REFRESH TOKEN (simpan ke GitHub Secret YT_REFRESH_TOKEN) ===")
-    print(tokens.get("refresh_token", "(tidak dikembalikan Google)"))
-    print("===================================================================\n")
+    refresh_token = tokens.get("refresh_token", "")
+    if refresh_token:
+        _save_env_value("YT_REFRESH_TOKEN", refresh_token)
+        _copy_to_clipboard(refresh_token)
+        print(
+            f"\n[ok] Refresh token tersimpan di .env dan clipboard "
+            f"(panjang {len(refresh_token)} karakter, tidak ditampilkan)."
+        )
+        print("Tempel sebagai GitHub Secret YT_REFRESH_TOKEN.\n")
+    else:
+        print("\n[warn] Google tidak mengembalikan refresh_token. Periksa consent screen.\n")
     print(
         "Catatan: status OAuth 'Testing' membuat token ini kedaluwarsa dalam 7 hari. "
         "Ulangi script ini bila upload gagal dengan error invalid_grant."
