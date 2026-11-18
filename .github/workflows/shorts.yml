@@ -6,9 +6,34 @@ on:
     - cron: '0 23 * * *'
     - cron: '0 11 * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode konten'
+        type: choice
+        options:
+          - famous
+          - custom
+        default: famous
+      quote_text:
+        description: 'Teks quote (wajib untuk mode custom). Pisahkan baris dengan | atau baris baru.'
+        type: string
+        required: false
+      quote_author:
+        description: 'Nama/penulis quote (custom). Default: dbcw'
+        type: string
+        required: false
+        default: dbcw
+      quote_language:
+        description: 'Bahasa quote (auto/id/en)'
+        type: choice
+        options:
+          - auto
+          - id
+          - en
+        default: auto
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: shorts-bot
@@ -33,6 +58,7 @@ jobs:
           curl -sSL https://rclone.org/install.sh | sudo bash
           ffmpeg -hide_banner -encoders | grep -q libx264
           test -f /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
+          test -f /usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf
 
       - name: Siapkan kredensial Google Drive
         env:
@@ -89,7 +115,7 @@ jobs:
       - name: Pasang dependency Python
         run: pip install -r requirements.txt
 
-      - name: Rencana (Pexels + AI teks saja)
+      - name: Rencana (Pexels + AI quotes)
         env:
           TZ: Asia/Jakarta
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -98,6 +124,10 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'openrouter' }}
           YT_PRIVACY: ${{ vars.YT_PRIVACY || 'public' }}
+          QUOTE_MODE: ${{ inputs.mode || 'famous' }}
+          QUOTE_TEXT: ${{ inputs.quote_text || '' }}
+          QUOTE_AUTHOR: ${{ inputs.quote_author || 'dbcw' }}
+          QUOTE_LANGUAGE: ${{ inputs.quote_language || 'auto' }}
         run: python scripts/plan.py
 
       - name: Render dengan ffmpeg
@@ -118,6 +148,20 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: python scripts/publish.py
+
+      - name: Commit log quotes terpakai
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/used_quotes.jsonl
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan log quotes."
+            exit 0
+          fi
+          git commit -m "chore: log used quote (run ${{ github.run_number }})"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Simpan log kecil sebagai artifact
         if: always()

@@ -1,15 +1,20 @@
 # shorts-bot
 
-Automasi Shorts Bahasa Indonesia dengan konsep **teks dulu, gambar belakang**. Latar video diambil dari Pexels, digelap dan diberi shape hitam supaya teks terbaca, lalu 3 baris teks muncul bertahap. Musik dari freetouse.com. Semua proses di GitHub Actions (repo public = gratis unlimited), hasil diarsipkan ke Google Drive, lalu di-upload ke YouTube Shorts.
+Automasi YouTube Shorts bertema **quotes** dengan konsep **teks dulu, gambar belakang**. Latar video diambil dari Pexels, digelap dan diberi shape hitam supaya teks terbaca, lalu teks quote muncul bertahap diikuti baris penulis (miring). Musik dari freetouse.com. Semua proses di GitHub Actions (repo public = gratis unlimited), hasil diarsipkan ke Google Drive, lalu di-upload ke YouTube Shorts.
+
+## Mode konten
+- **Famous quotes (AI, default/schedule)**: AI memilih/membuat quotes terkenal. Jika quotes aslinya bahasa Inggris → tetap bahasa Inggris; selain itu → Bahasa Indonesia. Baris penulis ditampilkan sebagai `- Nama -` (miring). Prompt AI diberi riwayat `data/used_quotes.jsonl` agar menghindari pengulangan.
+- **Custom quotes (insidental, bridge untuk Telegram bot nanti)**: jalankan manual **Actions → shorts-bot → Run workflow** dengan input `mode=custom`, `quote_text`, `quote_author` (default `dbcw`), `quote_language` (auto/id/en). Penulis ditampilkan sebagai `- dbcw -` (atau nama yang diisi), miring. Integrasi Telegram bot penuh belum dibuat; nanti bot bisa memicu workflow ini lewat GitHub API (`workflow_dispatch`) dengan input yang sama.
 
 ```
 Pexels MP4 langsung --latar--> Runner GitHub (4 core / 16 GB)
 Drive /music --rclone-->  |
-                          +-- AI: 3 baris teks + judul + caption (TEKS SAJA, tanpa gambar)
-                          +-- ffmpeg: gelap + black band + teks bertahap + musik
+                          +-- AI: quotes terkenal / metadata custom (TEKS SAJA, tanpa gambar)
+                          +-- ffmpeg: gelap + black band + teks bertahap + penulis miring + musik
                           |
                           +--OAuth--> Drive /outputs/<tanggal>  (arsip + caption.txt)
                           +--API----> YouTube Shorts
+                          +--commit-> data/used_quotes.jsonl   (log quotes terpakai)
 ```
 
 Jadwal default: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` dalam UTC).
@@ -17,17 +22,18 @@ Jadwal default: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` dala
 ## Catatan konsep soal token
 
 - **Mengulang video latar dan backsound TIDAK menghemat token AI.** Token dibayar dari teks yang dikirim, bukan dari file video/musik.
-- Yang benar-benar menghemat token adalah **tidak mengirim thumbnail/gambar ke AI**. Rencana lama mengirim 8 thumbnail per run; rencana ini **nol gambar**, jadi biaya AI turun drastis.
-- Supaya konten tidak terasa statis, tiap tema punya **pool kecil** `pexels_backgrounds` berisi URL MP4 langsung dari Pexels. Skrip memilih satu secara deterministik berdasarkan tanggal, jadi latar bisa berulang tapi tidak selalu sama persis.
+- Yang benar-benar menghemat token adalah **tidak mengirim thumbnail/gambar ke AI**. Pipeline ini mengirim **teks saja**.
+- Supaya konten tidak terasa statis, tema punya **pool kecil** `pexels_backgrounds` berisi URL MP4 langsung dari Pexels. Skrip memilih satu secara deterministik berdasarkan tanggal.
+- Riwayat quotes terpakai disimpan di `data/used_quotes.jsonl` dan ikut dikirim (ringkas) ke prompt AI famous quotes untuk mengurangi pengulangan.
 
 ---
 
 ## 1. Repo GitHub (akun sekunder)
 
 1. Buat repo **public**, misalnya `shorts-bot`.
-2. `Settings -> Actions -> General -> Workflow permissions` -> **Read repository contents and packages**.
+2. `Settings -> Actions -> General -> Workflow permissions` -> **Read and write permissions** (dibutuhkan agar workflow bisa auto-commit `data/used_quotes.jsonl`).
 3. Jangan pasang kartu pembayaran di akun sekunder. Repo public = Actions gratis unlimited, 4 core / 16 GB.
-4. File `.env`, `sa.json`, folder `work/`, dan `out/` sudah masuk `.gitignore`. Jangan pernah di-commit.
+4. File `.env`, `sa.json`, folder `work/`, dan `out/` sudah masuk `.gitignore`. Jangan pernah di-commit. Log quotes yang **boleh** di-commit: `data/used_quotes.jsonl`.
 
 ---
 
@@ -187,15 +193,16 @@ PENTING: deskripsi YouTube **tidak mendukung markdown** `[nama](https://...)`, s
 {
   "defaults": {
     "duration_seconds": 30,
-    "lines": 3,
     "font_size": 72,
     "min_font_size": 34,
+    "author_font_size": 48,
+    "author_min_font_size": 30,
     "fade_in_min": 0.7,
     "fade_in_max": 1.4,
     "fade_in_per_word": 0.12,
     "line_gap": 0.7,
-    "band_top": 680,
-    "band_height": 560,
+    "band_top": 620,
+    "band_height": 680,
     "overlay_opacity": 0.55,
     "brightness": -0.18,
     "saturation": 0.75,
@@ -203,57 +210,43 @@ PENTING: deskripsi YouTube **tidak mendukung markdown** `[nama](https://...)`, s
   },
   "themes": [
     {
-      "id": "motivasi-malam",
-      "niche": "Motivasi produktivitas dan semangat kerja, Bahasa Indonesia. Nada optimistis, singkat, dan konkret.",
-      "pexels_query": "city night lights timelapse portrait",
-      "pexels_backgrounds": [
-        {
-          "id": 30508832,
-          "description": "night city traffic from above with bokeh lights",
-          "url": "https://www.pexels.com/video/night-city-traffic-from-above-with-bokeh-lights-30508832/",
-          "photographer": "David Saurik",
-          "file_url": "https://videos.pexels.com/video-files/30508832/13071300_1440_2560_30fps.mp4"
-        },
-        {
-          "id": 37779530,
-          "description": "dynamic city night traffic timelapse",
-          "url": "https://www.pexels.com/video/dynamic-city-night-traffic-timelapse-37779530/",
-          "photographer": "Sapol Churanon",
-          "file_url": "https://videos.pexels.com/video-files/37779530/16024710_1440_2560_30fps.mp4"
-        }
-      ],
-      "music": [
-        {
-          "file": "unstoppable.mp3",
-          "title": "Unstoppable",
-          "url": "https://freetouse.com/music/aylex/unstoppable"
-        },
-        {
-          "file": "enlivening.mp3",
-          "title": "Enlivening",
-          "url": "https://freetouse.com/music/pufino/enlivening"
-        }
-      ]
+      "id": "quotes",
+      "niche": "Quotes inspiratif dan bermakna. Cocok untuk refleksi, motivasi, dan kebijaksanaan hidup.",
+      "pexels_query": "cinematic background portrait bokeh",
+      "pexels_backgrounds": [ { "...": "..." } ],
+      "music": [ { "...": "..." } ]
     }
   ]
 }
 ```
 
 - `duration_seconds`: durasi video akhir.
-- `lines`: jumlah baris teks bertahap (default 3; render mendukung maksimal 3).
-- `font_size` / `min_font_size`: ukuran font maksimal dan minimal. Render otomatis mengecilkan font sampai teks muat di lebar 920 px, jadi tidak terpotong.
+- `font_size` / `min_font_size`: ukuran font maksimal/minimal untuk baris quote. Render otomatis mengecilkan font sampai teks muat di lebar 920 px.
+- `author_font_size` / `author_min_font_size`: ukuran font untuk baris penulis (miring), biasanya lebih kecil dari quote.
 - `fade_in_min` / `fade_in_max` / `fade_in_per_word`: durasi fade in dihitung dari jumlah kata, dibatasi 0,7–1,4 detik (`0,7 + 0,12 × kata`). **Tidak ada fade out** — teks bertahan setelah muncul.
-- `line_gap`: **jeda tetap 0,7 detik** setelah fade in sebuah baris selesai; setelah itu baris berikutnya mulai fade in. Waktu baca tidak lagi dipakai untuk menjadwalkan kemunculan.
-- `band_top` / `band_height`: posisi dan tinggi shape hitam (koordinat 1080x1920).
+- `line_gap`: **jeda tetap 0,7 detik** setelah fade in sebuah baris selesai; baris berikutnya (termasuk baris penulis) mulai fade in setelah itu.
+- `band_top` / `band_height`: posisi dan tinggi shape hitam (koordinat 1080x1920). Layout baris dihitung dinamis; jika baris terakhir adalah penulis, posisinya ditempatkan di bawah blok quote.
 - `overlay_opacity`: kegelapan shape hitam (`0.55` = 55%).
 - `brightness` / `saturation`: menggelap dan meredupkan latar.
 - `music_volume`: volume musik (0–1).
 - `music`: array track. Skrip memilih satu per tanggal, tapi hanya dari file yang benar-benar tersedia di `work/music`.
-- `pexels_backgrounds`: pool video Pexels berupa URL MP4 langsung. Skrip memilih satu per hari secara deterministik (berdasarkan tanggal), jadi latar bergilir tapi bisa diprediksi. Semua video di pool sudah portrait 9:16; render tetap di-crop ke 1080x1920.
+- `pexels_backgrounds`: pool video Pexels berupa URL MP4 langsung. Skrip memilih satu per hari secara deterministik. Render tetap di-crop ke 1080x1920.
 
-Pool yang terisi sekarang adalah video **kota malam / lalu lintas bokeh** portrait 9:16, 30 fps. Cara menambah: lihat bagian **3. Latar Pexels tanpa API key**. Field `pexels_query` tetap dipakai sebagai fallback deskripsi untuk prompt AI.
+Render mendukung jumlah baris variabel (quote 1–3 baris + 1 baris penulis). Baris penulis menggunakan font miring (DejaVu Sans Oblique).
 
-Karena hanya ada **satu tema**, prompt AI jadi lebih pendek dan biaya token makin kecil.
+## 5.1 Cara menjalankan
+
+- **Otomatis (jadwal)**: 06.00 & 18.00 WIB, mode `famous` (AI generate quotes terkenal, EN tetap EN, selain itu ID).
+- **Manual famous**: Actions → **shorts-bot** → **Run workflow** → `mode = famous`.
+- **Manual custom (bridge Telegram bot nanti)**: Actions → **Run workflow** → `mode = custom`, isi `quote_text` (pisahkan baris dengan `|` atau baris baru), opsional `quote_author` (default `dbcw`), `quote_language` (`auto/id/en`). Hasil: baris penulis `- dbcw -` (miring).
+
+> Integrasi Telegram bot penuh belum diimplementasikan. Nanti bot dapat memicu workflow ini via GitHub REST API `workflow_dispatch` dengan input yang sama (`mode`, `quote_text`, `quote_author`, `quote_language`).
+
+## 5.2 Log quotes terpakai
+
+- File: `data/used_quotes.jsonl` (satu JSON per baris).
+- Di-append oleh `scripts/plan.py` setiap run, lalu workflow melakukan auto-commit & push (`contents: write`).
+- Dipakai sebagai konteks "hindari pengulangan" untuk mode `famous`.
 
 ---
 
