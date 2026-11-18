@@ -47,7 +47,14 @@ jobs:
               sa = json.loads(base64.b64decode(raw))
           except Exception as exc:
               raise SystemExit(f"GDRIVE_SA_JSON bukan base64 JSON valid: {exc}")
-          print(f"[ok] Service account terbaca: {sa.get('client_email')}")
+          email = sa.get("client_email", "")
+          expected = "shorts-bot@shorts-bot-515107.iam.gserviceaccount.com"
+          if email != expected:
+              raise SystemExit(
+                  f"Service account salah. Dapat: {email or '(kosong)'}. "
+                  f"Harus: {expected}"
+              )
+          print(f"[ok] Service account terbaca: {email}")
           PY
           echo "$GDRIVE_SA_JSON" | base64 -d > /tmp/shorts-sa.json
           rclone config create gdrive drive \
@@ -67,7 +74,7 @@ jobs:
             echo "GDRIVE_MUSIC_FOLDER_ID harus berupa ID saja, bukan URL lengkap."
             exit 1
           fi
-          echo "Membuka folder musik (panjang ID: ${#MUSIC})..."
+          echo "Membuka folder musik (panjang ID: ${#MUSIC}, prefix: ${MUSIC:0:6}...)..."
           rclone lsjson "gdrive:$MUSIC" --max-depth 1 \
             || { echo "Gagal membuka folder. Cek GDRIVE_MUSIC_FOLDER_ID dan sharing ke service account."; exit 1; }
           mkdir -p work/music out
