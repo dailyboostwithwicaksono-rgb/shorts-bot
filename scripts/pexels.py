@@ -15,8 +15,8 @@ def _download(link: str, out: Path) -> None:
                     fh.write(chunk)
 
 
-def pick_background(theme: dict, day: str, out: Path) -> dict:
-    """Pilih satu background dari pool URL langsung secara deterministik per tanggal."""
+def pick_background(theme: dict, seed: str, out: Path) -> dict:
+    """Pilih satu background dari pool URL langsung berdasarkan seed (acak per run)."""
     pool = theme.get("pexels_backgrounds") or []
     if not pool:
         raise SystemExit(
@@ -33,7 +33,7 @@ def pick_background(theme: dict, day: str, out: Path) -> dict:
     chosen = sorted(
         valid,
         key=lambda b: hashlib.sha256(
-            f"{b.get('id') or b['file_url']}|{day}".encode("utf-8")
+            f"{b.get('id') or b['file_url']}|{seed}".encode("utf-8")
         ).hexdigest(),
     )[0]
 

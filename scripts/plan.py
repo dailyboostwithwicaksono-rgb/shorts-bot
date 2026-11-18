@@ -176,12 +176,18 @@ def main() -> None:
     cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
     defaults = cfg["defaults"]
     day = os.getenv("RUN_DATE") or date.today().isoformat()
+    run_seed = (
+        os.getenv("RUN_SEED")
+        or os.getenv("GITHUB_RUN_ID")
+        or os.getenv("GITHUB_RUN_NUMBER")
+        or datetime.now(timezone.utc).isoformat()
+    )
     WORK.mkdir(parents=True, exist_ok=True)
     MUSIC.mkdir(parents=True, exist_ok=True)
 
     theme = pick_theme(cfg["themes"], day)
     bg_path = WORK / "bg.mp4"
-    bg = pick_background(theme, day, bg_path)
+    bg = pick_background(theme, run_seed, bg_path)
 
     music_pool = theme.get("music") or []
     if isinstance(music_pool, dict):
@@ -194,7 +200,7 @@ def main() -> None:
         )
     music = sorted(
         available,
-        key=lambda m: hashlib.sha256(f"{m['file']}|{day}".encode("utf-8")).hexdigest(),
+        key=lambda m: hashlib.sha256(f"{m['file']}|{run_seed}".encode("utf-8")).hexdigest(),
     )[0]
     music_path = MUSIC / music["file"]
 

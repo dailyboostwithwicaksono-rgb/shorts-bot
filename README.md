@@ -23,7 +23,7 @@ Jadwal default: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` dala
 
 - **Mengulang video latar dan backsound TIDAK menghemat token AI.** Token dibayar dari teks yang dikirim, bukan dari file video/musik.
 - Yang benar-benar menghemat token adalah **tidak mengirim thumbnail/gambar ke AI**. Pipeline ini mengirim **teks saja**.
-- Supaya konten tidak terasa statis, tema punya **pool kecil** `pexels_backgrounds` berisi URL MP4 langsung dari Pexels. Skrip memilih satu secara deterministik berdasarkan tanggal.
+- Supaya konten tidak terasa statis, tema punya **pool kecil** `pexels_backgrounds` berisi URL MP4 langsung dari Pexels. Skrip memilih satu **per run** (seed dari `GITHUB_RUN_ID`/run number), jadi run yang berbeda bisa memakai latar berbeda meski di hari yang sama.
 - Riwayat quotes terpakai disimpan di `data/used_quotes.jsonl` dan ikut dikirim (ringkas) ke prompt AI famous quotes untuk mengurangi pengulangan.
 
 ---
@@ -166,7 +166,7 @@ Dua track sudah kamu upload ke Drive `shorts-music` dan terdaftar di `config/the
 
 Track ketiga (**Cascade** oleh Alegend) tidak dipakai karena butuh subscription — tidak masalah, tidak ada biaya yang terlibat.
 
-Skrip memilih salah satu dari pool di atas secara bergilir per tanggal, tapi **hanya yang file-nya benar-benar ada** di `work/music`. Jadi kalau suatu hari kamu tambah track, cukup:
+Skrip memilih salah satu dari pool di atas **per run** (seed dari `GITHUB_RUN_ID`/run number), tapi **hanya yang file-nya benar-benar ada** di `work/music`. Jadi kalau suatu hari kamu tambah track, cukup:
 
 1. Download MP3-nya, rename misalnya `cascade.mp3`, upload ke `shorts-music`.
 2. Tambahkan objek `{ "file": ..., "title": ..., "url": ... }` ke array `music` di `config/themes.json`.
@@ -230,7 +230,7 @@ PENTING: deskripsi YouTube **tidak mendukung markdown** `[nama](https://...)`, s
 - `brightness` / `saturation`: menggelap dan meredupkan latar.
 - `music_volume`: volume musik (0–1).
 - `music`: array track. Skrip memilih satu per tanggal, tapi hanya dari file yang benar-benar tersedia di `work/music`.
-- `pexels_backgrounds`: pool video Pexels berupa URL MP4 langsung. Skrip memilih satu per hari secara deterministik. Render tetap di-crop ke 1080x1920.
+- `pexels_backgrounds`: pool video Pexels berupa URL MP4 langsung. Skrip memilih satu **per run** (seed run), sehingga beberapa run di hari yang sama bisa memilih latar berbeda. Render tetap di-crop ke 1080x1920.
 
 Render mendukung jumlah baris variabel (quote 1–3 baris + 1 baris penulis). Baris penulis menggunakan font miring (DejaVu Sans Oblique).
 
