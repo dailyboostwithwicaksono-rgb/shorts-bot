@@ -498,7 +498,8 @@ def main() -> None:
         music_credit = f"Musik: {music_label} — {music_url} (Free To Use)" if music_url else f"Musik: {music_label} (Free To Use)"
 
     attribution = f"{bg_credit}\n{music_credit}"
-    quote_credit = f"Quote: {quote_text}" + (f" — {author_name}" if author_name else "")
+    quote_text_display = " ".join([ln.strip() for ln in quote_lines if str(ln).strip()]).strip() or quote_text.replace(" / ", " ")
+    quote_credit = f"Quote: {quote_text_display}" + (f" — {author_name}" if author_name else "")
     description = f"{caption}\n\n{quote_credit}\n{' '.join(hashtags)}\n\n{attribution}"
 
     plan = {
