@@ -56,6 +56,25 @@
       "keyword": "sailing boat",
       "stage": "S1",
       "duration_actual": 18.0
+    },
+    {
+      "id": 384849,
+      "url": "https://pixabay.com/videos/id-384849/",
+      "pageURL": "https://pixabay.com/videos/id-384849/",
+      "photographer": "adege",
+      "user": "adege",
+      "description": "sunset, sun, sunspots, astronomy, silhouette, trees, clouds, evening sky, orange, nature, dusk, forest, dramatic, horizon, solar disk, 4k, space",
+      "tags": "sunset, sun, sunspots, astronomy, silhouette, trees, clouds, evening sky, orange, nature, dusk, forest, dramatic, horizon, solar disk, 4k, space",
+      "type": "film",
+      "duration_meta": 21,
+      "file_url": "https://cdn.pixabay.com/video/2026/10/24/384849_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "sunrise horizon",
+      "stage": "S1",
+      "duration_actual": 21.24
     }
   ]
 }
