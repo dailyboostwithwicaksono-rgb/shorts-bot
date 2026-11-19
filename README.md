@@ -1,11 +1,11 @@
 # shorts-bot
 
-Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar Pexels (digelap + dark band), musik dari freetouse.com, arsip ke Google Drive, lalu upload ke YouTube Shorts. Proses berjalan di GitHub Actions.
+Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar Pexels (digelap + dark band), musik dari freetouse.com, arsip ke Google Drive, lalu upload ke YouTube Shorts. Proses utama berjalan di **GitHub Actions** (bisa juga dijalankan **lokal**, lihat [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)).
 
 ## Ringkasan
 - **Latar**: URL MP4 langsung Pexels (`config/themes.json`), dipilih **acak per run**.
 - **Musik**: dari folder Drive `shorts-music` (rclone + service account), dipilih **acak per run**.
-- **Render**: 1080x1920, 30 fps, durasi **per quote** (detik), ffmpeg + Pillow (overlay teks).
+- **Render**: 1080×1920, 30 fps, durasi **per quote** (detik), ffmpeg + Pillow (overlay teks).
 - **Arsip**: `out/*` ke Drive `shorts-outputs/<tanggal>` via OAuth user.
 - **Upload**: YouTube Shorts via OAuth user.
 - **Log**: `data/used_quotes.jsonl` di-append tiap run dan **auto-commit** oleh workflow.
@@ -58,7 +58,7 @@ Jadwal: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` UTC, `workfl
 ## Konfigurasi (`config/themes.json`)
 - `defaults`: mode/file default, tipografi (`quote_font_size`, `author_font_size`, `line_spacing`, `max_text_width`, warna, ukuran garis), timing (`fade_in_*`, `line_gap`), layout band (`band_top`, `band_height`, `overlay_opacity`, `brightness`, `saturation`, `music_volume`).
 - `themes[].pexels_backgrounds`: pool latar (MP4 langsung `file_url`, + `id/url/photographer/description`).
-- `themes[].music`: pool musik (`file`, `title`, `url`) — file harus ada di `work/music` (diunduh dari Drive).
+- `themes[].music`: pool musik (`file`, `title`, `url`) — file harus ada di `work/music` (diunduh dari Drive di Actions, atau disiapkan manual saat lokal).
 
 ## Latar Pexels (tanpa API key)
 Tambah background: ambil `file_url` MP4 langsung dari Pexels, verifikasi (200, `video/mp4`), tambahkan entri ke `pexels_backgrounds` dan commit. Atribusi fotografer/tautan Pexels otomatis masuk deskripsi. Lisensi Pexels mengizinkan penggunaan komersial; atribusi tetap dicantumkan sesuai guideline.
@@ -66,35 +66,62 @@ Tambah background: ambil `file_url` MP4 langsung dari Pexels, verifikasi (200, `
 ## Musik freetouse.com
 Lisensi Free To Use mewajibkan atribusi; judul + URL track otomatis masuk deskripsi YouTube (URL polos/clickable). Tambah track: upload ke `shorts-music`, daftarkan di `config/themes.json`. Cek syarat lisensi di https://freetouse.com/license.
 
-## Setup (ringkas)
+## Setup (ringkas, GitHub Actions)
 1. **Repo** public, akun sekunder. `Settings → Actions → General → Workflow permissions` = **Read and write** (untuk auto-commit log). Jangan commit `.env`, `sa.json`, `work/`, `out/`.
-2. **Google Cloud**: aktifkan Google Drive API & YouTube Data API v3. Buat Service Account (JSON → base64 sebagai `GDRIVE_SA_JSON`) untuk **baca musik** dari Drive (share folder musik ke SA sebagai Viewer). Buat OAuth client Desktop + consent screen (scope `drive` & `youtube.upload`, test user = akunmu) untuk **arsip Drive & upload YouTube**.
-3. **Folder Drive**: `shorts-music` (berisi mp3) → share ke SA (Viewer), simpan ID sebagai `GDRIVE_MUSIC_FOLDER_ID`. `shorts-outputs` → ID sebagai `GDRIVE_OUTPUTS_FOLDER_ID` (ditulis via OAuth user, SA tidak punya kuota tulis Drive pribadi).
+2. **Google Cloud**: aktifkan Google Drive API & YouTube Data API v3. Buat Service Account (JSON → base64 sebagai `GDRIVE_SA_JSON`) untuk **baca musik** dari Drive (share folder musik ke SA sebagai Viewer). Buat OAuth client Desktop + consent screen (scope `drive` & `youtube.upload`) untuk **arsip Drive & upload YouTube**.
+3. **Folder Drive**: `shorts-music` (berisi mp3) → share ke SA (Viewer), simpan ID sebagai `GDRIVE_MUSIC_FOLDER_ID`. `shorts-outputs` → ID sebagai `GDRIVE_OUTPUTS_FOLDER_ID` (ditulis via OAuth user; SA tidak punya kuota tulis Drive pribadi).
 4. **Refresh token OAuth**: isi `YT_CLIENT_ID`/`YT_CLIENT_SECRET` di `.env` lokal lalu `python scripts/get_refresh_token.py`, simpan token ke secret `YT_REFRESH_TOKEN`.
 5. **AI** (untuk mode `famous`/metadata custom): isi `OPENROUTER_API_KEY` (model `:free`), opsional `GEMINI_API_KEY`/`DEEPSEEK_API_KEY` sebagai fallback.
 
-## Secrets & Variables
+## Mengubah OAuth app dari Testing ke Production
+Saat status **Testing**, refresh token bisa kedaluwarsa ~7 hari (`invalid_grant`). Memindahkan ke **Production** (di luar Testing) menghilangkan batas kedaluwarsa 7 hari tersebut (token tetap bisa invalid jika dicabut/alasan keamanan lain).
+
+1. Buka **Google Cloud Console → APIs & Services → OAuth consent screen** (Google Auth Platform → Branding/Audience).
+2. **Lengkapi Branding** (tombol Publish nonaktif jika ada yang kurang). Wajib umumnya:
+   - **App name** dan **User support email**.
+   - **Application home page** (URL `https` valid), mis. `https://github.com/dailyboostwithwicaksono-rgb/shorts-bot`.
+   - **Application privacy policy link** (URL `https` valid, kolom terpisah), mis. `https://github.com/dailyboostwithwicaksono-rgb/shorts-bot/blob/main/PRIVACY.md` (tersedia di repo).
+   - **Authorized domains**: tambahkan domain dari URL di atas (mis. `github.com`) lalu simpan.
+   - **Developer contact information** (email). Simpan semua perubahan.
+3. Pastikan **Audience/Data access** (scope `youtube.upload`, `drive`) sesuai. Untuk Gmail pribadi tipe user adalah **External** (Internal hanya Google Workspace).
+4. Klik **Publish app / In production**.
+5. **Buat refresh token baru** dan perbarui kredensial:
+   - Jalankan `python scripts/get_refresh_token.py` (login & setujui izin; jika ada peringatan “unverified app”, lanjutkan untuk akun sendiri).
+   - Update secret GitHub **`YT_REFRESH_TOKEN`** dengan token baru.
+6. Uji workflow (arsip Drive & upload YouTube) memastikan tidak ada `invalid_grant`.
+
+**Catatan penting:**
+- Scope `youtube.upload` dan `drive` bersifat sensitif/terbatas. App Production dengan scope tersebut dapat memerlukan **verifikasi app** oleh Google sesuai kebijakan; untuk penggunaan pribadi 1 akun sering kali tetap dapat berjalan, namun persyaratan/verifikasi bisa menjadi kendala.
+- **OAuth user cap**: untuk app yang meminta scope sensitif/terbatas yang belum disetujui, jumlah pengguna yang bisa memberi izin dibatasi sepanjang masa proyek (tidak bisa di-reset). Untuk pemakaian **hanya oleh akunmu sendiri**, ini praktis tidak masalah — jangan memberi akses ke pengguna lain. Layar “unverified app” dapat muncul bila scope belum disetujui.
+
+## Secrets & Variables (GitHub Actions)
 Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `GDRIVE_SA_JSON`, `GDRIVE_MUSIC_FOLDER_ID`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`.
 
 Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`inclusionai/ling-3.2-flash:free`), `YT_PRIVACY` (`public`/`unlisted`).
 
-## Menjalankan
+## Menjalankan di GitHub Actions
 - Otomatis: jadwal 06.00 & 18.00 WIB (`mode=list`).
-- Manual: Actions → **shorts-bot** → **Run workflow** (pilih `mode`: `list`/`famous`/`custom`).
+- Manual: **Actions → shorts-bot → Run workflow** (pilih `mode`: `list`/`famous`/`custom`).
+
+## Menjalankan di lokal (detail, bertahap)
+Panduan lengkap (untuk pemula, termasuk instalasi ffmpeg, penyiapan musik, env, penjadwalan lokal, dan **cek krusial saat error/gagal**): **[docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)**.
+
+Ringkas: pasang dependensi Python & ffmpeg → siapkan musik di `work/music/` → `python scripts/plan.py` → `python scripts/render.py` → ambil `out/final.mp4` + `out/caption.txt` (judul/deskripsi siap tempel) untuk **upload manual** ke YouTube. Mode `list` tidak memerlukan API key AI. Latar saat ini bersumber dari Pexels (bukan Drive).
 
 ## Maintenance
-- **Token OAuth (penting, mingguan)**: app berstatus **Testing** → refresh token bisa kedaluwarsa ~7 hari. Gejala: `invalid_grant` saat arsip/upload. Solusi: jalankan ulang `scripts/get_refresh_token.py`, update secret `YT_REFRESH_TOKEN`.
-- **Actions (1–2×/minggu)**: cek run 06.00 & 18.00 WIB sukses; jadwal bisa telat. Jika gagal, periksa langkah merah (AI/rate limit, token/quota YouTube, rclone/Drive, commit log). Workflow butuh **Read and write permissions** untuk auto-commit log.
-- **Stok quotes**: pastikan `data/quotes.json` masih cukup; mode `list` akan loop jika habis, tapi tetap baik menambah entri/variasi.
-- **Pool media & kuota Drive**: tambah variasi background/musik agar tidak repetitif; arsip output menambah pemakaian kuota Drive akun OAuth.
-- **YouTube API quota**: 2 upload/hari biasanya aman; cek jika menaikkan frekuensi.
-- **AI**: model `:free` bisa berubah ketersediaan/rate limit; ganti `OPENROUTER_MODEL` bila perlu.
-- **Repo dormant**: workflow schedule dapat dinonaktifkan jika repo lama tidak aktif — jalankan manual/commit kecil untuk mengaktifkan kembali.
+- **Token OAuth**: jika app **Testing** → refresh token kedaluwarsa ~7 hari (`invalid_grant`), regenerate & update `YT_REFRESH_TOKEN`. Jika sudah **Production** → tidak ada kedaluwarsa 7 hari, namun token tetap bisa invalid (dicabut/alasan keamanan) — siapkan cara regenerate. Untuk alur lokal *upload manual* + musik via rclone+SA/manual, OAuth user bisa tidak diperlukan.
+- **Actions (1–2×/minggu)**: cek run terjadwal sukses; jadwal bisa telat. Jika gagal, periksa langkah merah (AI/rate limit, token/quota YouTube, rclone/Drive, commit log). Workflow butuh **Read and write permissions** untuk auto-commit log.
+- **Stok quotes**: pastikan `data/quotes.json` cukup; mode `list` loop jika habis, namun tetap baik menambah variasi.
+- **Pool media & kuota Drive**: tambah variasi background/musik agar tidak repetitif; arsip output menambah kuota Drive.
+- **YouTube API quota**: 2 upload/hari umumnya aman; cek jika menaikkan frekuensi.
+- **AI**: model `:free` dapat berubah ketersediaan/rate limit; ganti `OPENROUTER_MODEL` bila perlu.
+- **Repo dormant**: jadwal dapat dinonaktifkan jika repo lama tidak aktif — jalankan manual/commit kecil untuk mengaktifkan kembali.
 
 ## Troubleshooting singkat
-- `invalid_grant`: token OAuth kedaluwarsa (Testing) → regenerate `YT_REFRESH_TOKEN`.
+- `invalid_grant`: token OAuth kedaluwarsa (Testing) atau dicabut → regenerate `YT_REFRESH_TOKEN` (dan pastikan app/consent sesuai).
 - rclone/Drive musik gagal: cek base64 `GDRIVE_SA_JSON`, `GDRIVE_MUSIC_FOLDER_ID`, sharing folder musik ke SA.
 - Pexels download gagal: `file_url` di pool perlu diperbarui.
-- AI gagal/rate limit: cek key, model `:free`, atau fallback provider.
+- AI gagal/rate limit: cek key, model `:free`, atau fallback provider (mode `list` tidak butuh AI).
 - Commit log gagal: cek Workflow permissions (Read and write).
 - `quotaExceeded` (YouTube): cek kuota di Google Cloud Console.
+- Error lokal (ffmpeg, musik, dependensi, disk, dll.): lihat bagian **“Cek krusial saat error atau gagal”** di [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md).
