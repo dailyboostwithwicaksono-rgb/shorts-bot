@@ -8,77 +8,24 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from ai import generate_plan
-from pixabay import pick_background
+from common import ROOT, WORK, MUSIC, PLAN_OUT, CONFIG_PATH, load_dotenv, now_utc_iso, read_json, load_used_entries, append_jsonl
 from freetouse import pick_music as pick_freetouse_music
+from pixabay import pick_background
+from runlog import log_run
 
-ROOT = Path(__file__).resolve().parent.parent
-CONFIG = ROOT / "config" / "themes.json"
-WORK = ROOT / "work"
-MUSIC = WORK / "music"
-PLAN_OUT = ROOT / "render_plan.json"
+CONFIG = CONFIG_PATH
 DEFAULT_QUOTES = ROOT / "data" / "quotes.json"
 DEFAULT_USED = ROOT / "data" / "used_quotes.jsonl"
 DEFAULT_USED_VIDEOS = ROOT / "data" / "used_videos.jsonl"
 DEFAULT_USED_MUSIC = ROOT / "data" / "used_music.jsonl"
 
-
-def load_dotenv(path: Path) -> None:
-    if not path or not path.exists():
-        return
-    try:
-        for raw in path.read_text(encoding="utf-8").splitlines():
-            line = raw.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            k, v = line.split("=", 1)
-            k = k.strip()
-            v = v.strip().strip('"').strip("'")
-            if k and k not in os.environ:
-                os.environ[k] = v
-    except Exception:
-        pass
-
-
 load_dotenv(ROOT / ".env")
-
-
-def now_utc_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
 def pick_theme(themes: list[dict]) -> dict:
     if not themes:
         raise SystemExit("config/themes.json tidak memiliki themes.")
     return random.choice(themes)
-
-
-def read_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8-sig"))
-
-
-def load_used_entries(path: Path, limit: int = 200) -> list[dict]:
-    if not path.exists():
-        return []
-    items = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            items.append(json.loads(line))
-        except Exception:
-            continue
-    return items[-limit:]
-
-
-def append_jsonl(path: Path, entry: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-
-
-def append_used_entry(path: Path, entry: dict) -> None:
-    append_jsonl(path, entry)
 
 
 def to_lower(s: str) -> str:
@@ -332,36 +279,8 @@ def load_list_quote(quotes_path: Path, used_path: Path) -> dict:
     return selected
 
 
-def main() -> None:
-    cfg = read_json(CONFIG)
-    defaults = cfg.get("defaults", {})
-    day = os.getenv("RUN_DATE") or date.today().isoformat()
-    run_seed = (
-        os.getenv("RUN_SEED")
-        or os.getenv("GITHUB_RUN_ID")
-        or os.getenv("GITHUB_RUN_NUMBER")
-        or datetime.now(timezone.utc).isoformat()
-        or str(random.random())
-    )
-
-    WORK.mkdir(parents=True, exist_ok=True)
-    MUSIC.mkdir(parents=True, exist_ok=True)
-    OUT_DIR = ROOT / "out"
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-
-    theme = pick_theme(cfg.get("themes") or [])
-
-    mode = (os.getenv("QUOTE_MODE") or defaults.get("default_mode") or "list").strip().lower()
-    if mode not in ("list", "custom", "famous"):
-        mode = "list"
-
-    quotes_path = ROOT / str(defaults.get("quotes_file") or "data/quotes.json")
-    used_path = ROOT / str(defaults.get("used_quotes_file") or "data/used_quotes.jsonl")
-    cache_path = ROOT / str(defaults.get("pixabay_cache_file") or "data/pixabay_cache.json")
-    used_videos_path = ROOT / str(defaults.get("used_videos_file") or "data/used_videos.jsonl")
-    used_music_path = ROOT / str(defaults.get("used_music_file") or "data/used_music.jsonl")
-    used = load_used_entries(used_path)
-
+def resolve_quote(mode: str, defaults: dict, theme: dict, used: list[dict],
+                  quotes_path: Path, used_path: Path) -> dict:
     selected_id = None
     quote_text = ""
     quote_lines: list[str] = []
@@ -458,30 +377,16 @@ def main() -> None:
         title = (quote_lines[0][:97] + "...") if quote_lines and len(quote_lines[0]) > 100 else (quote_lines[0] if quote_lines else "quote hari ini")
         hashtags = []
 
-    # pick background from Pixabay (after quote/duration known, so keywords relevant)
-    bg_path = WORK / "bg.mp4"
-    bg = pick_background(
-        theme, run_seed, bg_path,
-        quote_duration=duration,
-        quote_lines=quote_lines,
-        quote_text=quote_text,
-        cache_path=cache_path,
-    )
+    return {
+        "mode": mode, "source": source, "selected_id": selected_id,
+        "quote_text": quote_text, "quote_lines": quote_lines, "emphasis": emphasis,
+        "author_raw": author_raw, "duration": duration, "language": language,
+        "title": title, "caption": caption, "hashtags": hashtags, "privacy": privacy,
+    }
 
-    # pick music from Freetouse API (calm/motivasi, durasi memadai)
-    music, music_path = choose_music(theme, run_seed, duration)
 
-    # normalisasi akhir
-    quote_lines = normalize_lines(quote_lines) or ["quote hari ini"]
-    quote_text = to_lower(quote_text) or " / ".join(quote_lines)
-    author_display, author_is_dash = format_author(author_raw)
-    author_name = to_lower(re.sub(r"^\s*-\s*|\s*-\s*$", "", str(author_raw or "")).strip())
-
-    quote_line_segments = compute_emphasis_segments(quote_lines, emphasis)
-
-    hashtags = ensure_hashtags(hashtags, language)
-    privacy = os.getenv("YT_PRIVACY") or privacy or "public"
-
+def build_description(caption: str, quote_lines: list[str], quote_text: str, author_name: str,
+                      hashtags: list[str], bg: dict, music: dict) -> str:
     # attribution
     if bg.get("source") in ("pixabay", "pixabay_cache"):
         bg_credit = f"Video latar: {bg.get('user') or bg.get('photographer','')} / Pixabay — {bg.get('pageURL') or bg.get('url','')}"
@@ -500,24 +405,37 @@ def main() -> None:
     attribution = f"{bg_credit}\n{music_credit}"
     quote_text_display = " ".join([ln.strip() for ln in quote_lines if str(ln).strip()]).strip() or quote_text.replace(" / ", " ")
     quote_credit = f"Quote: {quote_text_display}" + (f" — {author_name}" if author_name else "")
-    description = f"{caption}\n\n{quote_credit}\n{' '.join(hashtags)}\n\n{attribution}"
+    return f"{caption}\n\n{quote_credit}\n{' '.join(hashtags)}\n\n{attribution}"
 
-    plan = {
+
+def build_plan(day: str, theme: dict, defaults: dict, q: dict, bg: dict, bg_path: Path,
+               music: dict, music_path: Path) -> dict:
+    quote_lines = q["quote_lines"]
+    quote_text = q["quote_text"]
+    author_raw = q["author_raw"]
+    author_display, author_is_dash = format_author(author_raw)
+    author_name = to_lower(re.sub(r"^\s*-\s*|\s*-\s*$", "", str(author_raw or "")).strip())
+    quote_line_segments = compute_emphasis_segments(quote_lines, q["emphasis"])
+    hashtags = ensure_hashtags(q["hashtags"], q["language"])
+    privacy = os.getenv("YT_PRIVACY") or q["privacy"] or "public"
+    description = build_description(q["caption"], quote_lines, quote_text, author_name, hashtags, bg, music)
+
+    return {
         "date": day,
         "theme": theme.get("id"),
-        "mode": mode,
-        "source": source,
-        "id": selected_id,
-        "language": language,
+        "mode": q["mode"],
+        "source": q["source"],
+        "id": q["selected_id"],
+        "language": q["language"],
         "quote": quote_text,
         "author": author_name,
-        "duration": duration,
+        "duration": q["duration"],
         "lines": quote_lines + ([author_display] if author_display and not author_is_dash else (["-"] if author_is_dash else [])),
         "quote_line_segments": quote_line_segments,
         "author_display": author_display,
         "author_is_dash": author_is_dash,
-        "title": title,
-        "caption": caption,
+        "title": q["title"],
+        "caption": q["caption"],
         "hashtags": hashtags,
         "description": description,
         "privacy": privacy,
@@ -569,60 +487,70 @@ def main() -> None:
         "full_overlay_opacity": float(defaults.get("full_overlay_opacity", 0.3)),
         "band_feather": int(defaults.get("band_feather", 140)),
     }
+
+
+def main() -> None:
+    cfg = read_json(CONFIG)
+    defaults = cfg.get("defaults", {})
+    day = os.getenv("RUN_DATE") or date.today().isoformat()
+    run_seed = (
+        os.getenv("RUN_SEED")
+        or os.getenv("GITHUB_RUN_ID")
+        or os.getenv("GITHUB_RUN_NUMBER")
+        or datetime.now(timezone.utc).isoformat()
+        or str(random.random())
+    )
+
+    WORK.mkdir(parents=True, exist_ok=True)
+    MUSIC.mkdir(parents=True, exist_ok=True)
+    (ROOT / "out").mkdir(parents=True, exist_ok=True)
+
+    theme = pick_theme(cfg.get("themes") or [])
+
+    mode = (os.getenv("QUOTE_MODE") or defaults.get("default_mode") or "list").strip().lower()
+    if mode not in ("list", "custom", "famous"):
+        mode = "list"
+
+    quotes_path = ROOT / str(defaults.get("quotes_file") or "data/quotes.json")
+    used_path = ROOT / str(defaults.get("used_quotes_file") or "data/used_quotes.jsonl")
+    cache_path = ROOT / str(defaults.get("pixabay_cache_file") or "data/pixabay_cache.json")
+    used_videos_path = ROOT / str(defaults.get("used_videos_file") or "data/used_videos.jsonl")
+    used_music_path = ROOT / str(defaults.get("used_music_file") or "data/used_music.jsonl")
+    used = load_used_entries(used_path)
+
+    q = resolve_quote(mode, defaults, theme, used, quotes_path, used_path)
+    mode = q["mode"]
+
+    # pick background from Pixabay (after quote/duration known, so keywords relevant)
+    bg_path = WORK / "bg.mp4"
+    bg = pick_background(
+        theme, run_seed, bg_path,
+        quote_duration=q["duration"],
+        quote_lines=q["quote_lines"],
+        quote_text=q["quote_text"],
+        cache_path=cache_path,
+    )
+
+    # pick music from Freetouse API (calm/motivasi, durasi memadai)
+    music, music_path = choose_music(theme, run_seed, q["duration"])
+
+    # normalisasi akhir
+    q["quote_lines"] = normalize_lines(q["quote_lines"]) or ["quote hari ini"]
+    q["quote_text"] = to_lower(q["quote_text"]) or " / ".join(q["quote_lines"])
+    author_name = to_lower(re.sub(r"^\s*-\s*|\s*-\s*$", "", str(q["author_raw"] or "")).strip())
+
+    plan = build_plan(day, theme, defaults, q, bg, bg_path, music, music_path)
     PLAN_OUT.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
 
     ts = now_utc_iso()
-    log_entry = {
-        "ts": ts,
-        "date": day,
-        "mode": mode,
-        "source": source,
-        "id": selected_id,
-        "language": language,
-        "quote": quote_text,
-        "author": author_name,
-        "lines": quote_lines,
-        "title": title,
-        "background": {
-            "source": bg.get("source"),
-            "id": bg.get("id"),
-            "user": bg.get("user") or bg.get("photographer"),
-            "url": bg.get("pageURL") or bg.get("url"),
-            "keyword": bg.get("keyword"),
-        },
-        "music": {
-            "source": music.get("source"),
-            "id": music.get("id"),
-            "title": music.get("title"),
-            "artist": music.get("artist"),
-            "url": music.get("url"),
-        },
-    }
-    append_used_entry(used_path, log_entry)
-
-    video_meta_log = {
-        "ts": ts,
-        "date": day,
-        "run_seed": run_seed,
-        "quote_id": selected_id,
-        "quote": quote_text,
-        "duration_target": duration,
-        "background": bg,
-    }
-    append_jsonl(used_videos_path, video_meta_log)
-
-    music_meta_log = {
-        "ts": ts,
-        "date": day,
-        "run_seed": run_seed,
-        "quote_id": selected_id,
-        "duration_target": duration,
-        "music": music,
-    }
-    append_jsonl(used_music_path, music_meta_log)
+    log_run(
+        ts, day, run_seed, mode, q["source"], q["selected_id"], q["language"],
+        plan["quote"], plan["author"], q["quote_lines"], plan["title"], q["duration"],
+        bg, music, used_path, used_videos_path, used_music_path,
+    )
 
     print(f"[ok] tema: {theme.get('id')} | mode: {mode} | Pixabay: {bg.get('id')} ({bg.get('user')}) | musik: {music.get('title')} ({music.get('artist','')}, {music.get('source','')})")
-    print(f"[ok] quote: {quote_text} — {author_name or '-'} (durasi {duration}s)")
+    print(f"[ok] quote: {plan['quote']} — {plan['author'] or '-'} (durasi {q['duration']}s)")
     print(f"[ok] rencana ditulis: {PLAN_OUT}")
     print(f"[ok] log ditambah: {used_path}, {used_videos_path}, {used_music_path}")
 

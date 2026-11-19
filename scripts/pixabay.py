@@ -1,5 +1,4 @@
 """Ambil latar video dari Pixabay Video API (keyword dari AI, filter metadata oleh kode)."""
-import hashlib
 import json
 import os
 import random
@@ -10,19 +9,18 @@ from pathlib import Path
 import requests
 
 from ai import generate_plan
+from media_utils import download_file_requests, load_cache_items, save_cache_items, seeded_rng
 
 PIXABAY_API = "https://pixabay.com/api/videos/"
 TARGET_W, TARGET_H = 1080, 1920
 
 
+class PixabayError(Exception):
+    """Kesalahan domain saat memilih/mengambil latar Pixabay."""
+
+
 def _download(link: str, out: Path) -> None:
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with requests.get(link, stream=True, timeout=300) as resp:
-        resp.raise_for_status()
-        with out.open("wb") as fh:
-            for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                if chunk:
-                    fh.write(chunk)
+    download_file_requests(link, out, timeout=300)
 
 
 def _probe_duration(path: Path) -> float | None:
@@ -43,34 +41,11 @@ def _probe_duration(path: Path) -> float | None:
 
 
 def _load_cache(cache_path: Path) -> list[dict]:
-    if not cache_path or not cache_path.exists():
-        return []
-    try:
-        data = json.loads(cache_path.read_text(encoding="utf-8"))
-        if isinstance(data, dict):
-            data = data.get("items") or data.get("cache") or []
-        return data if isinstance(data, list) else []
-    except Exception:
-        return []
+    return load_cache_items(cache_path)
 
 
 def _save_cache(cache_path: Path, items: list[dict]) -> None:
-    if not cache_path:
-        return
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    # keep unique by id, most recent last, cap size
-    seen = {}
-    ordered = []
-    for it in items:
-        key = str(it.get("id") or it.get("pageURL") or it.get("file_url"))
-        if key in seen:
-            ordered[seen[key]] = it
-        else:
-            seen[key] = len(ordered)
-            ordered.append(it)
-    if len(ordered) > 200:
-        ordered = ordered[-200:]
-    cache_path.write_text(json.dumps({"items": ordered}, ensure_ascii=False, indent=2), encoding="utf-8")
+    save_cache_items(cache_path, items, limit=200)
 
 
 def _fallback_keywords(lines: list[str], quote_text: str, theme: dict) -> list[str]:
@@ -190,7 +165,7 @@ def _select_from_hits(hits: list[dict], quote_duration: int, seed: str) -> dict 
         return None
 
     # deterministic-ish random per seed+query context: shuffle with seed, pick up to 3, then random among them
-    rng = random.Random(hashlib.sha256(seed.encode("utf-8")).hexdigest())
+    rng = seeded_rng(seed)
     pool_copy = list(pool)
     rng.shuffle(pool_copy)
     top = pool_copy[:3]
@@ -225,9 +200,19 @@ def pick_background(theme: dict, seed: str, out: Path, quote_duration: int,
                     quote_lines: list[str] | None = None, quote_text: str = "",
                     cache_path: Path | None = None) -> dict:
     """Pilih & unduh latar dari Pixabay. Fallback ke cache sukses jika kosong."""
+    try:
+        return _pick_background(theme, seed, out, quote_duration, quote_lines, quote_text, cache_path)
+    except PixabayError as exc:
+        raise SystemExit(str(exc)) from None
+
+
+def _pick_background(theme: dict, seed: str, out: Path, quote_duration: int,
+                     quote_lines: list[str] | None = None, quote_text: str = "",
+                     cache_path: Path | None = None) -> dict:
+    """Domain logic: pilih & unduh latar dari Pixabay. Fallback ke cache sukses jika kosong."""
     api_key = (os.getenv("PIXABAY_API_KEY") or "").strip()
     if not api_key:
-        raise SystemExit("PIXABAY_API_KEY tidak ditemukan. Set env/secret PIXABAY_API_KEY untuk mengambil latar Pixabay.")
+        raise PixabayError("PIXABAY_API_KEY tidak ditemukan. Set env/secret PIXABAY_API_KEY untuk mengambil latar Pixabay.")
 
     keywords = generate_keywords(quote_lines or [], quote_text or "", theme)
     print(f"[info] Pixabay keywords: {keywords}")
@@ -263,7 +248,7 @@ def pick_background(theme: dict, seed: str, out: Path, quote_duration: int,
     # fallback: cache
     if cache_items:
         print("[warn] Pencarian Pixabay kosong/gagal, mencoba cache latar yang pernah berhasil...")
-        rng = random.Random(hashlib.sha256((seed + "|cache").encode("utf-8")).hexdigest())
+        rng = seeded_rng(seed, "cache")
         candidates = list(cache_items)
         rng.shuffle(candidates)
         for item in candidates[:20]:
@@ -285,7 +270,7 @@ def pick_background(theme: dict, seed: str, out: Path, quote_duration: int,
                 last_err = exc
                 continue
 
-    raise SystemExit(
+    raise PixabayError(
         "Tidak ada video Pixabay yang cocok dan cache kosong/tidak bisa dipakai. "
         f"Terakhir: {last_err}"
     )

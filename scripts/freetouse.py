@@ -1,12 +1,9 @@
 """Ambil musik latar dari Freetouse Public API (non-premium, cocok untuk short motivasi)."""
-import hashlib
-import json
-import os
-import random
 import re
 import urllib.parse
-import urllib.request
 from pathlib import Path
+
+from media_utils import download_file_urllib, fetch_json_urllib, seeded_rng
 
 BASE = "https://api.freetouse.com/v3"
 
@@ -32,21 +29,16 @@ SUITABLE_KEYWORDS = {
 }
 
 
+class FreetouseError(Exception):
+    """Kesalahan domain saat memilih/mengambil musik Freetouse."""
+
+
 def _fetch_json(url: str, timeout: int = 30) -> dict:
-    req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "shorts-bot/1.0"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.load(r)
+    return fetch_json_urllib(url, timeout=timeout)
 
 
 def _download(url: str, out: Path) -> None:
-    out.parent.mkdir(parents=True, exist_ok=True)
-    req = urllib.request.Request(url, headers={"User-Agent": "shorts-bot/1.0"})
-    with urllib.request.urlopen(req, timeout=300) as resp, out.open("wb") as fh:
-        while True:
-            chunk = resp.read(1024 * 1024)
-            if not chunk:
-                break
-            fh.write(chunk)
+    download_file_urllib(url, out, timeout=300)
 
 
 def slugify(text: str) -> str:
@@ -198,19 +190,19 @@ def pick_music(seed: str, out: Path, target_duration: int) -> dict:
         if candidates:
             break
     if not candidates:
-        raise SystemExit("Tidak ada musik Freetouse non-premium yang cocok ditemukan (cek koneksi internet).")
+        raise FreetouseError("Tidak ada musik Freetouse non-premium yang cocok ditemukan (cek koneksi internet).")
 
     # prefer higher suitability score, but keep randomness
     candidates.sort(key=lambda x: (-x["score"], -float(x["track"].get("duration") or 0)))
     top_n = min(30, len(candidates))
     pool = candidates[:top_n]
-    rng = random.Random(hashlib.sha256((seed + "|music").encode("utf-8")).hexdigest())
+    rng = seeded_rng(seed, "music")
     pick = rng.choice(pool)
     t = pick["track"]
 
     mp3_url = ((t.get("files") or {}).get("mp3") or "")
     if not mp3_url:
-        raise SystemExit("Track Freetouse terpilih tidak memiliki file mp3.")
+        raise FreetouseError("Track Freetouse terpilih tidak memiliki file mp3.")
 
     _download(mp3_url, out)
 
