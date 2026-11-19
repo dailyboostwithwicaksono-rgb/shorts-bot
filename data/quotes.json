@@ -1431,6 +1431,1463 @@
       ],
       "author": "Unknown",
       "duration": 16
+    },
+    {
+      "id": 101,
+      "lines": [
+        "Kebahagiaan hidupmu",
+        "bergantung pada kualitas",
+        "pikiranmu sendiri."
+      ],
+      "emphasis": [
+        "Kebahagiaan hidupmu",
+        "kualitas",
+        "pikiranmu sendiri"
+      ],
+      "author": "Marcus Aurelius",
+      "duration": 15
+    },
+    {
+      "id": 102,
+      "lines": [
+        "Kita lebih sering menderita",
+        "dalam bayangan pikiran",
+        "daripada dalam kenyataan."
+      ],
+      "emphasis": [
+        "bayangan pikiran",
+        "kenyataan"
+      ],
+      "author": "Seneca",
+      "duration": 16
+    },
+    {
+      "id": 103,
+      "lines": [
+        "Bukan peristiwa yang mengguncangmu,",
+        "melainkan cara pandangmu",
+        "terhadap peristiwa itu."
+      ],
+      "emphasis": [
+        "Bukan peristiwa",
+        "cara pandangmu"
+      ],
+      "author": "Epictetus",
+      "duration": 16
+    },
+    {
+      "id": 104,
+      "lines": [
+        "Ketika kita tidak lagi mampu",
+        "mengubah suatu keadaan,",
+        "kita ditantang untuk",
+        "mengubah diri kita sendiri."
+      ],
+      "emphasis": [
+        "mengubah suatu keadaan",
+        "mengubah diri kita sendiri"
+      ],
+      "author": "Viktor E. Frankl",
+      "duration": 19
+    },
+    {
+      "id": 105,
+      "lines": [
+        "Siapa yang melihat ke luar,",
+        "ia bermimpi.",
+        "Siapa yang melihat ke dalam,",
+        "ia terbangun."
+      ],
+      "emphasis": [
+        "ke luar",
+        "ke dalam",
+        "terbangun"
+      ],
+      "author": "Carl Jung",
+      "duration": 17
+    },
+    {
+      "id": 106,
+      "lines": [
+        "Luka adalah tempat",
+        "di mana cahaya",
+        "masuk ke dalam dirimu."
+      ],
+      "emphasis": [
+        "Luka",
+        "cahaya"
+      ],
+      "author": "Rumi",
+      "duration": 14
+    },
+    {
+      "id": 107,
+      "lines": [
+        "Dari penderitaan",
+        "telah lahir jiwa-jiwa",
+        "yang paling kuat."
+      ],
+      "emphasis": [
+        "penderitaan",
+        "paling kuat"
+      ],
+      "author": "Khalil Gibran",
+      "duration": 14
+    },
+    {
+      "id": 108,
+      "lines": [
+        "Menguasai orang lain",
+        "adalah kekuatan.",
+        "Menguasai diri sendiri",
+        "adalah kekuatan sejati."
+      ],
+      "emphasis": [
+        "orang lain",
+        "diri sendiri",
+        "kekuatan sejati"
+      ],
+      "author": "Lao Tzu",
+      "duration": 17
+    },
+    {
+      "id": 109,
+      "lines": [
+        "Tidak masalah seberapa lambat",
+        "kamu berjalan,",
+        "selama kamu tidak pernah",
+        "berhenti melangkah."
+      ],
+      "emphasis": [
+        "seberapa lambat",
+        "tidak pernah",
+        "berhenti melangkah"
+      ],
+      "author": "Confucius",
+      "duration": 18
+    },
+    {
+      "id": 110,
+      "lines": [
+        "Jangan berdoa untuk hidup",
+        "yang mudah,",
+        "berdoalah untuk kekuatan",
+        "menanggung hidup yang sulit."
+      ],
+      "emphasis": [
+        "mudah",
+        "kekuatan"
+      ],
+      "author": "Bruce Lee",
+      "duration": 18
+    },
+    {
+      "id": 111,
+      "lines": [
+        "Rahasia keberadaan manusia",
+        "bukan sekadar bertahan hidup,",
+        "melainkan menemukan",
+        "untuk apa ia hidup."
+      ],
+      "emphasis": [
+        "bertahan hidup",
+        "untuk apa ia hidup"
+      ],
+      "author": "Fyodor Dostoevsky",
+      "duration": 19
+    },
+    {
+      "id": 112,
+      "lines": [
+        "Di tengah musim dingin",
+        "yang paling beku,",
+        "aku akhirnya menemukan",
+        "musim panas yang tak terkalahkan",
+        "di dalam diriku."
+      ],
+      "emphasis": [
+        "musim dingin",
+        "tak terkalahkan",
+        "di dalam diriku"
+      ],
+      "author": "Albert Camus",
+      "duration": 22
+    },
+    {
+      "id": 113,
+      "lines": [
+        "Orang boleh pandai setinggi langit,",
+        "tapi selama ia tidak menulis,",
+        "ia akan hilang di dalam masyarakat",
+        "dan dari sejarah."
+      ],
+      "emphasis": [
+        "tidak menulis",
+        "hilang"
+      ],
+      "author": "Pramoedya Ananta Toer",
+      "duration": 21
+    },
+    {
+      "id": 114,
+      "lines": [
+        "Kalau hidup sekadar hidup,",
+        "babi di hutan juga hidup.",
+        "Kalau bekerja sekadar bekerja,",
+        "kera juga bekerja."
+      ],
+      "emphasis": [
+        "sekadar hidup",
+        "sekadar bekerja"
+      ],
+      "author": "Buya Hamka",
+      "duration": 20
+    },
+    {
+      "id": 115,
+      "lines": [
+        "Terbentur, terbentur,",
+        "terbentur,",
+        "lalu terbentuk."
+      ],
+      "emphasis": [
+        "Terbentur",
+        "terbentuk"
+      ],
+      "author": "Tan Malaka",
+      "duration": 12
+    },
+    {
+      "id": 116,
+      "lines": [
+        "Keberhasilan bukanlah milik",
+        "orang yang pintar,",
+        "melainkan milik mereka",
+        "yang senantiasa berusaha."
+      ],
+      "emphasis": [
+        "pintar",
+        "senantiasa berusaha"
+      ],
+      "author": "B. J. Habibie",
+      "duration": 18
+    },
+    {
+      "id": 117,
+      "lines": [
+        "Setiap orang menjadi guru,",
+        "setiap rumah menjadi sekolah."
+      ],
+      "emphasis": [
+        "guru",
+        "sekolah"
+      ],
+      "author": "Ki Hadjar Dewantara",
+      "duration": 13
+    },
+    {
+      "id": 118,
+      "lines": [
+        "Lebih baik diasingkan",
+        "daripada menyerah",
+        "pada kemunafikan."
+      ],
+      "emphasis": [
+        "diasingkan",
+        "kemunafikan"
+      ],
+      "author": "Soe Hok Gie",
+      "duration": 14
+    },
+    {
+      "id": 119,
+      "lines": [
+        "Habis gelap",
+        "terbitlah terang."
+      ],
+      "emphasis": [
+        "gelap",
+        "terang"
+      ],
+      "author": "R. A. Kartini",
+      "duration": 10
+    },
+    {
+      "id": 120,
+      "lines": [
+        "Kalau kamu bisa melakukan",
+        "sesuatu yang baik untuk semua orang,",
+        "orang tidak pernah tanya",
+        "apa agamamu."
+      ],
+      "emphasis": [
+        "baik untuk semua orang",
+        "tidak pernah tanya"
+      ],
+      "author": "Abdurrahman Wahid",
+      "duration": 20
+    },
+    {
+      "id": 121,
+      "lines": [
+        "Kesabaran itu pahit,",
+        "tetapi buahnya",
+        "selalu manis."
+      ],
+      "emphasis": [
+        "pahit",
+        "selalu manis"
+      ],
+      "author": "Aristoteles",
+      "duration": 13
+    },
+    {
+      "id": 122,
+      "lines": [
+        "Kemenangan pertama",
+        "dan paling mulia",
+        "adalah menaklukkan",
+        "diri sendiri."
+      ],
+      "emphasis": [
+        "paling mulia",
+        "menaklukkan",
+        "diri sendiri"
+      ],
+      "author": "Plato",
+      "duration": 16
+    },
+    {
+      "id": 123,
+      "lines": [
+        "Satu-satunya kebijaksanaan sejati",
+        "adalah mengetahui bahwa",
+        "kamu tidak mengetahui apa-apa."
+      ],
+      "emphasis": [
+        "kebijaksanaan sejati",
+        "tidak mengetahui apa-apa"
+      ],
+      "author": "Socrates",
+      "duration": 17
+    },
+    {
+      "id": 124,
+      "lines": [
+        "Tidak ada yang abadi",
+        "di dunia ini",
+        "kecuali perubahan itu sendiri."
+      ],
+      "emphasis": [
+        "Tidak ada yang abadi",
+        "perubahan"
+      ],
+      "author": "Heraclitus",
+      "duration": 15
+    },
+    {
+      "id": 125,
+      "lines": [
+        "Semua masalah manusia",
+        "bermula dari ketidakmampuannya",
+        "duduk diam sendirian",
+        "di dalam ruangan."
+      ],
+      "emphasis": [
+        "masalah manusia",
+        "duduk diam sendirian"
+      ],
+      "author": "Blaise Pascal",
+      "duration": 18
+    },
+    {
+      "id": 126,
+      "lines": [
+        "Kesepian adalah nasib",
+        "semua jiwa yang agung."
+      ],
+      "emphasis": [
+        "Kesepian",
+        "jiwa yang agung"
+      ],
+      "author": "Arthur Schopenhauer",
+      "duration": 13
+    },
+    {
+      "id": 127,
+      "lines": [
+        "Hidup hanya dapat dipahami",
+        "dengan menoleh ke belakang,",
+        "tetapi harus dijalani",
+        "dengan menatap ke depan."
+      ],
+      "emphasis": [
+        "dipahami",
+        "dijalani",
+        "menatap ke depan"
+      ],
+      "author": "Søren Kierkegaard",
+      "duration": 19
+    },
+    {
+      "id": 128,
+      "lines": [
+        "Kebebasan adalah",
+        "apa yang kamu lakukan",
+        "dengan apa yang telah",
+        "dilakukan orang lain kepadamu."
+      ],
+      "emphasis": [
+        "Kebebasan",
+        "kamu lakukan"
+      ],
+      "author": "Jean-Paul Sartre",
+      "duration": 18
+    },
+    {
+      "id": 129,
+      "lines": [
+        "Dunia mematahkan setiap orang,",
+        "dan setelah itu banyak yang menjadi kuat",
+        "di bagian yang pernah patah."
+      ],
+      "emphasis": [
+        "mematahkan",
+        "menjadi kuat",
+        "pernah patah"
+      ],
+      "author": "Ernest Hemingway",
+      "duration": 19
+    },
+    {
+      "id": 130,
+      "lines": [
+        "Kamu mungkin tidak bisa",
+        "mengendalikan semua peristiwa,",
+        "tetapi kamu bisa memilih",
+        "untuk tidak dikecilkan olehnya."
+      ],
+      "emphasis": [
+        "mengendalikan semua peristiwa",
+        "tidak dikecilkan"
+      ],
+      "author": "Maya Angelou",
+      "duration": 20
+    },
+    {
+      "id": 131,
+      "lines": [
+        "Dua hari terpenting dalam hidupmu",
+        "adalah hari ketika kamu dilahirkan",
+        "dan hari ketika kamu",
+        "menemukan alasannya."
+      ],
+      "emphasis": [
+        "dilahirkan",
+        "menemukan alasannya"
+      ],
+      "author": "Mark Twain",
+      "duration": 20
+    },
+    {
+      "id": 132,
+      "lines": [
+        "Pada akhirnya,",
+        "yang diperhitungkan bukanlah",
+        "tahun-tahun dalam hidupmu,",
+        "melainkan kehidupan dalam tahun-tahunmu."
+      ],
+      "emphasis": [
+        "tahun-tahun dalam hidupmu",
+        "kehidupan dalam tahun-tahunmu"
+      ],
+      "author": "Abraham Lincoln",
+      "duration": 20
+    },
+    {
+      "id": 133,
+      "lines": [
+        "Kesuksesan adalah melangkah",
+        "dari satu kegagalan",
+        "ke kegagalan berikutnya",
+        "tanpa kehilangan semangat."
+      ],
+      "emphasis": [
+        "kegagalan",
+        "kegagalan",
+        "tanpa kehilangan semangat"
+      ],
+      "author": "Winston Churchill",
+      "duration": 19
+    },
+    {
+      "id": 134,
+      "lines": [
+        "Banyak kegagalan dalam hidup",
+        "dialami oleh mereka yang tidak sadar",
+        "betapa dekatnya keberhasilan",
+        "saat mereka memutuskan menyerah."
+      ],
+      "emphasis": [
+        "betapa dekatnya keberhasilan",
+        "menyerah"
+      ],
+      "author": "Thomas A. Edison",
+      "duration": 21
+    },
+    {
+      "id": 135,
+      "lines": [
+        "Energi dan ketekunan",
+        "menaklukkan segala sesuatu."
+      ],
+      "emphasis": [
+        "Energi dan ketekunan",
+        "segala sesuatu"
+      ],
+      "author": "Benjamin Franklin",
+      "duration": 13
+    },
+    {
+      "id": 136,
+      "lines": [
+        "Dua pejuang paling kuat",
+        "dalam hidup adalah",
+        "kesabaran dan waktu."
+      ],
+      "emphasis": [
+        "paling kuat",
+        "kesabaran dan waktu"
+      ],
+      "author": "Leo Tolstoy",
+      "duration": 15
+    },
+    {
+      "id": 137,
+      "lines": [
+        "Seseorang hanya dapat melihat",
+        "dengan benar melalui hati.",
+        "Apa yang esensial",
+        "tidak tampak oleh mata."
+      ],
+      "emphasis": [
+        "melalui hati",
+        "tidak tampak oleh mata"
+      ],
+      "author": "Antoine de Saint-Exupéry",
+      "duration": 19
+    },
+    {
+      "id": 138,
+      "lines": [
+        "Jatuh tujuh kali,",
+        "bangkit delapan kali."
+      ],
+      "emphasis": [
+        "Jatuh tujuh kali",
+        "bangkit delapan kali"
+      ],
+      "author": "Pepatah Jepang",
+      "duration": 11
+    },
+    {
+      "id": 139,
+      "lines": [
+        "Barang siapa bersungguh-sungguh,",
+        "maka ia akan mendapatkannya."
+      ],
+      "emphasis": [
+        "bersungguh-sungguh",
+        "mendapatkannya"
+      ],
+      "author": "Pepatah Arab",
+      "duration": 14
+    },
+    {
+      "id": 140,
+      "lines": [
+        "Air yang menetes terus-menerus",
+        "mampu melubangi batu",
+        "bukan karena kekuatannya,",
+        "melainkan karena ketekunannya."
+      ],
+      "emphasis": [
+        "melubangi batu",
+        "ketekunannya"
+      ],
+      "author": "Pepatah Tiongkok",
+      "duration": 19
+    },
+    {
+      "id": 141,
+      "lines": [
+        "Berakit-rakit ke hulu,",
+        "berenang-renang ke tepian.",
+        "Bersakit-sakit dahulu,",
+        "bersenang-senang kemudian."
+      ],
+      "emphasis": [
+        "Bersakit-sakit dahulu",
+        "bersenang-senang kemudian"
+      ],
+      "author": "Pepatah Indonesia",
+      "duration": 19
+    },
+    {
+      "id": 142,
+      "lines": [
+        "Melalui kesulitan",
+        "menuju bintang-bintang."
+      ],
+      "emphasis": [
+        "kesulitan",
+        "bintang-bintang"
+      ],
+      "author": "Pepatah Latin",
+      "duration": 11
+    },
+    {
+      "id": 143,
+      "lines": [
+        "Keinginan adalah kontrak",
+        "yang kamu buat dengan dirimu sendiri",
+        "untuk tidak bahagia",
+        "sampai kamu mendapatkannya."
+      ],
+      "emphasis": [
+        "Keinginan adalah kontrak",
+        "tidak bahagia"
+      ],
+      "author": "Naval Ravikant",
+      "duration": 19
+    },
+    {
+      "id": 144,
+      "lines": [
+        "Bentuk kekayaan tertinggi",
+        "adalah kemampuan bangun setiap pagi",
+        "dan berkata, hari ini aku bebas",
+        "melakukan apa pun yang kumau."
+      ],
+      "emphasis": [
+        "kekayaan tertinggi",
+        "bebas"
+      ],
+      "author": "Morgan Housel",
+      "duration": 21
+    },
+    {
+      "id": 145,
+      "lines": [
+        "Tidak semua yang pergi",
+        "harus dikejar.",
+        "Ada yang memang dilepaskan",
+        "agar ruang hidupmu lebih lapang."
+      ],
+      "emphasis": [
+        "harus dikejar",
+        "lebih lapang"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 146,
+      "lines": [
+        "Dewasa bukan tentang",
+        "tidak pernah menangis lagi,",
+        "melainkan tetap bertanggung jawab",
+        "bahkan saat hati sedang rapuh."
+      ],
+      "emphasis": [
+        "tetap bertanggung jawab",
+        "hati sedang rapuh"
+      ],
+      "author": "Anonim",
+      "duration": 19
+    },
+    {
+      "id": 147,
+      "lines": [
+        "Terkadang jawaban paling bijak",
+        "atas kebisingan dunia",
+        "adalah menenangkan diri",
+        "dan fokus pada langkah berikutnya."
+      ],
+      "emphasis": [
+        "menenangkan diri",
+        "langkah berikutnya"
+      ],
+      "author": "Anonim",
+      "duration": 19
+    },
+    {
+      "id": 148,
+      "lines": [
+        "Jangan habiskan waktumu",
+        "menjelaskan niat baikmu",
+        "kepada orang yang sudah memilih",
+        "untuk salah paham."
+      ],
+      "emphasis": [
+        "niat baikmu",
+        "salah paham"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 149,
+      "lines": [
+        "Ketenangan batin hadir",
+        "saat kamu berhenti memaksakan",
+        "hal-hal yang berada",
+        "di luar kendalimu."
+      ],
+      "emphasis": [
+        "Ketenangan batin",
+        "di luar kendalimu"
+      ],
+      "author": "Anonim",
+      "duration": 17
+    },
+    {
+      "id": 150,
+      "lines": [
+        "Kamu tidak tertinggal",
+        "dari siapa pun.",
+        "Kamu hanya sedang berjalan",
+        "di jalur dan waktumu sendiri."
+      ],
+      "emphasis": [
+        "tidak tertinggal",
+        "jalur dan waktumu sendiri"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 151,
+      "lines": [
+        "Ing ngarsa sung tuladha,",
+        "ing madya mangun karsa,",
+        "tut wuri handayani."
+      ],
+      "emphasis": [
+        "tuladha",
+        "mangun karsa",
+        "handayani"
+      ],
+      "author": "Ki Hadjar Dewantara",
+      "duration": 16
+    },
+    {
+      "id": 152,
+      "lines": [
+        "Begja-begjane kang lali,",
+        "luwih begja kang eling",
+        "lan waspada."
+      ],
+      "emphasis": [
+        "lali",
+        "eling",
+        "waspada"
+      ],
+      "author": "Ranggawarsita",
+      "duration": 15
+    },
+    {
+      "id": 153,
+      "lines": [
+        "Ngelmu iku kalakone kanthi laku,",
+        "lekase lawan kas,",
+        "tegese kas nyantosani."
+      ],
+      "emphasis": [
+        "kanthi laku",
+        "nyantosani"
+      ],
+      "author": "Mangkunegara IV",
+      "duration": 16
+    },
+    {
+      "id": 154,
+      "lines": [
+        "Sura dira jayaningrat,",
+        "lebur dening pangastuti."
+      ],
+      "emphasis": [
+        "Sura dira",
+        "pangastuti"
+      ],
+      "author": "Pitutur Jawa",
+      "duration": 13
+    },
+    {
+      "id": 155,
+      "lines": [
+        "Urip iku urup.",
+        "Saben manungsa kudu bisa",
+        "menehi pepadhang",
+        "marang sapadha-padha."
+      ],
+      "emphasis": [
+        "Urip iku urup",
+        "pepadhang"
+      ],
+      "author": "Pitutur Jawa",
+      "duration": 17
+    },
+    {
+      "id": 156,
+      "lines": [
+        "Aja gumunan, aja getunan,",
+        "aja kagetan, aja aleman.",
+        "Jaga atimu supaya tetep tentrem."
+      ],
+      "emphasis": [
+        "aja getunan",
+        "aja aleman",
+        "tetep tentrem"
+      ],
+      "author": "Pitutur Jawa",
+      "duration": 18
+    },
+    {
+      "id": 157,
+      "lines": [
+        "Sapa sing temen",
+        "bakal tinemu.",
+        "Usaha kang tulus",
+        "ora bakal muspra."
+      ],
+      "emphasis": [
+        "temen",
+        "bakal tinemu",
+        "ora bakal muspra"
+      ],
+      "author": "Paribasan Jawa",
+      "duration": 16
+    },
+    {
+      "id": 158,
+      "lines": [
+        "Jer basuki mawa beya.",
+        "Kabeh gegayuhan luhur",
+        "mesthi mbutuhake pengorbanan."
+      ],
+      "emphasis": [
+        "mawa beya",
+        "pengorbanan"
+      ],
+      "author": "Paribasan Jawa",
+      "duration": 16
+    },
+    {
+      "id": 159,
+      "lines": [
+        "Becik ketitik, ala ketara.",
+        "Kabeh tumindak bakal katon",
+        "asile ing wektune."
+      ],
+      "emphasis": [
+        "Becik ketitik",
+        "ala ketara"
+      ],
+      "author": "Paribasan Jawa",
+      "duration": 16
+    },
+    {
+      "id": 160,
+      "lines": [
+        "Ngluruk tanpa bala,",
+        "menang tanpa ngasorake,",
+        "sekti tanpa aji-aji."
+      ],
+      "emphasis": [
+        "tanpa bala",
+        "tanpa ngasorake"
+      ],
+      "author": "Pitutur Jawa",
+      "duration": 15
+    },
+    {
+      "id": 161,
+      "lines": [
+        "Nrimo ing pandum",
+        "dudu ateges pasrah tanpa usaha,",
+        "nanging ikhlas nampa asile",
+        "sawise ikhtiar maksimal."
+      ],
+      "emphasis": [
+        "Nrimo ing pandum",
+        "ikhtiar maksimal"
+      ],
+      "author": "Pitutur Jawa",
+      "duration": 19
+    },
+    {
+      "id": 162,
+      "lines": [
+        "Aja dumeh kuasa,",
+        "aja dumeh sugih,",
+        "aja dumeh pinter.",
+        "Kabeh mung titipan."
+      ],
+      "emphasis": [
+        "Aja dumeh",
+        "mung titipan"
+      ],
+      "author": "Pitutur Jawa",
+      "duration": 16
+    },
+    {
+      "id": 163,
+      "lines": [
+        "Cakra manggilingan.",
+        "Urip iku muter kaya rodha,",
+        "kadhang ing ndhuwur,",
+        "kadhang ing ngisor."
+      ],
+      "emphasis": [
+        "Cakra manggilingan",
+        "muter kaya rodha"
+      ],
+      "author": "Paribasan Jawa",
+      "duration": 17
+    },
+    {
+      "id": 164,
+      "lines": [
+        "Ana dina ana upa,",
+        "ana awan ana pangan.",
+        "Sing penting aja mandheg",
+        "anggone makarya."
+      ],
+      "emphasis": [
+        "Ana dina ana upa",
+        "aja mandheg"
+      ],
+      "author": "Paribasan Jawa",
+      "duration": 17
+    },
+    {
+      "id": 165,
+      "lines": [
+        "Memayu hayuning bawana.",
+        "Jaga katentremaning ati",
+        "lan becike tumindak",
+        "ing ngendi wae papanmu."
+      ],
+      "emphasis": [
+        "Memayu hayuning bawana",
+        "katentremaning ati"
+      ],
+      "author": "Pitutur Jawa",
+      "duration": 18
+    },
+    {
+      "id": 166,
+      "lines": [
+        "Kadhang rasa sepi iku perlu,",
+        "supaya kowe bisa krungu",
+        "swara atimu dhewe",
+        "tanpa gangguan donya."
+      ],
+      "emphasis": [
+        "rasa sepi",
+        "swara atimu dhewe"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 167,
+      "lines": [
+        "Ora kabeh wong kudu ngerti",
+        "sepira abote perjuanganmu.",
+        "Cukup Gusti lan awakmu",
+        "sing ngerti tenane."
+      ],
+      "emphasis": [
+        "abote perjuanganmu",
+        "Gusti lan awakmu"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 168,
+      "lines": [
+        "Wektu ora tau mundur.",
+        "Mula aja nyia-nyiake dina iki",
+        "mung kanggo nggetuni",
+        "perkara sing wis liwat."
+      ],
+      "emphasis": [
+        "ora tau mundur",
+        "dina iki"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 169,
+      "lines": [
+        "Dewasa iku nalika kowe",
+        "luwih milih ngapura lan mlaku terus",
+        "tinimbang nyimpen dendam",
+        "sing nglarani awakmu dhewe."
+      ],
+      "emphasis": [
+        "ngapura lan mlaku terus",
+        "nyimpen dendam"
+      ],
+      "author": "Anonim",
+      "duration": 20
+    },
+    {
+      "id": 170,
+      "lines": [
+        "Aja kesusu kepengin cepet tekan,",
+        "nikmati saben langkahmu,",
+        "merga pelajaran urip",
+        "ana ing dalane."
+      ],
+      "emphasis": [
+        "nikmati saben langkahmu",
+        "ana ing dalane"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 171,
+      "lines": [
+        "Begin at once to live,",
+        "and count each separate day",
+        "as a separate life."
+      ],
+      "emphasis": [
+        "Begin at once",
+        "separate life"
+      ],
+      "author": "Seneca",
+      "duration": 16
+    },
+    {
+      "id": 172,
+      "lines": [
+        "You have power over your mind,",
+        "not outside events.",
+        "Realize this,",
+        "and you will find strength."
+      ],
+      "emphasis": [
+        "power over your mind",
+        "find strength"
+      ],
+      "author": "Marcus Aurelius",
+      "duration": 18
+    },
+    {
+      "id": 173,
+      "lines": [
+        "First say to yourself",
+        "what you would be;",
+        "and then do",
+        "what you have to do."
+      ],
+      "emphasis": [
+        "what you would be",
+        "what you have to do"
+      ],
+      "author": "Epictetus",
+      "duration": 17
+    },
+    {
+      "id": 174,
+      "lines": [
+        "Nature does not hurry,",
+        "yet everything",
+        "is accomplished."
+      ],
+      "emphasis": [
+        "does not hurry",
+        "accomplished"
+      ],
+      "author": "Lao Tzu",
+      "duration": 14
+    },
+    {
+      "id": 175,
+      "lines": [
+        "In the midst of chaos,",
+        "there is also opportunity."
+      ],
+      "emphasis": [
+        "chaos",
+        "opportunity"
+      ],
+      "author": "Sun Tzu",
+      "duration": 12
+    },
+    {
+      "id": 176,
+      "lines": [
+        "Our greatest glory",
+        "is not in never falling,",
+        "but in rising",
+        "every time we fall."
+      ],
+      "emphasis": [
+        "never falling",
+        "rising"
+      ],
+      "author": "Confucius",
+      "duration": 17
+    },
+    {
+      "id": 177,
+      "lines": [
+        "Yesterday I was clever,",
+        "so I wanted to change the world.",
+        "Today I am wise,",
+        "so I am changing myself."
+      ],
+      "emphasis": [
+        "change the world",
+        "changing myself"
+      ],
+      "author": "Rumi",
+      "duration": 19
+    },
+    {
+      "id": 178,
+      "lines": [
+        "Between stimulus and response",
+        "there is a space.",
+        "In that space",
+        "is our power to choose."
+      ],
+      "emphasis": [
+        "a space",
+        "power to choose"
+      ],
+      "author": "Viktor E. Frankl",
+      "duration": 18
+    },
+    {
+      "id": 179,
+      "lines": [
+        "Until you make",
+        "the unconscious conscious,",
+        "it will direct your life",
+        "and you will call it fate."
+      ],
+      "emphasis": [
+        "unconscious conscious",
+        "fate"
+      ],
+      "author": "Carl Jung",
+      "duration": 19
+    },
+    {
+      "id": 180,
+      "lines": [
+        "Nothing will work",
+        "unless you do."
+      ],
+      "emphasis": [
+        "Nothing",
+        "unless you do"
+      ],
+      "author": "Maya Angelou",
+      "duration": 11
+    },
+    {
+      "id": 181,
+      "lines": [
+        "Empty your mind,",
+        "be formless, shapeless,",
+        "like water."
+      ],
+      "emphasis": [
+        "Empty your mind",
+        "like water"
+      ],
+      "author": "Bruce Lee",
+      "duration": 14
+    },
+    {
+      "id": 182,
+      "lines": [
+        "Life is like riding a bicycle.",
+        "To keep your balance,",
+        "you must keep moving."
+      ],
+      "emphasis": [
+        "balance",
+        "keep moving"
+      ],
+      "author": "Albert Einstein",
+      "duration": 16
+    },
+    {
+      "id": 183,
+      "lines": [
+        "Knowing yourself",
+        "is the beginning",
+        "of all wisdom."
+      ],
+      "emphasis": [
+        "Knowing yourself",
+        "all wisdom"
+      ],
+      "author": "Aristotle",
+      "duration": 13
+    },
+    {
+      "id": 184,
+      "lines": [
+        "Beware the barrenness",
+        "of a busy life."
+      ],
+      "emphasis": [
+        "barrenness",
+        "busy life"
+      ],
+      "author": "Socrates",
+      "duration": 11
+    },
+    {
+      "id": 185,
+      "lines": [
+        "Wise men speak",
+        "because they have something to say;",
+        "fools because they have",
+        "to say something."
+      ],
+      "emphasis": [
+        "Wise men",
+        "something to say"
+      ],
+      "author": "Plato",
+      "duration": 19
+    },
+    {
+      "id": 186,
+      "lines": [
+        "To go wrong in one's own way",
+        "is better than to go right",
+        "in someone else's."
+      ],
+      "emphasis": [
+        "one's own way",
+        "someone else's"
+      ],
+      "author": "Fyodor Dostoevsky",
+      "duration": 16
+    },
+    {
+      "id": 187,
+      "lines": [
+        "He who cannot obey himself",
+        "will be commanded."
+      ],
+      "emphasis": [
+        "obey himself",
+        "commanded"
+      ],
+      "author": "Friedrich Nietzsche",
+      "duration": 12
+    },
+    {
+      "id": 188,
+      "lines": [
+        "To be yourself in a world",
+        "that is constantly trying",
+        "to make you something else",
+        "is the greatest accomplishment."
+      ],
+      "emphasis": [
+        "be yourself",
+        "greatest accomplishment"
+      ],
+      "author": "Ralph Waldo Emerson",
+      "duration": 20
+    },
+    {
+      "id": 189,
+      "lines": [
+        "Go confidently",
+        "in the direction of your dreams.",
+        "Live the life",
+        "you have imagined."
+      ],
+      "emphasis": [
+        "confidently",
+        "you have imagined"
+      ],
+      "author": "Henry David Thoreau",
+      "duration": 18
+    },
+    {
+      "id": 190,
+      "lines": [
+        "Keep your face always",
+        "toward the sunshine,",
+        "and shadows will fall",
+        "behind you."
+      ],
+      "emphasis": [
+        "sunshine",
+        "behind you"
+      ],
+      "author": "Walt Whitman",
+      "duration": 17
+    },
+    {
+      "id": 191,
+      "lines": [
+        "Alone we can do so little;",
+        "together we can do",
+        "so much."
+      ],
+      "emphasis": [
+        "so little",
+        "so much"
+      ],
+      "author": "Helen Keller",
+      "duration": 14
+    },
+    {
+      "id": 192,
+      "lines": [
+        "To live is the rarest thing",
+        "in the world.",
+        "Most people exist,",
+        "that is all."
+      ],
+      "emphasis": [
+        "To live",
+        "exist"
+      ],
+      "author": "Oscar Wilde",
+      "duration": 16
+    },
+    {
+      "id": 193,
+      "lines": [
+        "It is never too late",
+        "to be what you might",
+        "have been."
+      ],
+      "emphasis": [
+        "never too late",
+        "might",
+        "have been"
+      ],
+      "author": "George Eliot",
+      "duration": 14
+    },
+    {
+      "id": 194,
+      "lines": [
+        "We don't see things",
+        "as they are,",
+        "we see them as we are."
+      ],
+      "emphasis": [
+        "as they are",
+        "as we are"
+      ],
+      "author": "Anaïs Nin",
+      "duration": 14
+    },
+    {
+      "id": 195,
+      "lines": [
+        "Your pain is the breaking",
+        "of the shell that encloses",
+        "your understanding."
+      ],
+      "emphasis": [
+        "breaking",
+        "your understanding"
+      ],
+      "author": "Khalil Gibran",
+      "duration": 16
+    },
+    {
+      "id": 196,
+      "lines": [
+        "Not all those who wander",
+        "are lost."
+      ],
+      "emphasis": [
+        "wander",
+        "lost"
+      ],
+      "author": "J. R. R. Tolkien",
+      "duration": 11
+    },
+    {
+      "id": 197,
+      "lines": [
+        "We know what we are,",
+        "but know not",
+        "what we may be."
+      ],
+      "emphasis": [
+        "what we are",
+        "what we may be"
+      ],
+      "author": "William Shakespeare",
+      "duration": 14
+    },
+    {
+      "id": 198,
+      "lines": [
+        "Discipline is choosing",
+        "between what you want now",
+        "and what you want most."
+      ],
+      "emphasis": [
+        "what you want now",
+        "what you want most"
+      ],
+      "author": "Anonim",
+      "duration": 16
+    },
+    {
+      "id": 199,
+      "lines": [
+        "Outgrowing people and places",
+        "does not mean you failed.",
+        "It means you finally chose",
+        "your own peace."
+      ],
+      "emphasis": [
+        "does not mean you failed",
+        "your own peace"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 200,
+      "lines": [
+        "Silence is not empty.",
+        "Sometimes it is the space",
+        "where clarity finally speaks."
+      ],
+      "emphasis": [
+        "not empty",
+        "clarity finally speaks"
+      ],
+      "author": "Anonim",
+      "duration": 16
     }
   ]
 }
