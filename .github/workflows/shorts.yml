@@ -94,7 +94,7 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: python scripts/archive_drive.py
 
-      - name: Distribusi/Upload (default: YouTube)
+      - name: "Distribusi/Upload (default: YouTube)"
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
