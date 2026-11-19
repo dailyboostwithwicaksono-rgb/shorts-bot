@@ -1,14 +1,16 @@
 # shorts-bot
 
-Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar Pexels (digelap + dark band), musik dari freetouse.com, arsip ke Google Drive, lalu upload ke YouTube Shorts. Proses utama berjalan di **GitHub Actions** (bisa juga dijalankan **lokal**, lihat [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)).
+Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar video dari **Pixabay** (dipilih relevan via kata kunci AI, filter metadata oleh kode) dengan gaya visual konsisten (grayscale + overlay + band ber-gradasi), musik latar dari **Freetouse API** (non-premium, tema calm/motivasi), arsip ke Google Drive, lalu upload ke YouTube Shorts. Proses utama berjalan di **GitHub Actions** (bisa juga dijalankan **lokal**, lihat [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)).
 
 ## Ringkasan
-- **Latar**: URL MP4 langsung Pexels (`config/themes.json`), dipilih **acak per run**.
-- **Musik**: dari folder Drive `shorts-music` (rclone + service account), dipilih **acak per run**.
-- **Render**: 1080×1920, 30 fps, durasi **per quote** (detik), ffmpeg + Pillow (overlay teks).
+- **Latar**: video dari **Pixabay Video API** (`PIXABAY_API_KEY`). AI (teks saja, 1 langkah) menghasilkan **1–3 kata kunci** dari isi quote → kode mencari & memfilter metadata (tanpa animasi, durasi ≥ quote dengan pelonggaran bertahap, kualitas progresif **tanpa upscale** F1 → F2 → semua, prefer `large`) → ambil hingga 3 kandidat → **pilih 1 acak (kode)**. Jika kosong, fallback ke cache keberhasilan di `data/pixabay_cache.json` (di-commit). Pexels dinonaktifkan.
+- **Musik**: dari **Freetouse Public API** (`https://api.freetouse.com/v3`, tanpa API key). Dipilih per run: hanya track **non-premium/usable** (`is_premium == false`, `status == 1`, file MP3 tersedia), dengan query/tema yang cocok untuk short motivasi/calm (mis. inspirational, motivational, calm, uplifting, ambient, hopeful, peaceful, piano, cinematic, nature) + penilaian kecocokan tag/judul, dan durasi memadai (prefer `>= 60s` dan `>= durasi video`, dengan pelonggaran bertahap). Diunduh saat proses; jika API gagal, fallback ke file musik lokal bila tersedia. Atribusi (judul, artis, URL track best-effort) masuk deskripsi.
+- **Render**: 1080×1920, 30 fps, durasi **per quote** (detik), ffmpeg + Pillow. Latar: **grayscale** + **overlay hitam penuh ~30%** + **dark band dengan tepi atas/bawah ber-gradasi (feather)**. Durasi sumber dideteksi (`ffprobe`): jika lebih pendek dari target → **diperlambat (setpts)** agar pas; jika lebih panjang → dipotong.
 - **Arsip**: `out/*` ke Drive `shorts-outputs/<tanggal>` via OAuth user.
 - **Upload**: YouTube Shorts via OAuth user.
-- **Log**: `data/used_quotes.jsonl` di-append tiap run dan **auto-commit** oleh workflow.
+- **Log & metadata (di-commit)**: `data/used_quotes.jsonl`, `data/pixabay_cache.json`, `data/used_videos.jsonl`, `data/used_music.jsonl` di-update dan **auto-commit** oleh workflow (menyimpan metadata semua video/musik yang pernah dipakai).
+
+**Penyimpanan/media (GitHub Actions):** file video & audio latar/musik **diunduh saat run** ke folder kerja (`work/`) untuk dirender, **tidak di-commit** (ephemeral; `work/`, `out/`, `render_plan.json` di-`.gitignore`) agar tidak menambah storage repo. Hanya log/metadata di atas yang disimpan di repo; artifact run hanya menyimpan log kecil singkat.
 
 Jadwal: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` UTC, `workflow_dispatch` tersedia). Jadwal GitHub Actions bisa tertunda.
 
@@ -19,12 +21,13 @@ Jadwal: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` UTC, `workfl
 
 ## Tipografi & tampilan
 - Kanvas 1080×1920, teks rata tengah, **huruf kecil semua** (dinormalisasi).
+- **Latar**: dikonversi **grayscale** (saturasi 0) + **overlay hitam penuh ~30%** untuk konsistensi; **dark band** area teks dipertahankan dengan tepi **atas & bawah ber-gradasi (feather, solid → transparan)** agar teks tetap terbaca.
 - Font **Montserrat** (OFL, dibundle di `assets/fonts/`):
   - Quote: **Montserrat Light Italic 51pt**, `#FFFFFF`
   - Penekanan (emphasis): **Montserrat SemiBold Italic 51pt**, `#FFFFFF` (inline, ukuran sama)
   - Nama tokoh: **Montserrat Italic 28pt**, `#DDDDDD`, format `- nama -`
   - Tanpa author/sumber terverifikasi: **garis pendek 100 px × 2 px**, `#DDDDDD` (di posisi author)
-- Line spacing **1,3×**. Latar digelapkan + **dark band** (tanpa panel blur).
+- Line spacing **1,3×**.
 - **Progressive fade-in per baris** (quote lalu author/garis), baris tetap tampil/bertumpuk: durasi fade `clamp(0,7 + 0,12 × kata, 0,7, 1,4)` detik, **jeda tetap 0,7 detik** setelah fade-in tiap baris sebelum baris berikutnya, tanpa fade-out teks.
 - Ukuran quote 51pt (fix) dengan fallback **shrink** hanya jika baris terpaksa melebihi lebar aman.
 
@@ -56,22 +59,25 @@ Jadwal: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` UTC, `workfl
 `data/used_quotes.jsonl` berisi riwayat pemakaian (termasuk `id` untuk mode `list`) dan dipakai agar pilihan berurutan/tidak terulang.
 
 ## Konfigurasi (`config/themes.json`)
-- `defaults`: mode/file default, tipografi (`quote_font_size`, `author_font_size`, `line_spacing`, `max_text_width`, warna, ukuran garis), timing (`fade_in_*`, `line_gap`), layout band (`band_top`, `band_height`, `overlay_opacity`, `brightness`, `saturation`, `music_volume`).
-- `themes[].pexels_backgrounds`: pool latar (MP4 langsung `file_url`, + `id/url/photographer/description`).
-- `themes[].music`: pool musik (`file`, `title`, `url`) — file harus ada di `work/music` (diunduh dari Drive di Actions, atau disiapkan manual saat lokal).
+- `defaults`: mode/file default, path log/metadata (`quotes_file`, `used_quotes_file`, `pixabay_cache_file`, `used_videos_file`, `used_music_file`), tipografi (`quote_font_size`, `author_font_size`, `line_spacing`, `max_text_width`, warna, ukuran garis), timing (`fade_in_*`, `line_gap`), layout/gaya visual (`band_top`, `band_height`, `overlay_opacity`, `full_overlay_opacity`, `band_feather`, `brightness`, `saturation`, `music_volume`).
+- `themes[].pixabay_query`: kueri/cadangan untuk pencarian latar Pixabay (keyword utama dihasilkan per quote).
+- `themes[].music`: (opsional, fallback) daftar musik lokal (`file`, `title`, `url`) — dipakai hanya jika pengambilan dari Freetouse API gagal dan file tersedia di `work/music/`. Alur utama mengambil musik dari Freetouse API per run.
 
-## Latar Pexels (tanpa API key)
-Tambah background: ambil `file_url` MP4 langsung dari Pexels, verifikasi (200, `video/mp4`), tambahkan entri ke `pexels_backgrounds` dan commit. Atribusi fotografer/tautan Pexels otomatis masuk deskripsi. Lisensi Pexels mengizinkan penggunaan komersial; atribusi tetap dicantumkan sesuai guideline.
+## Latar Pixabay (API)
+Latar dipilih otomatis dari **Pixabay Video API** (`PIXABAY_API_KEY`) berdasarkan kata kunci yang dibuat dari quote, lalu difilter oleh kode (tanpa animasi, durasi/kualitas progresif, pilih acak 1 dari kandidat). Entri keberhasilan disimpan di `data/pixabay_cache.json` (di-commit) sebagai fallback bila pencarian berikutnya kosong/gagal. Atribusi (user/URL Pixabay) otomatis masuk deskripsi. Patuhi ketentuan lisensi Pixabay.
 
-## Musik freetouse.com
-Lisensi Free To Use mewajibkan atribusi; judul + URL track otomatis masuk deskripsi YouTube (URL polos/clickable). Tambah track: upload ke `shorts-music`, daftarkan di `config/themes.json`. Cek syarat lisensi di https://freetouse.com/license.
+## Musik Freetouse (API)
+Musik diambil otomatis dari **Freetouse Public API** (tanpa API key). Sistem memilih track **non-premium** yang dapat dipakai (`is_premium == false`, `status == 1`, MP3 ada) dengan tema/mood cocok untuk short motivasi/calm (inspirational/motivational/calm/uplifting/ambient/hopeful/peaceful/piano/cinematic/nature, dll.) dan durasi memadai (prefer `>= 60s` dan `>= durasi video`). Atribusi judul, artis, dan URL track (best-effort) otomatis masuk deskripsi. Metadata setiap musik yang dipakai dicatat di `data/used_music.jsonl`. Cek syarat lisensi di https://freetouse.com/license.
 
 ## Setup (ringkas, GitHub Actions)
-1. **Repo** public, akun sekunder. `Settings → Actions → General → Workflow permissions` = **Read and write** (untuk auto-commit log). Jangan commit `.env`, `sa.json`, `work/`, `out/`.
-2. **Google Cloud**: aktifkan Google Drive API & YouTube Data API v3. Buat Service Account (JSON → base64 sebagai `GDRIVE_SA_JSON`) untuk **baca musik** dari Drive (share folder musik ke SA sebagai Viewer). Buat OAuth client Desktop + consent screen (scope `drive` & `youtube.upload`) untuk **arsip Drive & upload YouTube**.
-3. **Folder Drive**: `shorts-music` (berisi mp3) → share ke SA (Viewer), simpan ID sebagai `GDRIVE_MUSIC_FOLDER_ID`. `shorts-outputs` → ID sebagai `GDRIVE_OUTPUTS_FOLDER_ID` (ditulis via OAuth user; SA tidak punya kuota tulis Drive pribadi).
+1. **Repo** public, akun sekunder. `Settings → Actions → General → Workflow permissions` = **Read and write** (untuk auto-commit log/metadata). Jangan commit `.env`, `work/`, `out/`.
+2. **Google Cloud** (untuk arsip Drive & upload YouTube): aktifkan Google Drive API & YouTube Data API v3. Buat OAuth client Desktop + consent screen (scope `drive` & `youtube.upload`).
+3. **Folder Drive (arsip output)**: `shorts-outputs` → simpan ID sebagai `GDRIVE_OUTPUTS_FOLDER_ID` (ditulis via OAuth user).
 4. **Refresh token OAuth**: isi `YT_CLIENT_ID`/`YT_CLIENT_SECRET` di `.env` lokal lalu `python scripts/get_refresh_token.py`, simpan token ke secret `YT_REFRESH_TOKEN`.
-5. **AI** (untuk mode `famous`/metadata custom): isi `OPENROUTER_API_KEY` (model `:free`), opsional `GEMINI_API_KEY`/`DEEPSEEK_API_KEY` sebagai fallback.
+5. **API key layanan**:
+   - **Pixabay**: `PIXABAY_API_KEY` (latar video).
+   - **AI** (untuk keyword latar & mode `famous`/metadata custom): `OPENROUTER_API_KEY` (model `:free`), opsional `GEMINI_API_KEY`/`DEEPSEEK_API_KEY` sebagai fallback.
+   - **Musik**: tidak perlu key/Drive (diambil dari Freetouse Public API per run).
 
 ## Mengubah OAuth app dari Testing ke Production
 Saat status **Testing**, refresh token bisa kedaluwarsa ~7 hari (`invalid_grant`). Memindahkan ke **Production** (di luar Testing) menghilangkan batas kedaluwarsa 7 hari tersebut (token tetap bisa invalid jika dicabut/alasan keamanan lain).
@@ -95,33 +101,35 @@ Saat status **Testing**, refresh token bisa kedaluwarsa ~7 hari (`invalid_grant`
 - **OAuth user cap**: untuk app yang meminta scope sensitif/terbatas yang belum disetujui, jumlah pengguna yang bisa memberi izin dibatasi sepanjang masa proyek (tidak bisa di-reset). Untuk pemakaian **hanya oleh akunmu sendiri**, ini praktis tidak masalah — jangan memberi akses ke pengguna lain. Layar “unverified app” dapat muncul bila scope belum disetujui.
 
 ## Secrets & Variables (GitHub Actions)
-Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `GDRIVE_SA_JSON`, `GDRIVE_MUSIC_FOLDER_ID`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`.
+Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `PIXABAY_API_KEY`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`.
 
 Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`inclusionai/ling-3.2-flash:free`), `YT_PRIVACY` (`public`/`unlisted`).
+
+> Catatan: musik diambil dari Freetouse API (tanpa key/Drive/rclone), sehingga `GDRIVE_SA_JSON` dan `GDRIVE_MUSIC_FOLDER_ID` tidak diperlukan untuk alur musik saat ini.
 
 ## Menjalankan di GitHub Actions
 - Otomatis: jadwal 06.00 & 18.00 WIB (`mode=list`).
 - Manual: **Actions → shorts-bot → Run workflow** (pilih `mode`: `list`/`famous`/`custom`).
 
 ## Menjalankan di lokal (detail, bertahap)
-Panduan lengkap (untuk pemula, termasuk instalasi ffmpeg, penyiapan musik, env, penjadwalan lokal, dan **cek krusial saat error/gagal**): **[docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)**.
+Panduan lengkap (untuk pemula, termasuk instalasi ffmpeg, env, penjadwalan lokal, dan **cek krusial saat error/gagal**): **[docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)**.
 
-Ringkas: pasang dependensi Python & ffmpeg → siapkan musik di `work/music/` → `python scripts/plan.py` → `python scripts/render.py` → ambil `out/final.mp4` + `out/caption.txt` (judul/deskripsi siap tempel) untuk **upload manual** ke YouTube. Mode `list` tidak memerlukan API key AI. Latar saat ini bersumber dari Pexels (bukan Drive).
+Ringkas: pasang dependensi Python & ffmpeg → set `PIXABAY_API_KEY` (dan AI key jika perlu) dengan internet aktif → `python scripts/plan.py` → `python scripts/render.py` → ambil `out/final.mp4` + `out/caption.txt` (judul/deskripsi siap tempel) untuk **upload manual** ke YouTube. Latar dari Pixabay API (cache fallback di `data/pixabay_cache.json`); musik diambil otomatis dari Freetouse API (non-premium, tema calm/motivasi, durasi memadai) dan diunduh saat run. File media tidak di-commit; metadata pemakaian tersimpan di `data/used_videos.jsonl` dan `data/used_music.jsonl`.
 
 ## Maintenance
-- **Token OAuth**: jika app **Testing** → refresh token kedaluwarsa ~7 hari (`invalid_grant`), regenerate & update `YT_REFRESH_TOKEN`. Jika sudah **Production** → tidak ada kedaluwarsa 7 hari, namun token tetap bisa invalid (dicabut/alasan keamanan) — siapkan cara regenerate. Untuk alur lokal *upload manual* + musik via rclone+SA/manual, OAuth user bisa tidak diperlukan.
-- **Actions (1–2×/minggu)**: cek run terjadwal sukses; jadwal bisa telat. Jika gagal, periksa langkah merah (AI/rate limit, token/quota YouTube, rclone/Drive, commit log). Workflow butuh **Read and write permissions** untuk auto-commit log.
+- **Token OAuth**: jika app **Testing** → refresh token kedaluwarsa ~7 hari (`invalid_grant`), regenerate & update `YT_REFRESH_TOKEN`. Jika sudah **Production** → tidak ada kedaluwarsa 7 hari, namun token tetap bisa invalid (dicabut/alasan keamanan) — siapkan cara regenerate. Untuk alur lokal *upload manual* (tanpa arsip/upload otomatis), OAuth user tidak diperlukan.
+- **Actions (1–2×/minggu)**: cek run terjadwal sukses; jadwal bisa telat. Jika gagal, periksa langkah merah (Pixabay/Freetouse API atau rate limit/koneksi, AI, token/quota YouTube/Drive arsip, commit log/metadata). Workflow butuh **Read and write permissions** untuk auto-commit log/metadata.
 - **Stok quotes**: pastikan `data/quotes.json` cukup; mode `list` loop jika habis, namun tetap baik menambah variasi.
-- **Pool media & kuota Drive**: tambah variasi background/musik agar tidak repetitif; arsip output menambah kuota Drive.
+- **Cache latar & metadata**: `data/pixabay_cache.json` membantu fallback latar; metadata pemakaian video/musik tersimpan di `data/used_videos.jsonl` dan `data/used_music.jsonl` (di-commit). Arsip output di Drive menambah kuota Drive (file media tidak di-commit ke repo).
 - **YouTube API quota**: 2 upload/hari umumnya aman; cek jika menaikkan frekuensi.
-- **AI**: model `:free` dapat berubah ketersediaan/rate limit; ganti `OPENROUTER_MODEL` bila perlu.
+- **AI**: model `:free` dapat berubah ketersediaan/rate limit; ganti `OPENROUTER_MODEL` bila perlu. Keyword latar punya fallback heuristik, mode `famous/custom` butuh AI.
 - **Repo dormant**: jadwal dapat dinonaktifkan jika repo lama tidak aktif — jalankan manual/commit kecil untuk mengaktifkan kembali.
 
 ## Troubleshooting singkat
 - `invalid_grant`: token OAuth kedaluwarsa (Testing) atau dicabut → regenerate `YT_REFRESH_TOKEN` (dan pastikan app/consent sesuai).
-- rclone/Drive musik gagal: cek base64 `GDRIVE_SA_JSON`, `GDRIVE_MUSIC_FOLDER_ID`, sharing folder musik ke SA.
-- Pexels download gagal: `file_url` di pool perlu diperbarui.
-- AI gagal/rate limit: cek key, model `:free`, atau fallback provider (mode `list` tidak butuh AI).
-- Commit log gagal: cek Workflow permissions (Read and write).
+- Pixabay gagal/kosong: cek `PIXABAY_API_KEY`, kuota/rate limit, koneksi internet, atau cache `data/pixabay_cache.json` (fallback bila tersedia).
+- Musik Freetouse gagal/kosong: cek koneksi internet ke `api.freetouse.com` (tidak perlu key). Sistem memilih track non-premium/usable bertema calm/motivasi; jika API gagal dan tidak ada file lokal fallback, proses berhenti.
+- AI gagal/rate limit: cek key, model `:free`, atau fallback provider (mode `list` tidak butuh AI; keyword latar punya fallback heuristik).
+- Commit log/metadata gagal: cek Workflow permissions (Read and write).
 - `quotaExceeded` (YouTube): cek kuota di Google Cloud Console.
-- Error lokal (ffmpeg, musik, dependensi, disk, dll.): lihat bagian **“Cek krusial saat error atau gagal”** di [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md).
+- Error lokal (ffmpeg, dependensi, disk, internet, dll.): lihat bagian **“Cek krusial saat error atau gagal”** di [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md).

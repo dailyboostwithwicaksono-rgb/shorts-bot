@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render Shorts 1080x1920: bg gelap + dark band + teks progresif (Pillow) + musik."""
+"""Render Shorts 1080x1920: bg grayscale + overlay + feathered band + teks progresif + musik."""
 import json
 import shutil
 import subprocess
@@ -73,7 +73,6 @@ def measure_segments(segments: list[dict], size: int) -> float:
 
 def fit_quote_size(segments: list[dict], base_size: int, max_width: int) -> int:
     size = int(base_size)
-    # shrink-only fallback jika terpaksa
     while size > 20 and measure_segments(segments, size) > max_width:
         size -= 2
     return size
@@ -96,8 +95,6 @@ def render_quote_line(segments: list[dict], y_center: int, p: dict, out_path: Pa
     draw = ImageDraw.Draw(img)
     total_w = measure_segments(segments, size)
     x = (W - total_w) / 2.0
-    lh = line_height(size, spacing)
-    # approximate vertical centering by text bbox height at this size
     bbox = draw.textbbox((0, 0), "Ag", font=qf)
     text_h = bbox[3] - bbox[1]
     y = int(round(y_center - text_h / 2.0))
@@ -116,14 +113,12 @@ def render_quote_line(segments: list[dict], y_center: int, p: dict, out_path: Pa
 
 def render_author_line(text: str, y_center: int, p: dict, out_path: Path) -> None:
     size = int(p.get("author_font_size", 28))
-    spacing = float(p.get("line_spacing", 1.3))
     color = hex_to_rgb(p.get("author_color", "#DDDDDD"))
     font = load_author_font(size)
 
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     tw = text_width(draw, text, font)
-    # shrink only if somehow overflow
     while size > 14 and tw > int(p.get("max_text_width", 920)):
         size -= 1
         font = load_author_font(size)
@@ -151,6 +146,38 @@ def render_dash_line(y_center: int, p: dict, out_path: Path) -> None:
     img.save(out_path)
 
 
+def render_band_overlay(p: dict, out_path: Path) -> None:
+    band_top = int(p.get("band_top", 560))
+    band_h = int(p.get("band_height", 800))
+    band_opacity = float(p.get("overlay_opacity", 0.55))
+    feather = max(0, int(p.get("band_feather", 140)))
+    feather = min(feather, band_h // 2)
+
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    if band_h <= 0:
+        img.save(out_path)
+        return
+    max_a = int(round(max(0.0, min(1.0, band_opacity)) * 255))
+    px = img.load()
+    y0 = max(0, band_top)
+    y1 = min(H, band_top + band_h)
+    for y in range(y0, y1):
+        # distance inside band
+        dt = y - band_top
+        db = (band_top + band_h - 1) - y
+        d = min(dt, db)
+        if feather > 0 and d < feather:
+            a = int(round(max_a * (d + 1) / feather))
+        else:
+            a = max_a
+        if a <= 0:
+            continue
+        for x in range(W):
+            px[x, y] = (0, 0, 0, a)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    img.save(out_path)
+
+
 def compute_centers(p: dict, n_quote: int, has_trailing: bool) -> tuple[list[int], int | None]:
     band_top = int(p.get("band_top", 560))
     band_h = int(p.get("band_height", 800))
@@ -159,7 +186,6 @@ def compute_centers(p: dict, n_quote: int, has_trailing: bool) -> tuple[list[int
     a_size = int(p.get("author_font_size", 28))
 
     q_step = line_height(q_size, spacing)
-    a_step = line_height(a_size, spacing)
     gap_before_author = int(round(q_step * 0.9))
 
     total_h = 0
@@ -168,14 +194,12 @@ def compute_centers(p: dict, n_quote: int, has_trailing: bool) -> tuple[list[int
     if has_trailing:
         if n_quote > 0:
             total_h += gap_before_author
-        else:
-            total_h += 0
         total_h += a_size
 
     block_top = band_top + max(0, (band_h - total_h) // 2)
     q_centers: list[int] = []
     y = block_top + q_size // 2
-    for i in range(n_quote):
+    for _ in range(n_quote):
         q_centers.append(int(y))
         y += q_step
 
@@ -187,6 +211,23 @@ def compute_centers(p: dict, n_quote: int, has_trailing: bool) -> tuple[list[int
             y = block_top + a_size // 2
         trailing_center = int(y)
     return q_centers, trailing_center
+
+
+def probe_duration(path: str) -> float | None:
+    try:
+        r = subprocess.run(
+            [
+                "ffprobe", "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                str(path),
+            ],
+            check=True, capture_output=True, text=True, timeout=30,
+        )
+        val = (r.stdout or "").strip()
+        return float(val) if val else None
+    except Exception:
+        return None
 
 
 def build_and_render(p: dict) -> tuple[Path, dict]:
@@ -203,16 +244,26 @@ def build_and_render(p: dict) -> tuple[Path, dict]:
 
     q_centers, trailing_center = compute_centers(p, len(q_lines), has_trailing)
 
+    # detect bg duration for slow-down if shorter
+    bg_meta = p.get("background_meta") or {}
+    src_dur = probe_duration(bg)
+    if not src_dur or src_dur <= 0:
+        try:
+            src_dur = float(bg_meta.get("duration_actual") or bg_meta.get("duration_meta") or 0) or None
+        except Exception:
+            src_dur = None
+    slow_factor = 1.0
+    if src_dur and src_dur > 0 and src_dur < dur:
+        slow_factor = dur / src_dur  # stretch to fill target duration (no loop jump)
+
     tmpdir = Path(tempfile.mkdtemp(prefix="shorts-lines-", dir=str(OUT)))
     try:
-        elements = []  # (png_path, start, fade, words_text)
-        # quote lines
+        elements = []  # (png_path, plain_text)
         for i, (segments, y_center) in enumerate(zip(q_lines, q_centers)):
             png = tmpdir / f"line_{i:02d}.png"
             render_quote_line(segments, y_center, p, png)
             plain = "".join(seg.get("text", "") for seg in segments).strip()
             elements.append((png, plain))
-        # trailing author or dash
         if has_trailing and trailing_center is not None:
             png = tmpdir / f"line_{len(q_lines):02d}.png"
             if show_dash:
@@ -222,39 +273,47 @@ def build_and_render(p: dict) -> tuple[Path, dict]:
                 render_author_line(author_text, trailing_center, p, png)
                 elements.append((png, author_text))
 
+        band_png = tmpdir / "band.png"
+        render_band_overlay(p, band_png)
+
         # timing
         timed = []
         t = 1.0
         line_gap = float(p.get("line_gap", 0.7))
-        for idx, (png, plain) in enumerate(elements):
+        for _, plain in elements:
             fi = fade_in_time(plain, p)
             start = min(round(t, 2), float(max(1, dur - 2)))
-            timed.append((png, start, fi))
+            timed.append((start, fi))
             t = round(start + fi + line_gap, 2)
 
         # ffmpeg filter graph
-        band_top = int(p.get("band_top", 560))
-        band_h = int(p.get("band_height", 800))
-        overlay_opacity = float(p.get("overlay_opacity", 0.55))
-        brightness = float(p.get("brightness", -0.18))
-        saturation = float(p.get("saturation", 0.75))
+        brightness = float(p.get("brightness", -0.08))
+        saturation = float(p.get("saturation", 0.0))
+        full_overlay = float(p.get("full_overlay_opacity", 0.3))
         music_vol = float(p.get("music_volume", 0.28))
 
-        video_filters = [
-            f"trim=duration={dur},setpts=PTS-STARTPTS",
+        vf = [
+            f"setpts={slow_factor}*PTS" if slow_factor > 1.001 else "setpts=PTS-STARTPTS",
+            f"trim=duration={dur}",
+            "setpts=PTS-STARTPTS",
             "scale=1080:1920:force_original_aspect_ratio=increase",
             "crop=1080:1920",
             "fps=30,setsar=1",
             f"eq=brightness={brightness}:saturation={saturation}:contrast=1.05",
-            f"drawbox=x=0:y={band_top}:w=1080:h={band_h}:color=black@{overlay_opacity}:t=fill",
+            f"drawbox=x=0:y=0:w=1080:h=1920:color=black@{full_overlay}:t=fill",
         ]
 
-        parts = ["[0:v]" + ",".join(video_filters) + "[base]"]
-        current = "base"
-        for i, (png, start, fi) in enumerate(timed):
-            in_idx = 2 + i  # 0:bg,1:music,2+:pngs
+        parts = ["[0:v]" + ",".join(vf) + "[base]"]
+        # band overlay (input index 2)
+        parts.append("[2:v]format=rgba[band]")
+        parts.append("[base][band]overlay=0:0:format=auto[v0]")
+
+        current = "v0"
+        # text overlays start at input index 3
+        for i, (start, fi) in enumerate(timed):
+            in_idx = 3 + i
             parts.append(f"[{in_idx}:v]format=rgba,fade=t=in:st={start}:d={fi}:alpha=1[t{i}]")
-            out_label = "v" if i == len(timed) - 1 else f"b{i+1}"
+            out_label = "vout" if i == len(timed) - 1 else f"v{i+1}"
             parts.append(f"[{current}][t{i}]overlay=0:0:format=auto[{out_label}]")
             current = out_label
 
@@ -269,8 +328,9 @@ def build_and_render(p: dict) -> tuple[Path, dict]:
             "ffmpeg", "-y", "-v", "error", "-stats",
             "-stream_loop", "-1", "-i", str(bg),
             "-stream_loop", "-1", "-i", str(music),
+            "-loop", "1", "-t", str(dur), "-i", str(band_png),
         ]
-        for png, _, _ in timed:
+        for (png, _plain), _t in zip(elements, timed):
             cmd += ["-loop", "1", "-t", str(dur), "-i", str(png)]
         cmd += [
             "-filter_complex", filter_complex,
@@ -284,7 +344,9 @@ def build_and_render(p: dict) -> tuple[Path, dict]:
             str(final),
         ]
         subprocess.run(cmd, check=True)
-        return final, {"timed": [(str(x[0].name), x[1], x[2]) for x in timed]}
+        info = {"timed": [(elements[i][0].name, timed[i][0], timed[i][1]) for i in range(len(timed))],
+                "bg_src_dur": src_dur, "slow_factor": slow_factor}
+        return final, info
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
 
@@ -321,11 +383,13 @@ def main() -> None:
         "hashtags": p.get("hashtags", []),
         "description": p.get("description", ""),
         "privacy": p.get("privacy", "public"),
+        "background_meta": p.get("background_meta", {}),
+        "render": meta,
     }
     (OUT / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    print(f"[ok] render selesai: {final} ({duration}s, {manifest['size_bytes']} bytes)")
+    print(f"[ok] render selesai: {final} ({duration}s, {manifest['size_bytes']} bytes, slow={meta.get('slow_factor')})")
 
 
 if __name__ == "__main__":

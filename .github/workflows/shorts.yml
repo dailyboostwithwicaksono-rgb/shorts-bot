@@ -52,68 +52,16 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Pasang ffmpeg dan rclone
+      - name: Pasang ffmpeg
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          curl -sSL https://rclone.org/install.sh | sudo bash
           ffmpeg -hide_banner -encoders | grep -q libx264
           test -f assets/fonts/Montserrat-LightItalic.ttf
           test -f assets/fonts/Montserrat-SemiBoldItalic.ttf
           test -f assets/fonts/Montserrat-Italic.ttf
           test -f assets/fonts/OFL.txt
-
-      - name: Siapkan kredensial Google Drive
-        env:
-          GDRIVE_SA_JSON: ${{ secrets.GDRIVE_SA_JSON }}
-          MUSIC: ${{ secrets.GDRIVE_MUSIC_FOLDER_ID }}
-        run: |
-          python - <<'PY'
-          import base64, json, os
-          raw = os.environ.get("GDRIVE_SA_JSON", "").strip()
-          if not raw:
-              raise SystemExit("GDRIVE_SA_JSON kosong. Paste base64 sa.json sebagai Repository Secret.")
-          try:
-              sa = json.loads(base64.b64decode(raw))
-          except Exception as exc:
-              raise SystemExit(f"GDRIVE_SA_JSON bukan base64 JSON valid: {exc}")
-          email = sa.get("client_email", "")
-          expected = "shorts-bot@shorts-bot-515107.iam.gserviceaccount.com"
-          if email != expected:
-              raise SystemExit(
-                  f"Service account salah. Dapat: {email or '(kosong)'}. "
-                  f"Harus: {expected}"
-              )
-          print(f"[ok] Service account terbaca: {email}")
-          PY
-          MUSIC=$(printf '%s' "$MUSIC" | tr -d '[:space:]')
-          if [ -z "$MUSIC" ]; then
-            echo "GDRIVE_MUSIC_FOLDER_ID kosong."
-            exit 1
-          fi
-          if ! [[ "$MUSIC" =~ ^[A-Za-z0-9_-]+$ ]]; then
-            echo "GDRIVE_MUSIC_FOLDER_ID harus berupa ID saja, bukan URL lengkap."
-            exit 1
-          fi
-          echo "$GDRIVE_SA_JSON" | base64 -d > /tmp/shorts-sa.json
-          rclone config create gdrive drive \
-            service_account_file /tmp/shorts-sa.json \
-            scope drive \
-            root_folder_id "$MUSIC"
-          echo "[ok] rclone root_folder_id diset (panjang ID: ${#MUSIC})"
-
-      - name: Unduh musik dari Drive
-        run: |
-          echo "Membuka root musik..."
-          rclone lsjson gdrive: --max-depth 1 \
-            || { echo "Gagal membuka folder musik. Cek GDRIVE_MUSIC_FOLDER_ID dan sharing ke service account."; exit 1; }
           mkdir -p work/music out
-          rclone copy gdrive: work/music \
-            --include "*.mp3" --include "*.wav" --include "*.m4a" --include "*.ogg" \
-            --transfers 2 --retries 3
-          ls -lh work/music
-          find work/music -type f \( -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.ogg' \) | grep -q . \
-            || { echo "Tidak ada file musik di folder GDRIVE_MUSIC_FOLDER_ID"; exit 1; }
 
       - name: Pasang dependency Python
         run: pip install -r requirements.txt
@@ -126,6 +74,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'openrouter' }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           YT_PRIVACY: ${{ vars.YT_PRIVACY || 'public' }}
           QUOTE_MODE: ${{ inputs.mode || 'list' }}
           QUOTE_TEXT: ${{ inputs.quote_text || '' }}
@@ -152,17 +101,17 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: python scripts/publish.py
 
-      - name: Commit log quotes terpakai
+      - name: Commit log & metadata (quotes, cache, video, music)
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/used_quotes.jsonl
+          git add data/used_quotes.jsonl data/pixabay_cache.json data/used_videos.jsonl data/used_music.jsonl || true
           if git diff --cached --quiet; then
-            echo "Tidak ada perubahan log quotes."
+            echo "Tidak ada perubahan log/metadata."
             exit 0
           fi
-          git commit -m "chore: log used quote (run ${{ github.run_number }})"
+          git commit -m "chore: update logs/metadata (run ${{ github.run_number }})"
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
 

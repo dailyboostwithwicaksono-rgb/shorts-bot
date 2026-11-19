@@ -3,6 +3,9 @@
     "default_mode": "list",
     "quotes_file": "data/quotes.json",
     "used_quotes_file": "data/used_quotes.jsonl",
+    "pixabay_cache_file": "data/pixabay_cache.json",
+    "used_videos_file": "data/used_videos.jsonl",
+    "used_music_file": "data/used_music.jsonl",
     "duration_seconds": 30,
     "quote_font_size": 51,
     "author_font_size": 28,
@@ -15,8 +18,10 @@
     "band_top": 560,
     "band_height": 800,
     "overlay_opacity": 0.55,
-    "brightness": -0.18,
-    "saturation": 0.75,
+    "full_overlay_opacity": 0.3,
+    "band_feather": 140,
+    "brightness": -0.08,
+    "saturation": 0.0,
     "music_volume": 0.28,
     "dash_width": 100,
     "dash_height": 2,
@@ -27,23 +32,7 @@
     {
       "id": "quotes",
       "niche": "Quotes inspiratif dan bermakna. Cocok untuk refleksi, motivasi, dan kebijaksanaan hidup.",
-      "pexels_query": "cinematic background portrait bokeh",
-      "pexels_backgrounds": [
-        {
-          "id": 30508832,
-          "description": "night city traffic from above with bokeh lights",
-          "url": "https://www.pexels.com/video/night-city-traffic-from-above-with-bokeh-lights-30508832/",
-          "photographer": "David Saurik",
-          "file_url": "https://videos.pexels.com/video-files/30508832/13071300_1440_2560_30fps.mp4"
-        },
-        {
-          "id": 37779530,
-          "description": "dynamic city night traffic timelapse",
-          "url": "https://www.pexels.com/video/dynamic-city-night-traffic-timelapse-37779530/",
-          "photographer": "Sapol Churanon",
-          "file_url": "https://videos.pexels.com/video-files/37779530/16024710_1440_2560_30fps.mp4"
-        }
-      ],
+      "pixabay_query": "cinematic inspiration bokeh",
       "music": [
         {
           "file": "unstoppable.mp3",
