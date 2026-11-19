@@ -66,6 +66,13 @@ Jadwal: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` UTC, `workfl
 ## Latar Pixabay (API)
 Latar dipilih otomatis dari **Pixabay Video API** (`PIXABAY_API_KEY`) berdasarkan kata kunci yang dibuat dari quote, lalu difilter oleh kode (tanpa animasi, durasi/kualitas progresif, pilih acak 1 dari kandidat). Entri keberhasilan disimpan di `data/pixabay_cache.json` (di-commit) sebagai fallback bila pencarian berikutnya kosong/gagal. Atribusi (user/URL Pixabay) otomatis masuk deskripsi. Patuhi ketentuan lisensi Pixabay.
 
+## Distribusi & multi-platform (Fase 3–4)
+- **Kontrak konten:** distribusi membaca konten kanonik dari artefak render (`out/manifest.json`, `out/final.mp4`, `out/caption.txt`).
+- **Arsip:** `scripts/archive_drive.py` tetap mengarsipkan `out/*` ke Drive (target Google terpisah).
+- **Publish (dispatcher):** `scripts/publish.py` mem-publish ke target aktif via `PUBLISH_TARGETS` (default: `youtube`, perilaku sama seperti sebelumnya). Opsi: `PUBLISH_DRY_RUN=1` (formatter/validasi tanpa upload nyata), `PUBLISH_FAIL_FAST` (default `1`, gagal cepat; `0` untuk lanjut parsial) dengan ringkasan hasil per target.
+- **Platform tambahan (kerangka):** formatter + stub/dry-run untuk **TikTok, Meta, X** tersedia (`PUBLISH_TARGETS=youtube,tiktok,meta,x`). Publish **nyata** ke platform tersebut bertahap dan memerlukan akun/app, izin/API, kredensial, serta implementasi API masing-masing; tanpa itu gunakan dry-run atau target akan gagal/ditolak dengan pesan jelas (tidak ada publish palsu).
+- **Secrets/env per platform (opsional, saat diaktifkan):** TikTok `TIKTOK_ACCESS_TOKEN`; Meta `META_ACCESS_TOKEN`, `META_IG_USER_ID`; X `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`. YouTube/Drive tetap memakai kredensial Google (`YT_*`, `GDRIVE_OUTPUTS_FOLDER_ID`).
+
 ## Musik Freetouse (API)
 Musik diambil otomatis dari **Freetouse Public API** (tanpa API key). Sistem memilih track **non-premium** yang dapat dipakai (`is_premium == false`, `status == 1`, MP3 ada) dengan tema/mood cocok untuk short motivasi/calm (inspirational/motivational/calm/uplifting/ambient/hopeful/peaceful/piano/cinematic/nature, dll.) dan durasi memadai (prefer `>= 60s` dan `>= durasi video`). Atribusi judul, artis, dan URL track (best-effort) otomatis masuk deskripsi. Metadata setiap musik yang dipakai dicatat di `data/used_music.jsonl`. Cek syarat lisensi di https://freetouse.com/license.
 
@@ -103,7 +110,9 @@ Saat status **Testing**, refresh token bisa kedaluwarsa ~7 hari (`invalid_grant`
 ## Secrets & Variables (GitHub Actions)
 Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `PIXABAY_API_KEY`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`.
 
-Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`inclusionai/ling-3.2-flash:free`), `YT_PRIVACY` (`public`/`unlisted`).
+Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`inclusionai/ling-3.2-flash:free`), `YT_PRIVACY` (`public`/`unlisted`), `PUBLISH_TARGETS` (default `youtube`), `PUBLISH_DRY_RUN` (default `0`), `PUBLISH_FAIL_FAST` (default `1`).
+
+Secrets opsional (multi-platform, saat target diaktifkan & implementasi API siap): TikTok `TIKTOK_ACCESS_TOKEN`; Meta `META_ACCESS_TOKEN`, `META_IG_USER_ID`; X `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`.
 
 > Catatan: musik diambil dari Freetouse API (tanpa key/Drive/rclone), sehingga `GDRIVE_SA_JSON` dan `GDRIVE_MUSIC_FOLDER_ID` tidak diperlukan untuk alur musik saat ini.
 

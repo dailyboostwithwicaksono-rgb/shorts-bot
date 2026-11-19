@@ -206,6 +206,7 @@ python scripts/render.py
 ## 10. (Opsional) Arsip ke Drive / upload otomatis & OAuth
 
 - **Arsip otomatis ke Drive** (`python scripts/archive_drive.py`) dan **Upload otomatis** (`python scripts/publish.py`) butuh OAuth user (`YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`, dst.). Untuk pemula, **arsip/upload manual** lebih sederhana.
+- **Publish (dispatcher, Fase 3–4):** `publish.py` membaca konten kanonik dari `out/` dan mem-publish ke target aktif. Default `PUBLISH_TARGETS=youtube` (perilaku sama). Opsi: `PUBLISH_DRY_RUN=1` (formatter/validasi tanpa upload), `PUBLISH_FAIL_FAST` (default `1`). Target tambahan `tiktok,meta,x` tersedia sebagai kerangka (formatter + stub/dry-run); publish nyata bertahap dan butuh kredensial/izin/API & implementasi platform masing-masing. Contoh dry-run lokal: set `PUBLISH_TARGETS=youtube,tiktok` dan `PUBLISH_DRY_RUN=1` lalu jalankan `python scripts/publish.py`.
 - Alur lokal **upload manual** tidak memerlukan OAuth user, rclone, maupun service account.
 
 ---

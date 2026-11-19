@@ -4,7 +4,7 @@ Dokumen ini menyusun rencana **refactoring bertahap** (perbaikan struktur intern
 1. **Efisiensi & maintainability**: kode lebih mudah dipahami, diuji, dan dioptimalkan.
 2. **Kesiapan multi-platform**: memudahkan penambahan distribusi/upload ke media sosial lain (mis. **TikTok, Meta/Instagram-Facebook, X**) di samping YouTube & arsip Drive yang sudah ada.
 
-> Status: **rencana** (belum dieksekusi). Setiap fase dijalankan hanya jika sudah disetujui.
+> Status: **Fase 0–4 selesai** (terimplementasi & terverifikasi). Fase 5 (opsional/lanjutan) belum dijalankan. Setiap fase dijalankan bertahap dan diverifikasi.
 
 ## Prinsip & guardrails (berlaku di semua fase)
 - **Paritas perilaku:** output fungsional tetap sama (alur `plan.py` → `render.py`, isi `render_plan.json`/`out/final.mp4`/`out/caption.txt`/`out/manifest.json`, format log/metadata `used_quotes.jsonl`, `used_videos.jsonl`, `used_music.jsonl`, `pixabay_cache.json`, serta alur arsip/upload YouTube yang ada) kecuali dinyatakan eksplisit.
@@ -67,6 +67,9 @@ Dokumen ini menyusun rencana **refactoring bertahap** (perbaikan struktur intern
 - **Verifikasi:** `py_compile` + e2e `plan.py` → `render.py`; bandingkan struktur/field `render_plan.json`, `manifest.json`, `caption.txt`, dan entri log terhadap baseline.
 - **Risiko/catatan:** regresi halus pada normalisasi/format deskripsi — mitigasi dengan verifikasi struktur & kasus representatif (list/famous fallback/custom).
 
+**Status:** ✅ selesai.
+- Implementasi: `scripts/common.py`, `scripts/runlog.py`, refactor `scripts/plan.py` (orkestrasi + helper terpisah, logging terpusat) dengan paritas perilaku/skema. Terverifikasi `py_compile` + e2e `plan.py` → `render.py` dan pemeriksaan struktur/log.
+
 ## Fase 2 — Modularisasi sumber media & utilitas bersama (siap efisiensi)
 **Tujuan:** merapikan integrasi Pixabay/Freetouse/AI dan utilitas bersama agar mudah dioptimalkan (retry, timeout, caching, strategi seleksi) tanpa mengubah hasil.
 
@@ -81,6 +84,9 @@ Dokumen ini menyusun rencana **refactoring bertahap** (perbaikan struktur intern
 - **Keluaran:** modul media/utilitas lebih bersih & dapat diuji; jalur siap untuk efisiensi di fase lanjutan.
 - **Verifikasi:** `py_compile` + e2e; cek pemilihan/fallback masih berfungsi (termasuk skenario cache/fallback yang dapat disimulasikan) dan metadata/log setara.
 - **Risiko/catatan:** perubahan pada seed/urutan acak dapat mengubah pilihan meski “valid” — pertahankan mekanisme seed/seleksi agar ekuivalen.
+
+**Status:** ✅ selesai.
+- Implementasi: `scripts/media_utils.py`, refactor `scripts/pixabay.py` & `scripts/freetouse.py` (utilitas bersama, exception domain + boundary/exit/pesan & fallback setara, konstanta dipertahankan). `scripts/ai.py` tidak diubah (tanpa duplikasi jelas yang aman). Terverifikasi `py_compile` + e2e `plan.py` → `render.py` dan pemeriksaan struktur/log.
 
 ## Fase 3 — Kontrak konten kanonik & abstraksi publish (paritas YouTube/arsip)
 **Tujuan:** memformalkan artefak konten dan memisahkan publikasi agar **menambah platform baru tidak menyentuh render/inti konten**, sambil menjaga YouTube & arsip Drive tetap bekerja sama.
@@ -98,6 +104,10 @@ Dokumen ini menyusun rencana **refactoring bertahap** (perbaikan struktur intern
 - **Verifikasi:** `py_compile` + e2e render; verifikasi alur publish/arsip menghasilkan perilaku setara (uji nyata bila kredensial tersedia, atau verifikasi pemetaan metadata/request & dry-run yang aman bila tidak).
 - **Risiko/catatan:** area sensitif kredensial/API — lakukan perubahan kecil, uji terbatas, dan sediakan jalur fallback/kompatibilitas pemanggilan lama bila perlu.
 
+**Status:** ✅ selesai.
+- Implementasi: `scripts/content.py` (kontrak/konten kanonik dari `out/manifest.json` + video), `scripts/publish_youtube.py` (formatter metadata YouTube + upload resumable, pemetaan identik), `scripts/publish.py` sebagai dispatcher target publish (default `youtube`, paritas perilaku/output YouTube). `scripts/archive_drive.py` & `scripts/gauth.py` dipertahankan untuk target Google/arsip. Workflow publish diberi env opsional dengan default kompatibel.
+- Verifikasi: `py_compile` modul publish/konten; formatter YouTube diverifikasi identik terhadap logika/manifest saat ini (pemetaan `snippet/status` & batas). Alur CI default tetap: arsip Drive → publish YouTube. Upload nyata tidak diuji ulang di lokal (butuh kredensial/sisi YouTube), kontrak pemetaan dipertahankan.
+
 ## Fase 4 — Multi-target & penyiapan platform baru (TikTok, Meta, X)
 **Tujuan:** memungkinkan render sekali lalu distribusi ke beberapa platform melalui formatter/publisher per platform.
 
@@ -113,6 +123,11 @@ Dokumen ini menyusun rencana **refactoring bertahap** (perbaikan struktur intern
 - **Keluaran:** kerangka multi-platform siap pakai/diaktifkan per platform seiring ketersediaan akses.
 - **Verifikasi:** uji per platform secara terisolasi (sandbox/akun uji bila ada), verifikasi formatter (batas/pemetaan field), dan regresi YouTube/Drive.
 - **Risiko/catatan:** ketergantungan pada approval & perubahan API pihak ketiga; rilis bertahap per platform disarankan.
+
+**Status:** ✅ selesai (kerangka/scaffolding; publish nyata per platform bertahap).
+- Implementasi: `scripts/publish_platforms.py` (formatter metadata per platform TikTok/Meta/X dari konten kanonik + publisher stub/dry-run), dispatcher `scripts/publish.py` mendukung `PUBLISH_TARGETS` (default `youtube`), `PUBLISH_DRY_RUN`, `PUBLISH_FAIL_FAST` (default 1, gagal cepat; bisa 0 untuk lanjut parsial) dengan ringkasan per target. Formatter YouTube tidak diubah.
+- Batas/kebijakan: TikTok/Meta/X memerlukan akun/app, izin/API, kredensial & implementasi API nyata; saat ini target non-YouTube mendukung verifikasi formatter via dry-run dan memberi error jelas bila kredensial/implementasi nyata belum siap (tidak publish palsu). Workflow & dokumentasi diperbarui dengan opsi/secrets terpisah.
+- Verifikasi: `py_compile` modul terkait; regresi jalur default YouTube dipertahankan (formatter paritas). Uji publish nyata platform baru menunggu akses/kredensial & implementasi API masing-masing.
 
 ## Fase 5 (opsional/lanjutan) — Efisiensi lanjutan & hardening
 **Tujuan:** optimasi dan keandalan setelah struktur stabil.

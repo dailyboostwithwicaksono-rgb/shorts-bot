@@ -1,91 +1,60 @@
 #!/usr/bin/env python3
-"""Upload video ke YouTube lewat refresh token (resumable upload)."""
-import json
-from pathlib import Path
+"""Dispatcher distribusi/upload konten ke platform aktif (default: YouTube, paritas)."""
+import os
+import sys
 
-import requests
-
-from gauth import get_access_token
-
-ROOT = Path(__file__).resolve().parent.parent
-MANIFEST = ROOT / "out" / "manifest.json"
-CHUNK = 8 * 1024 * 1024
+from content import load_canonical_content
+from publish_youtube import publish_youtube, PublishResult
 
 
-def resumable_upload(token: str, video: Path, metadata: dict) -> str:
-    size = video.stat().st_size
-    init = requests.post(
-        "https://www.googleapis.com/upload/youtube/v3/videos"
-        "?uploadType=resumable&part=snippet,status",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json; charset=UTF-8",
-            "X-Upload-Content-Type": "video/mp4",
-            "X-Upload-Content-Length": str(size),
-        },
-        json=metadata,
-        timeout=60,
-    )
-    init.raise_for_status()
-    session_url = init.headers["Location"]
-    data = video.read_bytes()
-
-    start = 0
-    while start < size:
-        end = min(start + CHUNK, size) - 1
-        part = data[start : end + 1]
-        r = requests.put(
-            session_url,
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "video/mp4",
-                "Content-Length": str(len(part)),
-                "Content-Range": f"bytes {start}-{end}/{size}",
-            },
-            data=part,
-            timeout=300,
-        )
-        if r.status_code in (200, 201):
-            return r.json()["id"]
-        if r.status_code == 308:
-            rng = r.headers.get("Range", "")
-            try:
-                next_start = int(rng.split("=", 1)[1].split("-", 1)[1]) + 1
-            except (IndexError, ValueError):
-                next_start = end + 1
-            if next_start <= start:
-                raise SystemExit(f"Upload tidak maju: {rng}")
-            start = next_start
-            continue
-        raise SystemExit(f"Gagal upload {r.status_code}: {r.text[:600]}")
-
-    raise SystemExit("Upload selesai tanpa response video ID.")
+def _parse_targets(raw: str | None) -> list[str]:
+    if raw is None or not str(raw).strip():
+        return ["youtube"]
+    parts = [p.strip().lower() for p in str(raw).replace(";", ",").split(",")]
+    targets = [p for p in parts if p]
+    return targets or ["youtube"]
 
 
 def main() -> None:
-    m = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    video = ROOT / "out" / m["file"]
-    hashtags = m["hashtags"]
-    description = m.get("description") or f"{m['caption']}\n\n{' '.join(hashtags)}"
-    metadata = {
-        "snippet": {
-            "title": m["title"][:100],
-            "description": description[:5000],
-            "tags": [h for h in hashtags[:10] if h],
-            "categoryId": "24",
-            "defaultLanguage": "id",
-            "defaultAudioLanguage": "id",
-        },
-        "status": {
-            "privacyStatus": m.get("privacy", "public"),
-            "selfDeclaredMadeForKids": False,
-            "embeddable": True,
-        },
-    }
-    token = get_access_token()
-    video_id = resumable_upload(token, video, metadata)
-    print(f"[ok] YouTube video ID: {video_id}")
-    print(f"[ok] URL: https://www.youtube.com/shorts/{video_id}")
+    targets = _parse_targets(os.getenv("PUBLISH_TARGETS"))
+    dry_run = (os.getenv("PUBLISH_DRY_RUN") or "").strip().lower() in ("1", "true", "yes", "on")
+    fail_fast = (os.getenv("PUBLISH_FAIL_FAST") or "1").strip().lower() not in ("0", "false", "no", "off")
+
+    content = load_canonical_content()
+    results: list[PublishResult] = []
+    failures = 0
+
+    for target in targets:
+        try:
+            if target == "youtube":
+                res = publish_youtube(content, dry_run=dry_run)
+            elif target in ("tiktok", "meta", "x"):
+                # Fase 4: stub/dry-run terbatas bila akses/API belum siap
+                try:
+                    from publish_platforms import publish_platform
+                except Exception as exc:  # noqa: BLE001
+                    raise RuntimeError(f"modul publisher platform tidak tersedia: {exc}") from exc
+                res = publish_platform(target, content, dry_run=dry_run)
+            else:
+                print(f"[warn] Target publish tidak dikenal: {target} (dilewati)")
+                res = PublishResult(target=target, status="skipped", message="target tidak dikenal")
+        except Exception as exc:  # noqa: BLE001
+            failures += 1
+            res = PublishResult(target=target, status="failed", message=str(exc))
+            print(f"[error] Publish {target} gagal: {exc}")
+            if fail_fast:
+                results.append(res)
+                print(f"[info] Ringkasan publish: {len(results)} target, {failures} gagal")
+                raise SystemExit(1)
+        results.append(res)
+        if res.status == "skipped":
+            print(f"[info] Publish {target}: dilewati ({res.message or ''})")
+        elif res.status == "dry_run":
+            print(f"[info] Publish {target}: dry-run ({res.message or ''})")
+
+    print(f"[info] Ringkasan publish: {len(results)} target, {failures} gagal")
+    if failures:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
