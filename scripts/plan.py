@@ -4,6 +4,8 @@ import json
 import os
 import random
 import re
+import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -490,6 +492,7 @@ def build_plan(day: str, theme: dict, defaults: dict, q: dict, bg: dict, bg_path
 
 
 def main() -> None:
+    t0 = time.perf_counter()
     cfg = read_json(CONFIG)
     defaults = cfg.get("defaults", {})
     day = os.getenv("RUN_DATE") or date.today().isoformat()
@@ -518,21 +521,27 @@ def main() -> None:
     used_music_path = ROOT / str(defaults.get("used_music_file") or "data/used_music.jsonl")
     used = load_used_entries(used_path)
 
+    t_quote = time.perf_counter()
     q = resolve_quote(mode, defaults, theme, used, quotes_path, used_path)
     mode = q["mode"]
+    quote_elapsed = time.perf_counter() - t_quote
 
-    # pick background from Pixabay (after quote/duration known, so keywords relevant)
+    # ambil latar (Pixabay) & musik (Freetouse) paralel: independen setelah quote/duration diketahui
     bg_path = WORK / "bg.mp4"
-    bg = pick_background(
-        theme, run_seed, bg_path,
-        quote_duration=q["duration"],
-        quote_lines=q["quote_lines"],
-        quote_text=q["quote_text"],
-        cache_path=cache_path,
-    )
-
-    # pick music from Freetouse API (calm/motivasi, durasi memadai)
-    music, music_path = choose_music(theme, run_seed, q["duration"])
+    t_media = time.perf_counter()
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        fut_bg = ex.submit(
+            pick_background,
+            theme, run_seed, bg_path,
+            quote_duration=q["duration"],
+            quote_lines=q["quote_lines"],
+            quote_text=q["quote_text"],
+            cache_path=cache_path,
+        )
+        fut_music = ex.submit(choose_music, theme, run_seed, q["duration"])
+        bg = fut_bg.result()
+        music, music_path = fut_music.result()
+    media_elapsed = time.perf_counter() - t_media
 
     # normalisasi akhir
     q["quote_lines"] = normalize_lines(q["quote_lines"]) or ["quote hari ini"]
@@ -553,6 +562,7 @@ def main() -> None:
     print(f"[ok] quote: {plan['quote']} — {plan['author'] or '-'} (durasi {q['duration']}s)")
     print(f"[ok] rencana ditulis: {PLAN_OUT}")
     print(f"[ok] log ditambah: {used_path}, {used_videos_path}, {used_music_path}")
+    print(f"[info] waktu plan: quote={quote_elapsed:.2f}s media={media_elapsed:.2f}s total={time.perf_counter()-t0:.2f}s")
 
 
 if __name__ == "__main__":

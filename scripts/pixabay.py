@@ -164,12 +164,12 @@ def _select_from_hits(hits: list[dict], quote_duration: int, seed: str) -> dict 
     if not pool:
         return None
 
-    # deterministic-ish random per seed+query context: shuffle with seed, pick up to 3, then random among them
+    # deterministic per seed+query context: shuffle with seed, pick up to 3, then choose among them
     rng = seeded_rng(seed)
     pool_copy = list(pool)
     rng.shuffle(pool_copy)
     top = pool_copy[:3]
-    pick = random.choice(top)  # final pick random (code)
+    pick = rng.choice(top)
     pick["_stage"] = chosen_stage
     pick["_pool_size"] = len(pool)
     return pick

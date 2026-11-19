@@ -4,6 +4,7 @@ import json
 import shutil
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -230,6 +231,12 @@ def probe_duration(path: str) -> float | None:
         return None
 
 
+def ensure_ffmpeg_tools() -> None:
+    missing = [name for name in ("ffmpeg", "ffprobe") if shutil.which(name) is None]
+    if missing:
+        raise SystemExit(f"Tool render tidak ditemukan di PATH: {', '.join(missing)}. Pastikan ffmpeg/ffprobe terpasang.")
+
+
 def build_and_render(p: dict) -> tuple[Path, dict]:
     dur = int(p.get("duration", 30))
     bg = p["background"]
@@ -352,9 +359,13 @@ def build_and_render(p: dict) -> tuple[Path, dict]:
 
 
 def main() -> None:
+    t0 = time.perf_counter()
+    ensure_ffmpeg_tools()
     p = json.loads(PLAN.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
+    t_render = time.perf_counter()
     final, meta = build_and_render(p)
+    render_elapsed = time.perf_counter() - t_render
 
     raw = subprocess.run(
         ["ffprobe", "-v", "quiet", "-print_format", "json",
@@ -390,6 +401,7 @@ def main() -> None:
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     print(f"[ok] render selesai: {final} ({duration}s, {manifest['size_bytes']} bytes, slow={meta.get('slow_factor')})")
+    print(f"[info] waktu render: compose={render_elapsed:.2f}s total={time.perf_counter()-t0:.2f}s")
 
 
 if __name__ == "__main__":

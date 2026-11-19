@@ -136,6 +136,14 @@ Dokumen ini menyusun rencana **refactoring bertahap** (perbaikan struktur intern
 - **Usulan yang dilakukan (contoh, dipilih sesuai kebutuhan):** caching/reuse unduhan yang aman, strategi retry/backoff & timeout terpadu, paralelisasi aman pada langkah independen, pengurangan kerja render berulang, observability/log ringkas per langkah, dan hardening error-handling.
 - **Keluaran & verifikasi:** perbaikan terukur (waktu/keandalan/biaya) dengan paritas perilaku & uji regresi.
 
+**Status:** ✅ selesai (hardening & efisiensi terbatas, perilaku/kontrak dipertahankan).
+- **Implementasi:**
+  - `scripts/media_utils.py`: retry/backoff terbatas & terpadu untuk fetch/download HTTP (urllib/requests) pada kegagalan transient (timeout/koneksi, 429/5xx) — meningkatkan keandalan tanpa mengubah hasil sukses.
+  - `scripts/pixabay.py`: pemilihan akhir kandidat (dari top hasil terfilter) dibuat deterministik berbasis seed/RNG terisolasi (perbaikan konsistensi seed) sehingga aman untuk eksekusi paralel.
+  - `scripts/plan.py`: pengambilan latar (Pixabay) dan musik (Freetouse) dijalankan **paralel** setelah quote/durasi diketahui (langkah independen, I/O-bound) untuk efisiensi waktu; ditambah observability waktu langkah/total. Kontrak rencana, format log/metadata, dan mekanisme fallback/seleksi tetap setara.
+  - `scripts/render.py`: hardening cek ketersediaan `ffmpeg`/`ffprobe` dengan pesan jelas, serta observability waktu render/total. Pipeline/filter/artefak output tidak diubah.
+- **Verifikasi:** `python -m py_compile` pada modul terdampak lulus; e2e `plan.py` → `render.py` lulus (artefak `render_plan.json`, `out/final.mp4`, `out/caption.txt`, `out/manifest.json` valid & struktur setara). Karena pemilihan media bergantung seed/API/jaringan, verifikasi difokuskan pada keberhasilan alur, struktur/field wajib, dan paritas perilaku (bukan identitas media byte-per-byte).
+
 ---
 
 ## Definisi selesai per fase (ringkas)
