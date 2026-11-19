@@ -1,0 +1,1436 @@
+{
+  "quotes": [
+    {
+      "id": 1,
+      "lines": [
+        "Perjalanan seribu mil",
+        "dimulai dari satu",
+        "langkah kecil."
+      ],
+      "emphasis": [
+        "satu",
+        "langkah kecil"
+      ],
+      "author": "Lao Tzu",
+      "duration": 15
+    },
+    {
+      "id": 2,
+      "lines": [
+        "Apa yang kita pikirkan,",
+        "itulah yang perlahan",
+        "membentuk diri kita."
+      ],
+      "emphasis": [
+        "pikirkan",
+        "membentuk diri kita"
+      ],
+      "author": "Marcus Aurelius",
+      "duration": 17
+    },
+    {
+      "id": 3,
+      "lines": [
+        "Bukan karena sulit",
+        "kita tidak berani,",
+        "tetapi karena tidak berani",
+        "sesuatu menjadi sulit."
+      ],
+      "emphasis": [
+        "tidak berani",
+        "menjadi sulit"
+      ],
+      "author": "Seneca",
+      "duration": 19
+    },
+    {
+      "id": 4,
+      "lines": [
+        "Hiduplah seolah-olah",
+        "hari ini adalah hari terakhir,",
+        "belajarlah seolah-olah",
+        "kamu akan hidup selamanya."
+      ],
+      "emphasis": [
+        "hari ini adalah hari terakhir",
+        "belajar"
+      ],
+      "author": "Mahatma Gandhi",
+      "duration": 21
+    },
+    {
+      "id": 5,
+      "lines": [
+        "Kamu tidak bisa",
+        "mengubah arah angin,",
+        "tetapi kamu bisa",
+        "mengatur layarmu."
+      ],
+      "emphasis": [
+        "mengubah arah angin",
+        "mengatur layarmu"
+      ],
+      "author": "Jimmy Dean",
+      "duration": 18
+    },
+    {
+      "id": 6,
+      "lines": [
+        "Masa depan bergantung",
+        "pada apa yang kamu",
+        "lakukan hari ini."
+      ],
+      "emphasis": [
+        "bergantung",
+        "hari ini"
+      ],
+      "author": "Mahatma Gandhi",
+      "duration": 15
+    },
+    {
+      "id": 7,
+      "lines": [
+        "Keberanian bukan berarti",
+        "tidak memiliki rasa takut,",
+        "melainkan tetap melangkah",
+        "meski rasa takut hadir."
+      ],
+      "emphasis": [
+        "tetap melangkah",
+        "rasa takut"
+      ],
+      "author": "Nelson Mandela",
+      "duration": 20
+    },
+    {
+      "id": 8,
+      "lines": [
+        "Jangan menghitung hari,",
+        "buatlah setiap hari",
+        "menjadi berarti."
+      ],
+      "emphasis": [
+        "setiap hari",
+        "berarti"
+      ],
+      "author": "Muhammad Ali",
+      "duration": 15
+    },
+    {
+      "id": 9,
+      "lines": [
+        "Kesempatan tidak datang",
+        "kepada mereka yang menunggu,",
+        "tetapi kepada mereka",
+        "yang berani mencoba."
+      ],
+      "emphasis": [
+        "menunggu",
+        "berani mencoba"
+      ],
+      "author": "George Bernard Shaw",
+      "duration": 19
+    },
+    {
+      "id": 10,
+      "lines": [
+        "Jadilah perubahan",
+        "yang ingin kamu lihat",
+        "di dunia ini."
+      ],
+      "emphasis": [
+        "perubahan",
+        "di dunia ini"
+      ],
+      "author": "Mahatma Gandhi",
+      "duration": 15
+    },
+    {
+      "id": 11,
+      "lines": [
+        "Satu-satunya cara",
+        "melakukan pekerjaan hebat",
+        "adalah mencintai",
+        "apa yang kamu kerjakan."
+      ],
+      "emphasis": [
+        "pekerjaan hebat",
+        "mencintai"
+      ],
+      "author": "Steve Jobs",
+      "duration": 19
+    },
+    {
+      "id": 12,
+      "lines": [
+        "Di tengah kesulitan,",
+        "selalu ada kesempatan",
+        "untuk menemukan sesuatu."
+      ],
+      "emphasis": [
+        "kesulitan",
+        "kesempatan"
+      ],
+      "author": "Albert Einstein",
+      "duration": 16
+    },
+    {
+      "id": 13,
+      "lines": [
+        "Kegagalan bukan akhir,",
+        "melainkan kesempatan",
+        "untuk memulai kembali",
+        "dengan lebih bijaksana."
+      ],
+      "emphasis": [
+        "bukan akhir",
+        "memulai kembali"
+      ],
+      "author": "Henry Ford",
+      "duration": 19
+    },
+    {
+      "id": 14,
+      "lines": [
+        "Jangan biarkan",
+        "apa yang tidak bisa kamu lakukan",
+        "menghalangi apa yang",
+        "bisa kamu lakukan."
+      ],
+      "emphasis": [
+        "tidak bisa kamu lakukan",
+        "bisa kamu lakukan"
+      ],
+      "author": "John Wooden",
+      "duration": 21
+    },
+    {
+      "id": 15,
+      "lines": [
+        "Kita menjadi",
+        "apa yang kita lakukan",
+        "berulang kali."
+      ],
+      "emphasis": [
+        "berulang kali"
+      ],
+      "author": "Aristoteles",
+      "duration": 14
+    },
+    {
+      "id": 16,
+      "lines": [
+        "Tidak ada jalan pintas",
+        "menuju tempat",
+        "yang layak dituju."
+      ],
+      "emphasis": [
+        "Tidak ada jalan pintas",
+        "layak dituju"
+      ],
+      "author": "Beverly Sills",
+      "duration": 16
+    },
+    {
+      "id": 17,
+      "lines": [
+        "Percayalah bahwa kamu bisa,",
+        "dan kamu sudah",
+        "setengah jalan."
+      ],
+      "emphasis": [
+        "kamu bisa",
+        "setengah jalan"
+      ],
+      "author": "Theodore Roosevelt",
+      "duration": 15
+    },
+    {
+      "id": 18,
+      "lines": [
+        "Kesuksesan adalah",
+        "hasil dari usaha kecil",
+        "yang dilakukan setiap hari."
+      ],
+      "emphasis": [
+        "usaha kecil",
+        "setiap hari"
+      ],
+      "author": "Robert Collier",
+      "duration": 17
+    },
+    {
+      "id": 19,
+      "lines": [
+        "Apa pun yang kamu lakukan,",
+        "lakukanlah dengan sepenuh hati."
+      ],
+      "emphasis": [
+        "sepenuh hati"
+      ],
+      "author": "Confucius",
+      "duration": 14
+    },
+    {
+      "id": 20,
+      "lines": [
+        "Kamu tidak akan menemukan",
+        "pelangi tanpa melewati",
+        "hujan."
+      ],
+      "emphasis": [
+        "pelangi",
+        "hujan"
+      ],
+      "author": "Dolly Parton",
+      "duration": 15
+    },
+    {
+      "id": 21,
+      "lines": [
+        "Pendidikan adalah",
+        "senjata paling kuat",
+        "untuk mengubah dunia."
+      ],
+      "emphasis": [
+        "senjata paling kuat",
+        "mengubah dunia"
+      ],
+      "author": "Nelson Mandela",
+      "duration": 16
+    },
+    {
+      "id": 22,
+      "lines": [
+        "Jangan takut gagal.",
+        "Takutlah jika kamu",
+        "tidak pernah mencoba."
+      ],
+      "emphasis": [
+        "gagal",
+        "tidak pernah mencoba"
+      ],
+      "author": "Roy T. Bennett",
+      "duration": 15
+    },
+    {
+      "id": 23,
+      "lines": [
+        "Mimpi tidak akan bekerja",
+        "kecuali kamu",
+        "membuatnya menjadi nyata."
+      ],
+      "emphasis": [
+        "tidak akan bekerja",
+        "menjadi nyata"
+      ],
+      "author": "John C. Maxwell",
+      "duration": 16
+    },
+    {
+      "id": 24,
+      "lines": [
+        "Jangan menyerah",
+        "hanya karena perjalanan",
+        "terasa lebih panjang",
+        "dari yang kamu bayangkan."
+      ],
+      "emphasis": [
+        "Jangan menyerah",
+        "lebih panjang"
+      ],
+      "author": "Paulo Coelho",
+      "duration": 19
+    },
+    {
+      "id": 25,
+      "lines": [
+        "Waktu terbaik untuk menanam pohon",
+        "adalah dua puluh tahun lalu.",
+        "Waktu terbaik berikutnya",
+        "adalah sekarang."
+      ],
+      "emphasis": [
+        "dua puluh tahun lalu",
+        "sekarang"
+      ],
+      "author": "Pepatah Tiongkok",
+      "duration": 20
+    },
+    {
+      "id": 26,
+      "lines": [
+        "Jadilah dirimu sendiri,",
+        "karena semua orang lain",
+        "sudah memiliki tempatnya."
+      ],
+      "emphasis": [
+        "dirimu sendiri",
+        "semua orang lain"
+      ],
+      "author": "Oscar Wilde",
+      "duration": 17
+    },
+    {
+      "id": 27,
+      "lines": [
+        "Hidup bukan tentang",
+        "menunggu badai berlalu,",
+        "tetapi belajar menari",
+        "di tengah hujan."
+      ],
+      "emphasis": [
+        "menunggu badai berlalu",
+        "menari"
+      ],
+      "author": "Vivian Greene",
+      "duration": 19
+    },
+    {
+      "id": 28,
+      "lines": [
+        "Ketenangan pikiran",
+        "dimulai ketika kamu",
+        "berhenti membandingkan",
+        "hidupmu dengan orang lain."
+      ],
+      "emphasis": [
+        "Ketenangan pikiran",
+        "berhenti membandingkan"
+      ],
+      "author": "Roy T. Bennett",
+      "duration": 20
+    },
+    {
+      "id": 29,
+      "lines": [
+        "Jangan menilai setiap hari",
+        "dari hasil panen,",
+        "tetapi dari benih",
+        "yang kamu tanam."
+      ],
+      "emphasis": [
+        "hasil panen",
+        "benih"
+      ],
+      "author": "Robert Louis Stevenson",
+      "duration": 18
+    },
+    {
+      "id": 30,
+      "lines": [
+        "Hidup yang tidak diperiksa",
+        "tidak layak untuk dijalani."
+      ],
+      "emphasis": [
+        "tidak diperiksa",
+        "tidak layak"
+      ],
+      "author": "Socrates",
+      "duration": 14
+    },
+    {
+      "id": 31,
+      "lines": [
+        "Bekerjalah dalam diam,",
+        "biarkan hasilmu",
+        "yang membuat suara."
+      ],
+      "emphasis": [
+        "dalam diam",
+        "hasilmu"
+      ],
+      "author": "Frank Ocean",
+      "duration": 15
+    },
+    {
+      "id": 32,
+      "lines": [
+        "Kebahagiaan bukan sesuatu",
+        "yang sudah jadi.",
+        "Ia tumbuh dari",
+        "tindakanmu sendiri."
+      ],
+      "emphasis": [
+        "bukan sesuatu",
+        "tindakanmu sendiri"
+      ],
+      "author": "Dalai Lama",
+      "duration": 18
+    },
+    {
+      "id": 33,
+      "lines": [
+        "Jangan takut berjalan sendiri",
+        "jika jalan itu",
+        "membawamu menuju kebenaran."
+      ],
+      "emphasis": [
+        "berjalan sendiri",
+        "kebenaran"
+      ],
+      "author": "Martin Luther King Jr.",
+      "duration": 17
+    },
+    {
+      "id": 34,
+      "lines": [
+        "Kesederhanaan adalah",
+        "kecanggihan tertinggi."
+      ],
+      "emphasis": [
+        "Kesederhanaan",
+        "kecanggihan tertinggi"
+      ],
+      "author": "Leonardo da Vinci",
+      "duration": 13
+    },
+    {
+      "id": 35,
+      "lines": [
+        "Jika kamu ingin terbang,",
+        "lepaskan segala hal",
+        "yang membuatmu",
+        "tetap berada di tanah."
+      ],
+      "emphasis": [
+        "ingin terbang",
+        "lepaskan"
+      ],
+      "author": "Toni Morrison",
+      "duration": 18
+    },
+    {
+      "id": 36,
+      "lines": [
+        "Disiplin adalah",
+        "jembatan antara",
+        "tujuan dan pencapaian."
+      ],
+      "emphasis": [
+        "Disiplin",
+        "tujuan dan pencapaian"
+      ],
+      "author": "Jim Rohn",
+      "duration": 16
+    },
+    {
+      "id": 37,
+      "lines": [
+        "Jangan biarkan kemarin",
+        "mengambil terlalu banyak",
+        "ruang dari hari ini."
+      ],
+      "emphasis": [
+        "kemarin",
+        "hari ini"
+      ],
+      "author": "Will Rogers",
+      "duration": 16
+    },
+    {
+      "id": 38,
+      "lines": [
+        "Keberhasilan bukan milik",
+        "mereka yang tidak pernah jatuh,",
+        "melainkan mereka",
+        "yang selalu bangkit."
+      ],
+      "emphasis": [
+        "tidak pernah jatuh",
+        "selalu bangkit"
+      ],
+      "author": "Vince Lombardi",
+      "duration": 19
+    },
+    {
+      "id": 39,
+      "lines": [
+        "Kamu tidak harus melihat",
+        "seluruh anak tangga.",
+        "Cukup ambil",
+        "langkah pertama."
+      ],
+      "emphasis": [
+        "seluruh anak tangga",
+        "langkah pertama"
+      ],
+      "author": "Martin Luther King Jr.",
+      "duration": 17
+    },
+    {
+      "id": 40,
+      "lines": [
+        "Yang paling penting",
+        "bukan seberapa lama kamu hidup,",
+        "tetapi seberapa dalam",
+        "kamu menjalani hidup."
+      ],
+      "emphasis": [
+        "seberapa lama",
+        "seberapa dalam"
+      ],
+      "author": "Ralph Waldo Emerson",
+      "duration": 20
+    },
+    {
+      "id": 41,
+      "lines": [
+        "Jangan menunggu",
+        "semuanya sempurna.",
+        "Mulailah sekarang,",
+        "perbaiki sambil berjalan."
+      ],
+      "emphasis": [
+        "sempurna",
+        "Mulailah sekarang"
+      ],
+      "author": "Zig Ziglar",
+      "duration": 18
+    },
+    {
+      "id": 42,
+      "lines": [
+        "Mereka yang memiliki alasan",
+        "untuk hidup,",
+        "dapat menanggung",
+        "hampir segala keadaan."
+      ],
+      "emphasis": [
+        "alasan",
+        "untuk hidup"
+      ],
+      "author": "Friedrich Nietzsche",
+      "duration": 19
+    },
+    {
+      "id": 43,
+      "lines": [
+        "Jangan takut menjadi berbeda.",
+        "Takutlah jika kamu",
+        "kehilangan dirimu sendiri."
+      ],
+      "emphasis": [
+        "berbeda",
+        "kehilangan dirimu sendiri"
+      ],
+      "author": "Virginia Woolf",
+      "duration": 17
+    },
+    {
+      "id": 44,
+      "lines": [
+        "Pikiran yang tenang",
+        "melihat lebih jelas",
+        "daripada hati yang terburu-buru."
+      ],
+      "emphasis": [
+        "tenang",
+        "lebih jelas"
+      ],
+      "author": "James Allen",
+      "duration": 17
+    },
+    {
+      "id": 45,
+      "lines": [
+        "Tidak ada yang sia-sia",
+        "dari usaha yang tulus,",
+        "meski hasilnya",
+        "belum terlihat."
+      ],
+      "emphasis": [
+        "usaha yang tulus",
+        "belum terlihat"
+      ],
+      "author": "Helen Keller",
+      "duration": 18
+    },
+    {
+      "id": 46,
+      "lines": [
+        "Lakukan apa yang kamu bisa,",
+        "dengan apa yang kamu punya,",
+        "di tempat kamu berada."
+      ],
+      "emphasis": [
+        "apa yang kamu bisa",
+        "apa yang kamu punya"
+      ],
+      "author": "Theodore Roosevelt",
+      "duration": 18
+    },
+    {
+      "id": 47,
+      "lines": [
+        "Seseorang yang tidak pernah",
+        "membuat kesalahan",
+        "tidak pernah mencoba",
+        "sesuatu yang baru."
+      ],
+      "emphasis": [
+        "membuat kesalahan",
+        "sesuatu yang baru"
+      ],
+      "author": "Albert Einstein",
+      "duration": 19
+    },
+    {
+      "id": 48,
+      "lines": [
+        "Kita tidak bisa",
+        "memilih semua keadaan,",
+        "tetapi kita bisa memilih",
+        "cara menghadapinya."
+      ],
+      "emphasis": [
+        "memilih semua keadaan",
+        "cara menghadapinya"
+      ],
+      "author": "Epictetus",
+      "duration": 19
+    },
+    {
+      "id": 49,
+      "lines": [
+        "Jangan biarkan kesibukan",
+        "menggantikan hal-hal",
+        "yang benar-benar penting."
+      ],
+      "emphasis": [
+        "kesibukan",
+        "benar-benar penting"
+      ],
+      "author": "Stephen Covey",
+      "duration": 17
+    },
+    {
+      "id": 50,
+      "lines": [
+        "Keberanian tumbuh",
+        "ketika kamu melangkah",
+        "meski belum tahu",
+        "apa yang menanti."
+      ],
+      "emphasis": [
+        "Keberanian",
+        "meski belum tahu"
+      ],
+      "author": "Amelia Earhart",
+      "duration": 18
+    },
+    {
+      "id": 51,
+      "lines": [
+        "Wong sabar kuwi",
+        "dudu wong sing ora duwe nesu,",
+        "nanging wong sing bisa",
+        "ngendhaleni atine."
+      ],
+      "emphasis": [
+        "Wong sabar",
+        "ngendhaleni atine"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 52,
+      "lines": [
+        "Ora kabeh sing alon",
+        "iku ateges kalah.",
+        "Kadhang sing alon",
+        "luwih adoh tekan tujuane."
+      ],
+      "emphasis": [
+        "Ora kabeh sing alon",
+        "luwih adoh"
+      ],
+      "author": "Anonim",
+      "duration": 19
+    },
+    {
+      "id": 53,
+      "lines": [
+        "Urip iku kudu wani nyoba,",
+        "merga tanpa nyoba",
+        "kowe ora bakal ngerti",
+        "sepira kuate awakmu."
+      ],
+      "emphasis": [
+        "wani nyoba",
+        "sepira kuate awakmu"
+      ],
+      "author": "Anonim",
+      "duration": 19
+    },
+    {
+      "id": 54,
+      "lines": [
+        "Aja mung ngimpi gedhe,",
+        "nanging uga gelem",
+        "tumindak saben dina."
+      ],
+      "emphasis": [
+        "ngimpi gedhe",
+        "tumindak saben dina"
+      ],
+      "author": "Anonim",
+      "duration": 16
+    },
+    {
+      "id": 55,
+      "lines": [
+        "Sing penting dudu",
+        "sepira cepet lakumu,",
+        "nanging sepira teguh",
+        "kowe njaga tujuanmu."
+      ],
+      "emphasis": [
+        "sepira cepet",
+        "sepira teguh"
+      ],
+      "author": "Anonim",
+      "duration": 18
+    },
+    {
+      "id": 56,
+      "lines": [
+        "Aja mbandhingake",
+        "dalanmu karo dalane wong liya.",
+        "Saben uwong duwe",
+        "wektu lan critane dhewe."
+      ],
+      "emphasis": [
+        "dalanmu",
+        "wektu lan critane dhewe"
+      ],
+      "author": "Anonim",
+      "duration": 19
+    },
+    {
+      "id": 57,
+      "lines": [
+        "Yen dina iki durung kasil,",
+        "ora ateges sesuk",
+        "kowe ora bisa berhasil."
+      ],
+      "emphasis": [
+        "durung kasil",
+        "bisa berhasil"
+      ],
+      "author": "Anonim",
+      "duration": 16
+    },
+    {
+      "id": 58,
+      "lines": [
+        "Aja wedi karo peteng,",
+        "merga lintang",
+        "mung katon nalika wengi."
+      ],
+      "emphasis": [
+        "peteng",
+        "lintang"
+      ],
+      "author": "Anonim",
+      "duration": 16
+    },
+    {
+      "id": 59,
+      "lines": [
+        "Sing nandur bakal ngundhuh.",
+        "Mula, tandurna kabecikan",
+        "sanajan durung ana",
+        "sing menehi pujian."
+      ],
+      "emphasis": [
+        "nandur",
+        "kabecikan"
+      ],
+      "author": "Paribasan Jawa",
+      "duration": 18
+    },
+    {
+      "id": 60,
+      "lines": [
+        "Urip ora kudu tansah menang,",
+        "sing penting aja nganti",
+        "kalah karo rasa nyerah."
+      ],
+      "emphasis": [
+        "ora kudu tansah menang",
+        "rasa nyerah"
+      ],
+      "author": "Anonim",
+      "duration": 17
+    },
+    {
+      "id": 61,
+      "lines": [
+        "Ora ana asil gedhe",
+        "tanpa sabar lan usaha.",
+        "Kabeh butuh wektu",
+        "kanggo tuwuh."
+      ],
+      "emphasis": [
+        "asil gedhe",
+        "sabar lan usaha"
+      ],
+      "author": "Anonim",
+      "duration": 17
+    },
+    {
+      "id": 62,
+      "lines": [
+        "Aja mung nyawang",
+        "suwunge dalan.",
+        "Delengen uga",
+        "tujuan ing ngarep."
+      ],
+      "emphasis": [
+        "suwunge dalan",
+        "tujuan ing ngarep"
+      ],
+      "author": "Anonim",
+      "duration": 16
+    },
+    {
+      "id": 63,
+      "lines": [
+        "Saben esuk iku",
+        "kesempatan anyar",
+        "kanggo dadi luwih apik."
+      ],
+      "emphasis": [
+        "kesempatan anyar",
+        "luwih apik"
+      ],
+      "author": "Anonim",
+      "duration": 15
+    },
+    {
+      "id": 64,
+      "lines": [
+        "Aja isin miwiti saka ngisor.",
+        "Wit gedhe uga",
+        "tuwuh saka wiji cilik."
+      ],
+      "emphasis": [
+        "miwiti saka ngisor",
+        "wiji cilik"
+      ],
+      "author": "Anonim",
+      "duration": 17
+    },
+    {
+      "id": 65,
+      "lines": [
+        "Yen kesel, ngaso.",
+        "Nanging aja nganti",
+        "lali marang tujuanmu."
+      ],
+      "emphasis": [
+        "ngaso",
+        "aja nganti"
+      ],
+      "author": "Anonim",
+      "duration": 15
+    },
+    {
+      "id": 66,
+      "lines": [
+        "Aja ngenteni diakoni wong liya",
+        "kanggo percaya",
+        "marang kemampuanmu dhewe."
+      ],
+      "emphasis": [
+        "diakoni wong liya",
+        "percaya"
+      ],
+      "author": "Anonim",
+      "duration": 17
+    },
+    {
+      "id": 67,
+      "lines": [
+        "Sing kuat dudu",
+        "sing ora tau tiba,",
+        "nanging sing gelem",
+        "tangi maneh."
+      ],
+      "emphasis": [
+        "ora tau tiba",
+        "tangi maneh"
+      ],
+      "author": "Anonim",
+      "duration": 17
+    },
+    {
+      "id": 68,
+      "lines": [
+        "Aja nganti wedi gagal",
+        "ngalahake kepinginanmu",
+        "kanggo maju."
+      ],
+      "emphasis": [
+        "wedi gagal",
+        "kanggo maju"
+      ],
+      "author": "Anonim",
+      "duration": 15
+    },
+    {
+      "id": 69,
+      "lines": [
+        "Alon-alon waton kelakon.",
+        "Sing penting tetep mlaku",
+        "lan ora mandheg."
+      ],
+      "emphasis": [
+        "Alon-alon",
+        "ora mandheg"
+      ],
+      "author": "Paribasan Jawa",
+      "duration": 16
+    },
+    {
+      "id": 70,
+      "lines": [
+        "Ora kabeh perkara",
+        "kudu dibales.",
+        "Kadhang meneng",
+        "iku luwih wicaksana."
+      ],
+      "emphasis": [
+        "Ora kabeh perkara",
+        "luwih wicaksana"
+      ],
+      "author": "Anonim",
+      "duration": 17
+    },
+    {
+      "id": 71,
+      "lines": [
+        "Your past may explain you,",
+        "but it does not have to",
+        "define your future."
+      ],
+      "emphasis": [
+        "explain you",
+        "define your future"
+      ],
+      "author": "Tony Robbins",
+      "duration": 17
+    },
+    {
+      "id": 72,
+      "lines": [
+        "Small steps every day",
+        "can take you farther",
+        "than one giant leap."
+      ],
+      "emphasis": [
+        "Small steps",
+        "farther"
+      ],
+      "author": "James Clear",
+      "duration": 16
+    },
+    {
+      "id": 73,
+      "lines": [
+        "You are stronger",
+        "than the excuses",
+        "that keep you still."
+      ],
+      "emphasis": [
+        "stronger",
+        "keep you still"
+      ],
+      "author": "Unknown",
+      "duration": 15
+    },
+    {
+      "id": 74,
+      "lines": [
+        "Do not wait for confidence.",
+        "Take action,",
+        "and let confidence",
+        "grow along the way."
+      ],
+      "emphasis": [
+        "Take action",
+        "grow along the way"
+      ],
+      "author": "Dale Carnegie",
+      "duration": 18
+    },
+    {
+      "id": 75,
+      "lines": [
+        "The secret of getting ahead",
+        "is getting started."
+      ],
+      "emphasis": [
+        "getting ahead",
+        "getting started"
+      ],
+      "author": "Mark Twain",
+      "duration": 13
+    },
+    {
+      "id": 76,
+      "lines": [
+        "A meaningful life",
+        "is not measured by possessions,",
+        "but by the lives",
+        "you make better."
+      ],
+      "emphasis": [
+        "not measured by possessions",
+        "make better"
+      ],
+      "author": "Ralph Waldo Emerson",
+      "duration": 18
+    },
+    {
+      "id": 77,
+      "lines": [
+        "You cannot change yesterday,",
+        "but you can shape",
+        "what happens next."
+      ],
+      "emphasis": [
+        "change yesterday",
+        "shape"
+      ],
+      "author": "C. S. Lewis",
+      "duration": 16
+    },
+    {
+      "id": 78,
+      "lines": [
+        "Great things are done",
+        "by a series of small things",
+        "brought together."
+      ],
+      "emphasis": [
+        "Great things",
+        "small things"
+      ],
+      "author": "Vincent van Gogh",
+      "duration": 17
+    },
+    {
+      "id": 79,
+      "lines": [
+        "The only limit",
+        "to our realization of tomorrow",
+        "is our doubts of today."
+      ],
+      "emphasis": [
+        "only limit",
+        "doubts of today"
+      ],
+      "author": "Franklin D. Roosevelt",
+      "duration": 17
+    },
+    {
+      "id": 80,
+      "lines": [
+        "It always seems impossible",
+        "until it is done."
+      ],
+      "emphasis": [
+        "impossible",
+        "done"
+      ],
+      "author": "Nelson Mandela",
+      "duration": 13
+    },
+    {
+      "id": 81,
+      "lines": [
+        "Do what you can,",
+        "with what you have,",
+        "where you are."
+      ],
+      "emphasis": [
+        "what you can",
+        "what you have"
+      ],
+      "author": "Theodore Roosevelt",
+      "duration": 15
+    },
+    {
+      "id": 82,
+      "lines": [
+        "The harder you work",
+        "for something,",
+        "the greater it feels",
+        "when you achieve it."
+      ],
+      "emphasis": [
+        "harder you work",
+        "greater it feels"
+      ],
+      "author": "Unknown",
+      "duration": 18
+    },
+    {
+      "id": 83,
+      "lines": [
+        "Be patient with yourself.",
+        "Growth takes time,",
+        "and good things",
+        "are worth the wait."
+      ],
+      "emphasis": [
+        "patient with yourself",
+        "Growth takes time"
+      ],
+      "author": "Roy T. Bennett",
+      "duration": 18
+    },
+    {
+      "id": 84,
+      "lines": [
+        "Your direction matters",
+        "more than your speed."
+      ],
+      "emphasis": [
+        "direction",
+        "speed"
+      ],
+      "author": "Unknown",
+      "duration": 13
+    },
+    {
+      "id": 85,
+      "lines": [
+        "Do not let yesterday",
+        "use up too much",
+        "of today."
+      ],
+      "emphasis": [
+        "yesterday",
+        "today"
+      ],
+      "author": "Will Rogers",
+      "duration": 15
+    },
+    {
+      "id": 86,
+      "lines": [
+        "A calm mind",
+        "can find a way",
+        "through a difficult path."
+      ],
+      "emphasis": [
+        "calm mind",
+        "find a way"
+      ],
+      "author": "Unknown",
+      "duration": 16
+    },
+    {
+      "id": 87,
+      "lines": [
+        "Your journey is yours.",
+        "Walk it with courage,",
+        "not with comparison."
+      ],
+      "emphasis": [
+        "yours",
+        "not with comparison"
+      ],
+      "author": "Unknown",
+      "duration": 16
+    },
+    {
+      "id": 88,
+      "lines": [
+        "One day, your consistency",
+        "will become the reason",
+        "you are proud of yourself."
+      ],
+      "emphasis": [
+        "consistency",
+        "proud of yourself"
+      ],
+      "author": "Unknown",
+      "duration": 17
+    },
+    {
+      "id": 89,
+      "lines": [
+        "You do not need",
+        "to have it all figured out",
+        "to take the next step."
+      ],
+      "emphasis": [
+        "need",
+        "next step"
+      ],
+      "author": "Martin Luther King Jr.",
+      "duration": 17
+    },
+    {
+      "id": 90,
+      "lines": [
+        "Sometimes the bravest thing",
+        "you can do",
+        "is begin again."
+      ],
+      "emphasis": [
+        "bravest thing",
+        "begin again"
+      ],
+      "author": "Unknown",
+      "duration": 16
+    },
+    {
+      "id": 91,
+      "lines": [
+        "You become what you believe.",
+        "Choose thoughts",
+        "that help you grow."
+      ],
+      "emphasis": [
+        "what you believe",
+        "help you grow"
+      ],
+      "author": "Oprah Winfrey",
+      "duration": 16
+    },
+    {
+      "id": 92,
+      "lines": [
+        "The future belongs",
+        "to those who prepare",
+        "for it today."
+      ],
+      "emphasis": [
+        "future belongs",
+        "today"
+      ],
+      "author": "Malcolm X",
+      "duration": 16
+    },
+    {
+      "id": 93,
+      "lines": [
+        "Be willing to be a beginner.",
+        "Every expert",
+        "started somewhere."
+      ],
+      "emphasis": [
+        "beginner",
+        "started somewhere"
+      ],
+      "author": "Unknown",
+      "duration": 15
+    },
+    {
+      "id": 94,
+      "lines": [
+        "The smallest progress",
+        "is still progress.",
+        "Keep moving forward."
+      ],
+      "emphasis": [
+        "smallest progress",
+        "Keep moving forward"
+      ],
+      "author": "Unknown",
+      "duration": 15
+    },
+    {
+      "id": 95,
+      "lines": [
+        "Happiness grows",
+        "when gratitude becomes",
+        "a daily habit."
+      ],
+      "emphasis": [
+        "Happiness grows",
+        "daily habit"
+      ],
+      "author": "Zig Ziglar",
+      "duration": 15
+    },
+    {
+      "id": 96,
+      "lines": [
+        "You cannot control every wave,",
+        "but you can learn",
+        "how to keep sailing."
+      ],
+      "emphasis": [
+        "control every wave",
+        "keep sailing"
+      ],
+      "author": "Unknown",
+      "duration": 17
+    },
+    {
+      "id": 97,
+      "lines": [
+        "A setback is not",
+        "a permanent destination.",
+        "Keep going."
+      ],
+      "emphasis": [
+        "not",
+        "permanent destination"
+      ],
+      "author": "Unknown",
+      "duration": 14
+    },
+    {
+      "id": 98,
+      "lines": [
+        "Let your actions",
+        "speak louder",
+        "than your intentions."
+      ],
+      "emphasis": [
+        "actions",
+        "intentions"
+      ],
+      "author": "Stephen Covey",
+      "duration": 15
+    },
+    {
+      "id": 99,
+      "lines": [
+        "The life you want",
+        "is built by the choices",
+        "you make today."
+      ],
+      "emphasis": [
+        "life you want",
+        "choices",
+        "today"
+      ],
+      "author": "Unknown",
+      "duration": 16
+    },
+    {
+      "id": 100,
+      "lines": [
+        "Keep your heart hopeful,",
+        "your mind focused,",
+        "and your feet moving."
+      ],
+      "emphasis": [
+        "heart hopeful",
+        "mind focused",
+        "feet moving"
+      ],
+      "author": "Unknown",
+      "duration": 16
+    }
+  ]
+}

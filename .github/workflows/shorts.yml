@@ -11,9 +11,10 @@ on:
         description: 'Mode konten'
         type: choice
         options:
+          - list
           - famous
           - custom
-        default: famous
+        default: list
       quote_text:
         description: 'Teks quote (wajib untuk mode custom). Pisahkan baris dengan | atau baris baru.'
         type: string
@@ -51,14 +52,16 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Pasang ffmpeg, font, dan rclone
+      - name: Pasang ffmpeg dan rclone
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-dejavu-core
+          sudo apt-get install -y ffmpeg
           curl -sSL https://rclone.org/install.sh | sudo bash
           ffmpeg -hide_banner -encoders | grep -q libx264
-          test -f /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
-          test -f /usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf
+          test -f assets/fonts/Montserrat-LightItalic.ttf
+          test -f assets/fonts/Montserrat-SemiBoldItalic.ttf
+          test -f assets/fonts/Montserrat-Italic.ttf
+          test -f assets/fonts/OFL.txt
 
       - name: Siapkan kredensial Google Drive
         env:
@@ -115,7 +118,7 @@ jobs:
       - name: Pasang dependency Python
         run: pip install -r requirements.txt
 
-      - name: Rencana (Pexels + AI quotes)
+      - name: Rencana (quotes + media)
         env:
           TZ: Asia/Jakarta
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -124,7 +127,7 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'openrouter' }}
           YT_PRIVACY: ${{ vars.YT_PRIVACY || 'public' }}
-          QUOTE_MODE: ${{ inputs.mode || 'famous' }}
+          QUOTE_MODE: ${{ inputs.mode || 'list' }}
           QUOTE_TEXT: ${{ inputs.quote_text || '' }}
           QUOTE_AUTHOR: ${{ inputs.quote_author || 'dbcw' }}
           QUOTE_LANGUAGE: ${{ inputs.quote_language || 'auto' }}

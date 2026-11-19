@@ -1,20 +1,27 @@
 {
   "defaults": {
+    "default_mode": "list",
+    "quotes_file": "data/quotes.json",
+    "used_quotes_file": "data/used_quotes.jsonl",
     "duration_seconds": 30,
-    "font_size": 72,
-    "min_font_size": 34,
-    "author_font_size": 48,
-    "author_min_font_size": 30,
+    "quote_font_size": 51,
+    "author_font_size": 28,
+    "line_spacing": 1.3,
+    "max_text_width": 920,
     "fade_in_min": 0.7,
     "fade_in_max": 1.4,
     "fade_in_per_word": 0.12,
     "line_gap": 0.7,
-    "band_top": 620,
-    "band_height": 680,
+    "band_top": 560,
+    "band_height": 800,
     "overlay_opacity": 0.55,
     "brightness": -0.18,
     "saturation": 0.75,
-    "music_volume": 0.28
+    "music_volume": 0.28,
+    "dash_width": 100,
+    "dash_height": 2,
+    "quote_color": "#FFFFFF",
+    "author_color": "#DDDDDD"
   },
   "themes": [
     {
