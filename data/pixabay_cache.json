@@ -208,6 +208,25 @@
       "keyword": "first step on path",
       "stage": "S1",
       "duration_actual": 44.628
+    },
+    {
+      "id": 347076,
+      "url": "https://pixabay.com/videos/id-347076/",
+      "pageURL": "https://pixabay.com/videos/id-347076/",
+      "photographer": "adege",
+      "user": "adege",
+      "description": "nightfall, end of day, clouds, fog, hill, mountain range, eve, dusk, sunset, evening atmosphere, heaven, landscape, nature",
+      "tags": "nightfall, end of day, clouds, fog, hill, mountain range, eve, dusk, sunset, evening atmosphere, heaven, landscape, nature",
+      "type": "film",
+      "duration_meta": 25,
+      "file_url": "https://cdn.pixabay.com/video/2026/04/17/347076_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "kegagalan bukan akhir",
+      "stage": "S1",
+      "duration_actual": 25.0
     }
   ]
 }
