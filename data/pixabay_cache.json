@@ -246,6 +246,25 @@
       "keyword": "turtle walking",
       "stage": "S3",
       "duration_actual": 30.0
+    },
+    {
+      "id": 365995,
+      "url": "https://pixabay.com/videos/id-365995/",
+      "pageURL": "https://pixabay.com/videos/id-365995/",
+      "photographer": "Engin_Akyurt",
+      "user": "Engin_Akyurt",
+      "description": "phone, obstacle, fence, sharp, razor blade, metal, steel, macro, sky, forbidden, banned, warning, protection, prison, prisoner, crime, security, freedom, punishment",
+      "tags": "phone, obstacle, fence, sharp, razor blade, metal, steel, macro, sky, forbidden, banned, warning, protection, prison, prisoner, crime, security, freedom, punishment",
+      "type": "film",
+      "duration_meta": 30,
+      "file_url": "https://cdn.pixabay.com/video/2026/07/24/365995_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "overcoming obstacles",
+      "stage": "S1",
+      "duration_actual": 30.567
     }
   ]
 }
