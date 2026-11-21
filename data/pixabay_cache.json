@@ -227,6 +227,25 @@
       "keyword": "kegagalan bukan akhir",
       "stage": "S1",
       "duration_actual": 25.0
+    },
+    {
+      "id": 244754,
+      "url": "https://pixabay.com/videos/id-244754/",
+      "pageURL": "https://pixabay.com/videos/id-244754/",
+      "photographer": "PaulsAdventures",
+      "user": "PaulsAdventures",
+      "description": "turtle, ocean, tortoise, wildlife, underwater, snorkeling, marine life, sea life",
+      "tags": "turtle, ocean, tortoise, wildlife, underwater, snorkeling, marine life, sea life",
+      "type": "film",
+      "duration_meta": 30,
+      "file_url": "https://cdn.pixabay.com/video/2024/12/03/244754_large.mp4",
+      "file_label": "large",
+      "width": 2560,
+      "height": 1440,
+      "source": "pixabay",
+      "keyword": "turtle walking",
+      "stage": "S3",
+      "duration_actual": 30.0
     }
   ]
 }
