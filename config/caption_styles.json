@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "notes": [
+    "Metadata gaya caption untuk AI. Dipakai saat generate caption (dan nanti deskripsi) agar konsisten namun bervariasi.",
+    "Praktis: utamakan kejelasan di beberapa kata awal (judul/caption bisa terpotong di UI Shorts); jaga nada selaras dengan voiceover (tenang/jujur, hindari clickbait heboh); rotasi gaya antar-video."
+  ],
+  "rotation_hint": "Selang-seling antar kategori/gaya (mis. kontras, pertanyaan reflektif, observasi) untuk variasi tanpa mengubah sistem produksi.",
+  "styles": [
+    {
+      "id": "contrast",
+      "group": "popular",
+      "group_label": "Populer (teruji & mudah dipahami)",
+      "name": "Kontras / \"Bukan X, Tapi Y\"",
+      "intent": "Menabrak asumsi umum secara singkat sehingga pembaca langsung berhenti sejenak.",
+      "guidance": "Tunjukkan pola yang disangka penyebab vs penyebab/realita yang lebih jujur; singkat, tajam, mudah dipahami.",
+      "examples": [
+        "Bukan Pekerjaannya yang Berat, Tapi Rasa Takut Memulai",
+        "Bukan Kurang Waktu, Tapi Terlalu Banyak Hal yang Ingin Diurus Sekaligus"
+      ]
+    },
+    {
+      "id": "reflective_question",
+      "group": "popular",
+      "group_label": "Populer (teruji & mudah dipahami)",
+      "name": "Pertanyaan Reflektif Sehari-hari",
+      "intent": "Mengajak penonton mengaca pada kebiasaan atau perasaan yang sering mereka alami tanpa terasa menggurui.",
+      "guidance": "Gunakan pertanyaan yang dekat dengan pengalaman sehari-hari; nada lembut, mengundang refleksi, bukan menghakimi.",
+      "examples": [
+        "Kenapa Hal Sederhana Sering Terasa Rumit di Kepala?",
+        "Berapa Banyak Hal yang Kita Tunda Hanya Karena Takut Gagal?"
+      ]
+    },
+    {
+      "id": "calm_truth",
+      "group": "popular",
+      "group_label": "Populer (teruji & mudah dipahami)",
+      "name": "Pernyataan Tegas & Menenangkan (Calm Truth)",
+      "intent": "Kalimat pendek yang terasa seperti pengingat pelan di tengah hari yang bising.",
+      "guidance": "Pernyataan jernih, menenangkan, tidak menggurui; validasi perasaan dan beri izin untuk melangkah pelan/realistis.",
+      "examples": [
+        "Mulai Saja Dulu, Tidak Perlu Langsung Sempurna",
+        "Kamu Tidak Harus Menyelesaikan Semuanya Hari Ini"
+      ]
+    },
+    {
+      "id": "situational_relatable",
+      "group": "popular",
+      "group_label": "Populer (teruji & mudah dipahami)",
+      "name": "Relatabilitas Situasional (\"Saat Kamu...\")",
+      "intent": "Membidik momen spesifik yang langsung dikenali pembaca.",
+      "guidance": "Frame situasi/momen konkret yang familiar (mis. 'Saat/Ketika ...'); pembaca langsung merasa 'ini aku'.",
+      "examples": [
+        "Saat Kepala Penuh Tapi Langkah Terasa Berat",
+        "Ketika Menunda Justru Membuat Beban Makin Terasa"
+      ]
+    },
+    {
+      "id": "paradox_simplify",
+      "group": "unique",
+      "group_label": "Lebih unik (membedakan dari kanal quotes biasa)",
+      "name": "Penyederhanaan Paradoks (\"Rumit -> Sederhana\")",
+      "intent": "Menyoroti bagaimana masalah besar sering kali berakar dari hal kecil, atau sebaliknya. Cocok untuk menyederhanakan kerumitan.",
+      "guidance": "Balikkan asumsi skala/kompleksitas: yang tampak besar bisa berakar dari hal kecil (atau langkah kecil lebih jujur dari rencana besar).",
+      "examples": [
+        "Masalahnya Sering Kali Bukan Besar, Cuma Terlalu Lama Dipikirkan",
+        "Satu Langkah Lima Menit Sering Lebih Jujur dari Rencana Panjang"
+      ]
+    },
+    {
+      "id": "observational",
+      "group": "unique",
+      "group_label": "Lebih unik (membedakan dari kanal quotes biasa)",
+      "name": "Bahasa Observasi / Sudut Pandang Orang Ketiga",
+      "intent": "Bukan menasihati langsung, melainkan memotret pola manusia secara tenang.",
+      "guidance": "Amati dan beri nama pola/perilaku ('cara...', 'pola saat...') tanpa menyuruh; nada tenang, seperti catatan pengamat.",
+      "examples": [
+        "Cara Rasa Takut Menyamar Menjadi Alasan Menunda",
+        "Pola Kecil Saat Kita Mulai Menghindari Hal Penting"
+      ]
+    },
+    {
+      "id": "premise_reframe",
+      "group": "unique",
+      "group_label": "Lebih unik (membedakan dari kanal quotes biasa)",
+      "name": "Kutipan Diolah Jadi Premis",
+      "intent": "Alih-alih menaruh nama tokoh/kutipan mentah di judul, ambil inti gesekannya sebagai caption.",
+      "guidance": "Angkat inti ketegangan/gesekan makna kutipan sebagai premis ('tentang...', 'hal yang sering kita salah sangka...') tanpa mengutip mentah.",
+      "examples": [
+        "Tentang Berani Melangkah Sebelum Situasinya Terasa Mudah",
+        "Hal yang Sering Kita Salah Sangka Saat Merasa Terhambat"
+      ]
+    },
+    {
+      "id": "soft_open_loop",
+      "group": "unique",
+      "group_label": "Lebih unik (membedakan dari kanal quotes biasa)",
+      "name": "Kalimat Setengah Gantung (Open Loop Halus)",
+      "intent": "Memberi sedikit ketegangan naratif agar penonton ingin mendengar kelanjutannya di voiceover.",
+      "guidance": "Buka celah rasa ingin tahu secara halus ('ada satu hal...', 'sering kali yang menghalangi bukan...') tanpa clickbait berlebihan; payoff ada di VO.",
+      "examples": [
+        "Ada Satu Hal yang Diam-Diam Menahan Kita Melangkah...",
+        "Sering Kali yang Menghalangi Bukan Jalannya, Tapi..."
+      ]
+    }
+  ]
+}

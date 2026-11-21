@@ -12,7 +12,7 @@ Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar video dari 
 
 **Penyimpanan/media (GitHub Actions):** file video & audio latar/musik **diunduh saat run** ke folder kerja (`work/`) untuk dirender, **tidak di-commit** (ephemeral; `work/`, `out/`, `render_plan.json` di-`.gitignore`) agar tidak menambah storage repo. Hanya log/metadata di atas yang disimpan di repo; artifact run hanya menyimpan log kecil singkat.
 
-Jadwal: **06.00 dan 18.00 WIB** (cron `0 23 * * *` dan `0 11 * * *` UTC, `workflow_dispatch` tersedia). Jadwal GitHub Actions bisa tertunda.
+Jadwal: **03.00 dan 18.00 WIB** (cron `0 20 * * *` dan `0 11 * * *` UTC, `workflow_dispatch` tersedia). Jadwal GitHub Actions bisa tertunda.
 
 ## Mode konten
 - **`list` (default, jadwal/manual)**: baca `data/quotes.json`, pilih berurutan berdasarkan `id` menaik (entri pertama yang belum tercatat di `data/used_quotes.jsonl`). Jika semua sudah terpakai → **loop dari awal**.
@@ -117,7 +117,7 @@ Secrets opsional (multi-platform, saat target diaktifkan & implementasi API siap
 > Catatan: musik diambil dari Freetouse API (tanpa key/Drive/rclone), sehingga `GDRIVE_SA_JSON` dan `GDRIVE_MUSIC_FOLDER_ID` tidak diperlukan untuk alur musik saat ini.
 
 ## Menjalankan di GitHub Actions
-- Otomatis: jadwal 06.00 & 18.00 WIB (`mode=list`).
+- Otomatis: jadwal 03.00 & 18.00 WIB (`mode=list`).
 - Manual: **Actions → shorts-bot → Run workflow** (pilih `mode`: `list`/`famous`/`custom`).
 
 ## Menjalankan di lokal (detail, bertahap)
