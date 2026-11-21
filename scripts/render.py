@@ -376,7 +376,8 @@ def main() -> None:
     video = next(s for s in info["streams"] if s["codec_type"] == "video")
     duration = round(float(info["format"].get("duration", 0)), 2)
 
-    (OUT / "caption.txt").write_text(p.get("description", ""), encoding="utf-8")
+    (OUT / "caption.txt").write_text(p.get("caption", ""), encoding="utf-8")
+    (OUT / "description.txt").write_text(p.get("description", ""), encoding="utf-8")
     manifest = {
         "file": "final.mp4",
         "duration": duration,

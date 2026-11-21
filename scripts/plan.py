@@ -4,6 +4,7 @@ import json
 import os
 import random
 import re
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
@@ -14,6 +15,8 @@ from common import ROOT, WORK, MUSIC, PLAN_OUT, CONFIG_PATH, load_dotenv, now_ut
 from freetouse import pick_music as pick_freetouse_music
 from pixabay import pick_background
 from runlog import log_run
+
+sys.path.insert(0, str(ROOT / "scripts"))
 
 CONFIG = CONFIG_PATH
 DEFAULT_QUOTES = ROOT / "data" / "quotes.json"
@@ -379,6 +382,9 @@ def resolve_quote(mode: str, defaults: dict, theme: dict, used: list[dict],
         title = (quote_lines[0][:97] + "...") if quote_lines and len(quote_lines[0]) > 100 else (quote_lines[0] if quote_lines else "quote hari ini")
         hashtags = []
 
+    # Caption: gunakan AI + 1 gaya bersama (acak/preferensi) bila memungkinkan; fallback ke caption saat ini.
+    caption, _caption_style_id = generate_styled_caption(quote_lines, author_raw, language, caption)
+
     return {
         "mode": mode, "source": source, "selected_id": selected_id,
         "quote_text": quote_text, "quote_lines": quote_lines, "emphasis": emphasis,
@@ -408,6 +414,27 @@ def build_description(caption: str, quote_lines: list[str], quote_text: str, aut
     quote_text_display = " ".join([ln.strip() for ln in quote_lines if str(ln).strip()]).strip() or quote_text.replace(" / ", " ")
     quote_credit = f"Quote: {quote_text_display}" + (f" — {author_name}" if author_name else "")
     return f"{caption}\n\n{quote_credit}\n{' '.join(hashtags)}\n\n{attribution}"
+
+
+def generate_styled_caption(quote_lines: list[str], author_raw: str, language: str, fallback_caption: str) -> tuple[str, str | None]:
+    """Generate caption via shared caption styles (1 random/preferred style). Fallback on failure."""
+    try:
+        from caption_meta import build_caption_prompt, load_caption_styles, select_caption_style
+
+        styles = load_caption_styles(None)  # config/caption_styles.json (shared)
+        yt_ctx = {"defaultLanguage": language}
+        selected_style = select_caption_style(styles, yt_ctx)
+        quote = {"lines": quote_lines, "author": author_raw, "language": language}
+        prompt = build_caption_prompt(styles, selected_style, quote, None, yt_ctx)
+        result = generate_plan(prompt, [])
+        caption = str((result or {}).get("caption") or "").strip()
+        if caption:
+            sid = str((result or {}).get("style_id") or selected_style.get("id") or "").strip() or None
+            print(f"[info] Caption (AI, style={sid or '?'}) dihasilkan via gaya bersama.")
+            return caption, sid
+    except Exception as exc:  # noqa: BLE001
+        print(f"[warn] Caption AI/gaya bersama gagal ({exc}); pakai caption fallback.")
+    return fallback_caption, None
 
 
 def build_plan(day: str, theme: dict, defaults: dict, q: dict, bg: dict, bg_path: Path,
