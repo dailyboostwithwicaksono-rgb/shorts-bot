@@ -265,6 +265,25 @@
       "keyword": "overcoming obstacles",
       "stage": "S1",
       "duration_actual": 30.567
+    },
+    {
+      "id": 71122,
+      "url": "https://pixabay.com/videos/id-71122/",
+      "pageURL": "https://pixabay.com/videos/id-71122/",
+      "photographer": "RostislavUzunov",
+      "user": "RostislavUzunov",
+      "description": "waves, sea, ocean, storm, beautiful wallpaper, water, tide, horizon, loop, seamless, background, nature, 4k, wallpaper, live wallpaper, earth day",
+      "tags": "waves, sea, ocean, storm, beautiful wallpaper, water, tide, horizon, loop, seamless, background, nature, 4k, wallpaper, live wallpaper, earth day",
+      "type": "film",
+      "duration_meta": 19,
+      "file_url": "https://cdn.pixabay.com/video/2021/04/15/71122-537102350_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "repetition loop",
+      "stage": "S1",
+      "duration_actual": 18.75
     }
   ]
 }
