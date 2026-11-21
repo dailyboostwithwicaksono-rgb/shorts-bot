@@ -189,6 +189,25 @@
       "keyword": "tengah kesulitan selalu",
       "stage": "S1",
       "duration_actual": 21.467
+    },
+    {
+      "id": 44702,
+      "url": "https://pixabay.com/videos/id-44702/",
+      "pageURL": "https://pixabay.com/videos/id-44702/",
+      "photographer": "adege",
+      "user": "adege",
+      "description": "path, people, helicopter, mountains, hike, summer, alpine, transport, meiringen, time lapse, timelapse",
+      "tags": "path, people, helicopter, mountains, hike, summer, alpine, transport, meiringen, time lapse, timelapse",
+      "type": "film",
+      "duration_meta": 45,
+      "file_url": "https://cdn.pixabay.com/video/2020/07/14/44702-439940419_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "first step on path",
+      "stage": "S1",
+      "duration_actual": 44.628
     }
   ]
 }
