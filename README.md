@@ -16,7 +16,7 @@ Jadwal: **03.00 dan 18.00 WIB** (cron `0 20 * * *` dan `0 11 * * *` UTC, `workfl
 
 ## Mode konten
 - **`list` (default, jadwal/manual)**: baca `data/quotes.json`, pilih berurutan berdasarkan `id` menaik (entri pertama yang belum tercatat di `data/used_quotes.jsonl`). Jika semua sudah terpakai → **loop dari awal**.
-- **`famous` (AI)**: kurasi quotes terkenal via AI (EN tetap EN, selain itu ID), menghindari pengulangan berdasarkan log. Metadata (judul/caption/hashtag) dibantu AI.
+- **`famous` (AI)**: kurasi quotes terkenal via AI (EN tetap EN, selain itu ID), menghindari pengulangan berdasarkan log. Metadata (judul/title, hashtag) dibantu AI; `caption` hanya alias legacy dari title.
 - **`custom` (manual / bridge Telegram bot nanti)**: jalankan **Actions → shorts-bot → Run workflow** dengan `mode=custom`, isi `quote_text` (pisah baris dengan `|` atau baris baru), opsional `quote_author` (default `dbcw`, ditampilkan sebagai `- dbcw -`), `quote_language` (`auto/id/en`). Integrasi Telegram bot penuh belum dibuat; nanti dapat memicu `workflow_dispatch` (GitHub API) dengan input yang sama.
 
 ## Tipografi & tampilan
@@ -67,7 +67,7 @@ Jadwal: **03.00 dan 18.00 WIB** (cron `0 20 * * *` dan `0 11 * * *` UTC, `workfl
 Latar dipilih otomatis dari **Pixabay Video API** (`PIXABAY_API_KEY`) berdasarkan kata kunci yang dibuat dari quote, lalu difilter oleh kode (tanpa animasi, durasi/kualitas progresif, pilih acak 1 dari kandidat). Entri keberhasilan disimpan di `data/pixabay_cache.json` (di-commit) sebagai fallback bila pencarian berikutnya kosong/gagal. Atribusi (user/URL Pixabay) otomatis masuk deskripsi. Patuhi ketentuan lisensi Pixabay.
 
 ## Distribusi & multi-platform (Fase 3–4)
-- **Kontrak konten:** distribusi membaca konten kanonik dari artefak render (`out/manifest.json`, `out/final.mp4`, `out/caption.txt`).
+- **Kontrak konten:** distribusi membaca konten kanonik dari artefak render (`out/manifest.json`, `out/final.mp4`). Judul ada di `manifest.title`; `out/caption.txt` adalah **nama file legacy** yang kini berisi title, sedangkan deskripsi ada di `out/description.txt` / `manifest.description`.
 - **Arsip:** `scripts/archive_drive.py` tetap mengarsipkan `out/*` ke Drive (target Google terpisah).
 - **Publish (dispatcher):** `scripts/publish.py` mem-publish ke target aktif via `PUBLISH_TARGETS` (default: `youtube`, perilaku sama seperti sebelumnya). Opsi: `PUBLISH_DRY_RUN=1` (formatter/validasi tanpa upload nyata), `PUBLISH_FAIL_FAST` (default `1`, gagal cepat; `0` untuk lanjut parsial) dengan ringkasan hasil per target.
 - **Platform tambahan (kerangka):** formatter + stub/dry-run untuk **TikTok, Meta, X** tersedia (`PUBLISH_TARGETS=youtube,tiktok,meta,x`). Publish **nyata** ke platform tersebut bertahap dan memerlukan akun/app, izin/API, kredensial, serta implementasi API masing-masing; tanpa itu gunakan dry-run atau target akan gagal/ditolak dengan pesan jelas (tidak ada publish palsu).
@@ -123,7 +123,7 @@ Secrets opsional (multi-platform, saat target diaktifkan & implementasi API siap
 ## Menjalankan di lokal (detail, bertahap)
 Panduan lengkap (untuk pemula, termasuk instalasi ffmpeg, env, penjadwalan lokal, dan **cek krusial saat error/gagal**): **[docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)**.
 
-Ringkas: pasang dependensi Python & ffmpeg → set `PIXABAY_API_KEY` (dan AI key jika perlu) dengan internet aktif → `python scripts/plan.py` → `python scripts/render.py` → ambil `out/final.mp4` + `out/caption.txt` (judul/deskripsi siap tempel) untuk **upload manual** ke YouTube. Latar dari Pixabay API (cache fallback di `data/pixabay_cache.json`); musik diambil otomatis dari Freetouse API (non-premium, tema calm/motivasi, durasi memadai) dan diunduh saat run. File media tidak di-commit; metadata pemakaian tersimpan di `data/used_videos.jsonl` dan `data/used_music.jsonl`.
+Ringkas: pasang dependensi Python & ffmpeg → set `PIXABAY_API_KEY` (dan AI key jika perlu) dengan internet aktif → `python scripts/plan.py` → `python scripts/render.py` → ambil `out/final.mp4`, `out/caption.txt` (nama legacy; isinya **title**) dan `out/description.txt` (deskripsi siap tempel) untuk **upload manual** ke YouTube. Latar dari Pixabay API (cache fallback di `data/pixabay_cache.json`); musik diambil otomatis dari Freetouse API (non-premium, tema calm/motivasi, durasi memadai) dan diunduh saat run. File media tidak di-commit; metadata pemakaian tersimpan di `data/used_videos.jsonl` dan `data/used_music.jsonl`.
 
 ## Maintenance
 - **Token OAuth**: jika app **Testing** → refresh token kedaluwarsa ~7 hari (`invalid_grant`), regenerate & update `YT_REFRESH_TOKEN`. Jika sudah **Production** → tidak ada kedaluwarsa 7 hari, namun token tetap bisa invalid (dicabut/alasan keamanan) — siapkan cara regenerate. Untuk alur lokal *upload manual* (tanpa arsip/upload otomatis), OAuth user tidak diperlukan.

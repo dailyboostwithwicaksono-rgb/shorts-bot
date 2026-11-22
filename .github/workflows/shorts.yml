@@ -127,13 +127,15 @@ jobs:
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
-      - name: Simpan log kecil sebagai artifact
+      - name: "Simpan artefak kecil (title/description)"
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: run-${{ github.run_number }}
+          # caption.txt = nama file legacy; isinya adalah title kanonik.
           path: |
             render_plan.json
             out/manifest.json
             out/caption.txt
+            out/description.txt
           retention-days: 1

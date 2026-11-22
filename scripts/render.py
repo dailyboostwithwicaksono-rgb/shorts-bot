@@ -376,7 +376,9 @@ def main() -> None:
     video = next(s for s in info["streams"] if s["codec_type"] == "video")
     duration = round(float(info["format"].get("duration", 0)), 2)
 
-    (OUT / "caption.txt").write_text(p.get("caption", ""), encoding="utf-8")
+    # Title kanonik; caption.txt dipertahankan sebagai nama file legacy.
+    _title = str(p.get("title") or p.get("caption") or "")
+    (OUT / "caption.txt").write_text(_title, encoding="utf-8")
     (OUT / "description.txt").write_text(p.get("description", ""), encoding="utf-8")
     manifest = {
         "file": "final.mp4",
@@ -390,8 +392,8 @@ def main() -> None:
         "author": p.get("author"),
         "language": p.get("language"),
         "lines": p.get("lines"),
-        "title": p.get("title"),
-        "caption": p.get("caption"),
+        "title": _title,
+        "caption": _title,  # alias legacy; selalu mirror title
         "hashtags": p.get("hashtags", []),
         "description": p.get("description", ""),
         "privacy": p.get("privacy", "public"),

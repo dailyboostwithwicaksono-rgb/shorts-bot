@@ -382,14 +382,15 @@ def resolve_quote(mode: str, defaults: dict, theme: dict, used: list[dict],
         title = (quote_lines[0][:97] + "...") if quote_lines and len(quote_lines[0]) > 100 else (quote_lines[0] if quote_lines else "quote hari ini")
         hashtags = []
 
-    # Caption: gunakan AI + 1 gaya bersama (acak/preferensi) bila memungkinkan; fallback ke caption saat ini.
-    caption, _caption_style_id = generate_styled_caption(quote_lines, author_raw, language, caption)
+    # Title kanonik: gunakan AI + 1 gaya bersama (acak/preferensi) bila memungkinkan.
+    # Fallback mengutamakan title (baris quote asli), baru caption legacy.
+    title, _title_style_id = generate_styled_title(quote_lines, author_raw, language, title or caption)
 
     return {
         "mode": mode, "source": source, "selected_id": selected_id,
         "quote_text": quote_text, "quote_lines": quote_lines, "emphasis": emphasis,
         "author_raw": author_raw, "duration": duration, "language": language,
-        "title": title, "caption": caption, "hashtags": hashtags, "privacy": privacy,
+        "title": title, "caption": title, "hashtags": hashtags, "privacy": privacy,
     }
 
 
@@ -416,25 +417,31 @@ def build_description(caption: str, quote_lines: list[str], quote_text: str, aut
     return f"{caption}\n\n{quote_credit}\n{' '.join(hashtags)}\n\n{attribution}"
 
 
-def generate_styled_caption(quote_lines: list[str], author_raw: str, language: str, fallback_caption: str) -> tuple[str, str | None]:
-    """Generate caption via shared caption styles (1 random/preferred style). Fallback on failure."""
+def generate_styled_title(quote_lines: list[str], author_raw: str, language: str, fallback_title: str) -> tuple[str, str | None]:
+    """Generate title via shared title styles (1 random/preferred style). Fallback on failure."""
     try:
-        from caption_meta import build_caption_prompt, load_caption_styles, select_caption_style
+        from title_meta import build_title_prompt, load_title_styles, select_title_style
 
-        styles = load_caption_styles(None)  # config/caption_styles.json (shared)
+        styles = load_title_styles(None)  # config/title_styles.json (shared)
         yt_ctx = {"defaultLanguage": language}
-        selected_style = select_caption_style(styles, yt_ctx)
+        selected_style = select_title_style(styles, yt_ctx)
         quote = {"lines": quote_lines, "author": author_raw, "language": language}
-        prompt = build_caption_prompt(styles, selected_style, quote, None, yt_ctx)
+        prompt = build_title_prompt(styles, selected_style, quote, None, yt_ctx)
         result = generate_plan(prompt, [])
-        caption = str((result or {}).get("caption") or "").strip()
-        if caption:
+        # Terima "caption" hanya sebagai alias balasan AI lama; hasil tetap title kanonik.
+        title = str((result or {}).get("title") or (result or {}).get("caption") or "").strip()[:100]
+        if title:
             sid = str((result or {}).get("style_id") or selected_style.get("id") or "").strip() or None
-            print(f"[info] Caption (AI, style={sid or '?'}) dihasilkan via gaya bersama.")
-            return caption, sid
+            print(f"[info] Title (AI, style={sid or '?'}) dihasilkan via gaya bersama.")
+            return title, sid
     except Exception as exc:  # noqa: BLE001
-        print(f"[warn] Caption AI/gaya bersama gagal ({exc}); pakai caption fallback.")
-    return fallback_caption, None
+        print(f"[warn] Title AI/gaya bersama gagal ({exc}); pakai title fallback.")
+    return str(fallback_title or "").strip()[:100], None
+
+
+# Backward-compatible alias
+def generate_styled_caption(quote_lines: list[str], author_raw: str, language: str, fallback_caption: str) -> tuple[str, str | None]:
+    return generate_styled_title(quote_lines, author_raw, language, fallback_caption)
 
 
 def build_plan(day: str, theme: dict, defaults: dict, q: dict, bg: dict, bg_path: Path,
