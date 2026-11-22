@@ -284,6 +284,25 @@
       "keyword": "repetition loop",
       "stage": "S1",
       "duration_actual": 18.75
+    },
+    {
+      "id": 3581,
+      "url": "https://pixabay.com/videos/id-3581/",
+      "pageURL": "https://pixabay.com/videos/id-3581/",
+      "photographer": "Pexels",
+      "user": "Pexels",
+      "description": "coastline, beach, city, usa, sunset, aerial view, vacation, summer, sea, water, sand, travel, tourism, people, shore, lifestyle, coast, ocean, recreation, holiday",
+      "tags": "coastline, beach, city, usa, sunset, aerial view, vacation, summer, sea, water, sand, travel, tourism, people, shore, lifestyle, coast, ocean, recreation, holiday",
+      "type": "film",
+      "duration_meta": 64,
+      "file_url": "https://cdn.pixabay.com/video/2016/06/27/3581-172488192_large.mp4",
+      "file_label": "large",
+      "width": 1920,
+      "height": 1080,
+      "source": "pixabay",
+      "keyword": "minimalist lifestyle",
+      "stage": "S3",
+      "duration_actual": 63.897
     }
   ]
 }
