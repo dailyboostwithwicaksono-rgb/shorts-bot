@@ -110,7 +110,7 @@ Saat status **Testing**, refresh token bisa kedaluwarsa ~7 hari (`invalid_grant`
 ## Secrets & Variables (GitHub Actions)
 Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `PIXABAY_API_KEY`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`.
 
-Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`inclusionai/ling-3.2-flash:free`), `YT_PRIVACY` (`public`/`unlisted`), `PUBLISH_TARGETS` (default `youtube`), `PUBLISH_DRY_RUN` (default `0`), `PUBLISH_FAIL_FAST` (default `1`).
+Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`nvidia/nemotron-3.5-lightning:free`), `GEMINI_MODEL` (`gemini-flash-lite-latest`), `YT_PRIVACY` (`public`/`unlisted`), `PUBLISH_TARGETS` (default `youtube`), `PUBLISH_DRY_RUN` (default `0`), `PUBLISH_FAIL_FAST` (default `1`).
 
 Secrets opsional (multi-platform, saat target diaktifkan & implementasi API siap): TikTok `TIKTOK_ACCESS_TOKEN`; Meta `META_ACCESS_TOKEN`, `META_IG_USER_ID`; X `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`.
 

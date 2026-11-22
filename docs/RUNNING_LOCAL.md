@@ -150,7 +150,7 @@ Contoh (opsional, untuk AI):
 ```powershell
 $env:OPENROUTER_API_KEY = "ISI_API_KEY_KAMU"
 $env:AI_PROVIDER = "openrouter"
-$env:OPENROUTER_MODEL = "inclusionai/ling-3.2-flash:free"
+$env:OPENROUTER_MODEL = "nvidia/nemotron-3.5-lightning:free"
 $env:QUOTE_MODE = "list"   # atau famous/custom
 ```
 (Opsional) tanggal run: `$env:RUN_DATE = "2026-11-19"`.

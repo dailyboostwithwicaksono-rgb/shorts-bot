@@ -9,7 +9,7 @@ import os
 import requests
 
 OPENROUTER_MODEL = os.getenv(
-    "OPENROUTER_MODEL", "inclusionai/ling-3.2-flash:free"
+    "OPENROUTER_MODEL", "nvidia/nemotron-3.5-lightning:free"
 )
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-flash")
