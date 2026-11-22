@@ -360,6 +360,25 @@
       "keyword": "searching",
       "stage": "S1",
       "duration_actual": 32.824
+    },
+    {
+      "id": 142751,
+      "url": "https://pixabay.com/videos/id-142751/",
+      "pageURL": "https://pixabay.com/videos/id-142751/",
+      "photographer": "KIMDAEJEUNG",
+      "user": "KIMDAEJEUNG",
+      "description": "road, bus, city, traffic, daily life, goyang, republic of korea",
+      "tags": "road, bus, city, traffic, daily life, goyang, republic of korea",
+      "type": "film",
+      "duration_meta": 34,
+      "file_url": "https://cdn.pixabay.com/video/2022/12/13/142751-780943387_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "daily success",
+      "stage": "S1",
+      "duration_actual": 34.9
     }
   ]
 }
