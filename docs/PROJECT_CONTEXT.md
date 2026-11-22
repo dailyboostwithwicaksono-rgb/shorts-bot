@@ -98,6 +98,7 @@ Dari `shorts.yml`:
 - **Kanonik:** `title` (maks 100 karakter). Dihasilkan `scripts/plan.py` → `generate_styled_title()` → `scripts/title_meta.py` → `config/title_styles.json` → prompt `build_title_prompt()`, dengan fallback `title or caption` saat AI gagal.
 - **Alias legacy:** `caption` selalu di-mirror dari title di `render_plan.json` dan `out/manifest.json`. Prompt AI lama yang membalas `caption` masih diterima oleh `generate_styled_title()`.
 - **Artefak:** `out/caption.txt` berisi **title** (nama file dipertahankan untuk kompatibilitas `content.py`/publish/archive); `out/description.txt` dan `manifest.description` berisi deskripsi lengkap.
+- **Deskripsi mode `list` (`data/quotes.json`):** pembuka deskripsi dihasilkan Gemini via `generate_description_gemini()` memakai gaya judul yang sama; kredit quote, hashtag, dan atribusi tetap dirakit deterministik oleh `build_description()`. Fallback bila Gemini gagal: pembuka memakai title. Mode `famous`/`custom` belum memakai pembuka Gemini.
 - **Kompatibilitas yang tidak boleh dihapus:** `scripts/caption_meta.py` (shim), `generate_styled_caption()` (alias), kunci `caption_style`/`preferred_caption_style`, dan field `caption*`.
 - **Prasyarat CI:** `scripts/title_meta.py` dan `config/title_styles.json` harus ikut ter-commit. Jika tidak, `load_title_styles()` fallback ke `config/caption_styles.json` dan CI masih berperilaku/berlabel "caption".
 

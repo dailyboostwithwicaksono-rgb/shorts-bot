@@ -15,7 +15,7 @@ Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar video dari 
 Jadwal: **03.00 dan 18.00 WIB** (cron `0 20 * * *` dan `0 11 * * *` UTC, `workflow_dispatch` tersedia). Jadwal GitHub Actions bisa tertunda.
 
 ## Mode konten
-- **`list` (default, jadwal/manual)**: baca `data/quotes.json`, pilih berurutan berdasarkan `id` menaik (entri pertama yang belum tercatat di `data/used_quotes.jsonl`). Jika semua sudah terpakai → **loop dari awal**.
+- **`list` (default, jadwal/manual)**: baca `data/quotes.json`, pilih berurutan berdasarkan `id` menaik (entri pertama yang belum tercatat di `data/used_quotes.jsonl`). Jika semua sudah terpakai → **loop dari awal**. Judul dan **pembuka deskripsi dibuat Gemini**; jika Gemini gagal, pembuka deskripsi memakai title.
 - **`famous` (AI)**: kurasi quotes terkenal via AI (EN tetap EN, selain itu ID), menghindari pengulangan berdasarkan log. Metadata (judul/title, hashtag) dibantu AI; `caption` hanya alias legacy dari title.
 - **`custom` (manual / bridge Telegram bot nanti)**: jalankan **Actions → shorts-bot → Run workflow** dengan `mode=custom`, isi `quote_text` (pisah baris dengan `|` atau baris baru), opsional `quote_author` (default `dbcw`, ditampilkan sebagai `- dbcw -`), `quote_language` (`auto/id/en`). Integrasi Telegram bot penuh belum dibuat; nanti dapat memicu `workflow_dispatch` (GitHub API) dengan input yang sama.
 

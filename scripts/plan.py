@@ -386,11 +386,20 @@ def resolve_quote(mode: str, defaults: dict, theme: dict, used: list[dict],
     # Fallback mengutamakan title (baris quote asli), baru caption legacy.
     title, _title_style_id = generate_styled_title(quote_lines, author_raw, language, title or caption)
 
+    # Default untuk quotes.json (mode list): pembuka deskripsi ditulis Gemini.
+    # Mode famous/custom tetap memakai title sebagai pembuka (fallback).
+    description_lead = title
+    if mode == "list":
+        description_lead = generate_description_gemini(
+            quote_lines, author_raw, language, title, _title_style_id
+        )
+
     return {
         "mode": mode, "source": source, "selected_id": selected_id,
         "quote_text": quote_text, "quote_lines": quote_lines, "emphasis": emphasis,
         "author_raw": author_raw, "duration": duration, "language": language,
-        "title": title, "caption": title, "hashtags": hashtags, "privacy": privacy,
+        "title": title, "caption": title, "description_lead": description_lead,
+        "hashtags": hashtags, "privacy": privacy,
     }
 
 
@@ -444,6 +453,59 @@ def generate_styled_caption(quote_lines: list[str], author_raw: str, language: s
     return generate_styled_title(quote_lines, author_raw, language, fallback_caption)
 
 
+def generate_description_gemini(
+    quote_lines: list[str], author_raw: str, language: str, title: str,
+    style_id: str | None = None,
+) -> str:
+    """Buat pembuka deskripsi via Gemini (default untuk mode quotes.json/list).
+
+    Gemini dipanggil eksplisit agar deskripsi tidak jatuh ke provider lain.
+    Jika gagal, pembuka deskripsi tetap memakai title seperti perilaku lama.
+    """
+    try:
+        import ai as ai_module
+        from title_meta import load_title_styles, select_title_style
+
+        q_text = " / ".join(str(x).strip() for x in quote_lines if str(x).strip())
+        author = str(author_raw or "").strip()
+        lang_name = "Bahasa Indonesia" if language == "id" else "English"
+        styles = load_title_styles(None)
+        yt_ctx = {"defaultLanguage": language}
+        if style_id:
+            yt_ctx["title_style"] = style_id
+        selected_style = select_title_style(styles, yt_ctx)
+        style_json = json.dumps(selected_style, ensure_ascii=False)
+
+        prompt = f"""Kamu penulis deskripsi YouTube Shorts yang tenang, jujur, dan reflektif.
+
+Konteks konten:
+- Bahasa: {lang_name}
+- Quote: {q_text or "(tidak ada)"}
+- Author: {author or "-"}
+- Judul video (konteks saja, jangan diulang verbatim): {title or "-"}
+- Gaya judul terpilih: {style_json}
+
+Tugas: tulis 1 deskripsi video singkat (2-4 paragraf pendek) yang selaras dengan nada quote dan gaya di atas.
+Aturan WAJIB:
+- Gunakan bahasa sesuai konteks di atas. Hindari clickbait berlebihan dan emoji.
+- Jangan mengulang judul secara verbatim; gunakan kalimat pembuka sendiri.
+- Jangan mengarang kredit musik/video atau nama penulis selain Author di atas.
+- Jangan sertakan hashtag; hashtag ditambahkan oleh pipeline.
+
+Balas HANYA JSON valid:
+{{"description": "teks deskripsi final"}}
+"""
+        result = ai_module._gemini(prompt, [])
+        desc = str((result or {}).get("description") or (result or {}).get("caption") or "").strip()[:3000]
+        if desc:
+            sid = str(selected_style.get("id") or "").strip() or "?"
+            print(f"[info] Description (Gemini, style={sid}) dihasilkan untuk mode quotes.json.")
+            return desc
+    except Exception as exc:  # noqa: BLE001
+        print(f"[warn] Description Gemini gagal ({exc}); pakai title sebagai pembuka deskripsi.")
+    return str(title or "").strip()[:100]
+
+
 def build_plan(day: str, theme: dict, defaults: dict, q: dict, bg: dict, bg_path: Path,
                music: dict, music_path: Path) -> dict:
     quote_lines = q["quote_lines"]
@@ -454,7 +516,11 @@ def build_plan(day: str, theme: dict, defaults: dict, q: dict, bg: dict, bg_path
     quote_line_segments = compute_emphasis_segments(quote_lines, q["emphasis"])
     hashtags = ensure_hashtags(q["hashtags"], q["language"])
     privacy = os.getenv("YT_PRIVACY") or q["privacy"] or "public"
-    description = build_description(q["caption"], quote_lines, quote_text, author_name, hashtags, bg, music)
+    # Pembuka deskripsi: Gemini untuk mode quotes.json, fallback ke title/caption.
+    description = build_description(
+        q.get("description_lead") or q["caption"],
+        quote_lines, quote_text, author_name, hashtags, bg, music,
+    )
 
     return {
         "date": day,
