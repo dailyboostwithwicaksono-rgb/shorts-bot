@@ -382,17 +382,13 @@ def resolve_quote(mode: str, defaults: dict, theme: dict, used: list[dict],
         title = (quote_lines[0][:97] + "...") if quote_lines and len(quote_lines[0]) > 100 else (quote_lines[0] if quote_lines else "quote hari ini")
         hashtags = []
 
-    # Title kanonik: gunakan AI + 1 gaya bersama (acak/preferensi) bila memungkinkan.
-    # Fallback mengutamakan title (baris quote asli), baru caption legacy.
-    title, _title_style_id = generate_styled_title(quote_lines, author_raw, language, title or caption)
-
-    # Default untuk quotes.json (mode list): pembuka deskripsi ditulis Gemini.
-    # Mode famous/custom tetap memakai title sebagai pembuka (fallback).
-    description_lead = title
-    if mode == "list":
-        description_lead = generate_description_gemini(
-            quote_lines, author_raw, language, title, _title_style_id
-        )
+    # Title kanonik & pembuka deskripsi sama-sama dihasilkan AI aktif (AI_PROVIDER)
+    # untuk semua mode (list/famous/custom), memakai 1 gaya judul bersama.
+    # Fallback bila AI gagal: title (baris quote asli) dipakai untuk keduanya.
+    title, title_style_id = generate_styled_title(quote_lines, author_raw, language, title or caption)
+    description_lead = generate_description_ai(
+        quote_lines, author_raw, language, title, title_style_id
+    )
 
     return {
         "mode": mode, "source": source, "selected_id": selected_id,
@@ -426,6 +422,14 @@ def build_description(caption: str, quote_lines: list[str], quote_text: str, aut
     return f"{caption}\n\n{quote_credit}\n{' '.join(hashtags)}\n\n{attribution}"
 
 
+def _safe_ai_error(exc: Exception) -> str:
+    """Ringkas error AI tanpa membocorkan API key dari URL/header."""
+    msg = str(exc)
+    msg = re.sub(r"(key=)[^&\s]+", r"\1***", msg)
+    msg = re.sub(r"(Bearer\s+)[^\s]+", r"\1***", msg)
+    return msg[:300]
+
+
 def generate_styled_title(quote_lines: list[str], author_raw: str, language: str, fallback_title: str) -> tuple[str, str | None]:
     """Generate title via shared title styles (1 random/preferred style). Fallback on failure."""
     try:
@@ -444,7 +448,7 @@ def generate_styled_title(quote_lines: list[str], author_raw: str, language: str
             print(f"[info] Title (AI, style={sid or '?'}) dihasilkan via gaya bersama.")
             return title, sid
     except Exception as exc:  # noqa: BLE001
-        print(f"[warn] Title AI/gaya bersama gagal ({exc}); pakai title fallback.")
+        print(f"[warn] Title AI/gaya bersama gagal ({_safe_ai_error(exc)}); pakai title fallback.")
     return str(fallback_title or "").strip()[:100], None
 
 
@@ -453,17 +457,16 @@ def generate_styled_caption(quote_lines: list[str], author_raw: str, language: s
     return generate_styled_title(quote_lines, author_raw, language, fallback_caption)
 
 
-def generate_description_gemini(
+def generate_description_ai(
     quote_lines: list[str], author_raw: str, language: str, title: str,
     style_id: str | None = None,
 ) -> str:
-    """Buat pembuka deskripsi via Gemini (default untuk mode quotes.json/list).
+    """Buat pembuka deskripsi via AI aktif (AI_PROVIDER) untuk semua mode.
 
-    Gemini dipanggil eksplisit agar deskripsi tidak jatuh ke provider lain.
-    Jika gagal, pembuka deskripsi tetap memakai title seperti perilaku lama.
+    Memakai generate_plan() agar provider utama, retry, dan fallback sama
+    dengan title. Jika gagal, pembuka deskripsi tetap memakai title.
     """
     try:
-        import ai as ai_module
         from title_meta import load_title_styles, select_title_style
 
         q_text = " / ".join(str(x).strip() for x in quote_lines if str(x).strip())
@@ -495,15 +498,19 @@ Aturan WAJIB:
 Balas HANYA JSON valid:
 {{"description": "teks deskripsi final"}}
 """
-        result = ai_module._gemini(prompt, [])
+        result = generate_plan(prompt, [])
         desc = str((result or {}).get("description") or (result or {}).get("caption") or "").strip()[:3000]
         if desc:
             sid = str(selected_style.get("id") or "").strip() or "?"
-            print(f"[info] Description (Gemini, style={sid}) dihasilkan untuk mode quotes.json.")
+            print(f"[info] Description (AI, style={sid}) dihasilkan via gaya bersama.")
             return desc
     except Exception as exc:  # noqa: BLE001
-        print(f"[warn] Description Gemini gagal ({exc}); pakai title sebagai pembuka deskripsi.")
+        print(f"[warn] Description AI/gaya bersama gagal ({_safe_ai_error(exc)}); pakai title sebagai pembuka deskripsi.")
     return str(title or "").strip()[:100]
+
+
+# Backward-compatible alias untuk pemanggil lama.
+generate_description_gemini = generate_description_ai
 
 
 def build_plan(day: str, theme: dict, defaults: dict, q: dict, bg: dict, bg_path: Path,
@@ -516,7 +523,7 @@ def build_plan(day: str, theme: dict, defaults: dict, q: dict, bg: dict, bg_path
     quote_line_segments = compute_emphasis_segments(quote_lines, q["emphasis"])
     hashtags = ensure_hashtags(q["hashtags"], q["language"])
     privacy = os.getenv("YT_PRIVACY") or q["privacy"] or "public"
-    # Pembuka deskripsi: Gemini untuk mode quotes.json, fallback ke title/caption.
+    # Pembuka deskripsi sudah dihasilkan AI aktif untuk semua mode; fallback ke title/caption.
     description = build_description(
         q.get("description_lead") or q["caption"],
         quote_lines, quote_text, author_name, hashtags, bg, music,

@@ -112,6 +112,8 @@ Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `PIXABAY_API_KEY`, `GDRIVE
 
 Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`nvidia/nemotron-3.5-lightning:free`), `GEMINI_MODEL` (`gemini-flash-lite-latest`), `YT_PRIVACY` (`public`/`unlisted`), `PUBLISH_TARGETS` (default `youtube`), `PUBLISH_DRY_RUN` (default `0`), `PUBLISH_FAIL_FAST` (default `1`).
 
+Title dan pembuka deskripsi dibuat oleh provider AI aktif (`AI_PROVIDER`, dengan retry dan fallback ke provider lain yang punya key) untuk **semua mode** (`list`/`famous`/`custom`). Bila semua provider gagal, title tetap dipakai sebagai pembuka deskripsi.
+
 Secrets opsional (multi-platform, saat target diaktifkan & implementasi API siap): TikTok `TIKTOK_ACCESS_TOKEN`; Meta `META_ACCESS_TOKEN`, `META_IG_USER_ID`; X `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`.
 
 > Catatan: musik diambil dari Freetouse API (tanpa key/Drive/rclone), sehingga `GDRIVE_SA_JSON` dan `GDRIVE_MUSIC_FOLDER_ID` tidak diperlukan untuk alur musik saat ini.
@@ -131,14 +133,14 @@ Ringkas: pasang dependensi Python & ffmpeg → set `PIXABAY_API_KEY` (dan AI key
 - **Stok quotes**: pastikan `data/quotes.json` cukup; mode `list` loop jika habis, namun tetap baik menambah variasi.
 - **Cache latar & metadata**: `data/pixabay_cache.json` membantu fallback latar; metadata pemakaian video/musik tersimpan di `data/used_videos.jsonl` dan `data/used_music.jsonl` (di-commit). Arsip output di Drive menambah kuota Drive (file media tidak di-commit ke repo).
 - **YouTube API quota**: 2 upload/hari umumnya aman; cek jika menaikkan frekuensi.
-- **AI**: model `:free` dapat berubah ketersediaan/rate limit; ganti `OPENROUTER_MODEL` bila perlu. Keyword latar punya fallback heuristik, mode `famous/custom` butuh AI.
+- **AI**: model `:free` dapat berubah ketersediaan/rate limit; ganti `OPENROUTER_MODEL` bila perlu. Title/deskripsi memakai AI aktif di semua mode; keyword latar punya fallback heuristik.
 - **Repo dormant**: jadwal dapat dinonaktifkan jika repo lama tidak aktif — jalankan manual/commit kecil untuk mengaktifkan kembali.
 
 ## Troubleshooting singkat
 - `invalid_grant`: token OAuth kedaluwarsa (Testing) atau dicabut → regenerate `YT_REFRESH_TOKEN` (dan pastikan app/consent sesuai).
 - Pixabay gagal/kosong: cek `PIXABAY_API_KEY`, kuota/rate limit, koneksi internet, atau cache `data/pixabay_cache.json` (fallback bila tersedia).
 - Musik Freetouse gagal/kosong: cek koneksi internet ke `api.freetouse.com` (tidak perlu key). Sistem memilih track non-premium/usable bertema calm/motivasi; jika API gagal dan tidak ada file lokal fallback, proses berhenti.
-- AI gagal/rate limit: cek key, model `:free`, atau fallback provider (mode `list` tidak butuh AI; keyword latar punya fallback heuristik).
+- AI gagal/rate limit: cek key, model `:free`, atau fallback provider. Title/deskripsi masih dibuat dengan fallback title bila semua provider gagal; keyword latar punya fallback heuristik.
 - Commit log/metadata gagal: cek Workflow permissions (Read and write).
 - `quotaExceeded` (YouTube): cek kuota di Google Cloud Console.
 - Error lokal (ffmpeg, dependensi, disk, internet, dll.): lihat bagian **“Cek krusial saat error atau gagal”** di [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md).
