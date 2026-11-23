@@ -6,3 +6,7 @@ out/
 render_plan.json
 sa.json
 *.log
+
+# Kerjaan lokal / proyek uji coba; tidak masuk GitHub untuk saat ini.
+local/
+third_party/YouTube-Shorts-Flow/
