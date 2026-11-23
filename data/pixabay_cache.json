@@ -379,6 +379,25 @@
       "keyword": "daily success",
       "stage": "S1",
       "duration_actual": 34.9
+    },
+    {
+      "id": 52823,
+      "url": "https://pixabay.com/videos/id-52823/",
+      "pageURL": "https://pixabay.com/videos/id-52823/",
+      "photographer": "dayanandgarg",
+      "user": "dayanandgarg",
+      "description": "laptop, hands, programming, work, software, digital, web",
+      "tags": "laptop, hands, programming, work, software, digital, web",
+      "type": "film",
+      "duration_meta": 18,
+      "file_url": "https://cdn.pixabay.com/video/2020/10/19/52823-471089056_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "hands working",
+      "stage": "S1",
+      "duration_actual": 17.985
     }
   ]
 }
