@@ -417,6 +417,25 @@
       "keyword": "rain",
       "stage": "S3",
       "duration_actual": 15.267
+    },
+    {
+      "id": 273927,
+      "url": "https://pixabay.com/videos/id-273927/",
+      "pageURL": "https://pixabay.com/videos/id-273927/",
+      "photographer": "DespiertaYa",
+      "user": "DespiertaYa",
+      "description": "reading, education, laptop, technology, work, office, keyboard",
+      "tags": "reading, education, laptop, technology, work, office, keyboard",
+      "type": "film",
+      "duration_meta": 18,
+      "file_url": "https://cdn.pixabay.com/video/2025/04/23/273927_large.mp4",
+      "file_label": "large",
+      "width": 1920,
+      "height": 1080,
+      "source": "pixabay",
+      "keyword": "education",
+      "stage": "S3",
+      "duration_actual": 18.64
     }
   ]
 }
