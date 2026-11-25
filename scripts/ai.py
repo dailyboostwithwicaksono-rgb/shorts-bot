@@ -5,6 +5,8 @@ untuk kompatibilitas, tetapi tidak pernah dipakai.
 """
 import json
 import os
+import re
+import time
 
 import requests
 
@@ -134,6 +136,26 @@ CALLERS = {
     "deepseek": _deepseek,
 }
 
+_REDACT = (
+    re.compile(r"(?i)(key=)[^&\s]+"),
+    re.compile(r"(?i)(bearer\s+)[^\s]+"),
+    re.compile(r"(?i)(api[_-]?key[\"']?\s*[:=]\s*[\"']?)[^\s,}\"']+"),
+)
+_RETRYABLE_STATUS = {408, 429, 500, 502, 503, 504}
+
+
+def _safe_error(exc: Exception) -> str:
+    """Error log tanpa API key/token."""
+    msg = str(exc)
+    for pattern in _REDACT:
+        msg = pattern.sub(r"\1***", msg)
+    return msg[:500]
+
+
+def _status_of(exc: Exception) -> int | None:
+    response = getattr(exc, "response", None)
+    return getattr(response, "status_code", None)
+
 
 def generate_plan(prompt: str, images_b64: list[str]) -> dict:
     """Coba provider utama, retry sekali, lalu fallback ke provider lain."""
@@ -156,14 +178,22 @@ def generate_plan(prompt: str, images_b64: list[str]) -> dict:
     last_error = None
     for name in usable:
         for attempt in range(2):
+            extra = (
+                "\nPENTING: kembalikan JSON yang valid, tanpa markdown."
+                if attempt
+                else ""
+            )
             try:
-                extra = (
-                    "\nPENTING: kembalikan JSON yang valid, tanpa markdown."
-                    if attempt
-                    else ""
-                )
                 return CALLERS[name](prompt + extra, images_b64)
             except Exception as exc:  # noqa: BLE001 - sengaja fallback
                 last_error = exc
+                status = _status_of(exc)
+                suffix = f" (HTTP {status})" if status else ""
+                print(
+                    f"[warn] AI {name} attempt {attempt + 1}/2 gagal{suffix}: "
+                    f"{_safe_error(exc)}"
+                )
+                if attempt == 0 and (status is None or status in _RETRYABLE_STATUS):
+                    time.sleep(2)
 
-    raise RuntimeError(f"Semua provider AI gagal: {last_error}")
+    raise RuntimeError(f"Semua provider AI gagal: {_safe_error(last_error)}")

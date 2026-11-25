@@ -104,14 +104,16 @@ jobs:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-          # Multi-target (Fase 4): default youtube agar perilaku tetap sama.
-          PUBLISH_TARGETS: ${{ vars.PUBLISH_TARGETS || 'youtube' }}
+          # Workflow utama: YouTube + WoopSocial (hardcode, tidak bergantung variable repo).
+          PUBLISH_TARGETS: youtube,woopsocial
           PUBLISH_DRY_RUN: ${{ vars.PUBLISH_DRY_RUN || '0' }}
           PUBLISH_FAIL_FAST: ${{ vars.PUBLISH_FAIL_FAST || '1' }}
-          # WoopSocial: publish langsung ke IG Reels + TikTok bila target `woopsocial` diaktifkan.
+          # WoopSocial: publish langsung (PUBLISH_NOW) ke IG Reels + TikTok.
           WOOPSOCIAL_API_KEY: ${{ secrets.WOOPSOCIAL_API_KEY }}
-          WOOPSOCIAL_PROJECT_ID: ${{ vars.WOOPSOCIAL_PROJECT_ID || '' }}
-          WOOPSOCIAL_PLATFORMS: ${{ vars.WOOPSOCIAL_PLATFORMS || 'instagram,tiktok' }}
+          WOOPSOCIAL_PROJECT_ID: 199149673229844480
+          WOOPSOCIAL_IG_ACCOUNT_ID: 199150343760642048
+          WOOPSOCIAL_TIKTOK_ACCOUNT_ID: 199150530960818176
+          WOOPSOCIAL_PLATFORMS: instagram,tiktok
           # Kredensial platform lain (opsional, saat target diaktifkan)
           TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
           META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
