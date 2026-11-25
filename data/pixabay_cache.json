@@ -455,6 +455,25 @@
       "keyword": "courage",
       "stage": "S1",
       "duration_actual": 20.373
+    },
+    {
+      "id": 40812,
+      "url": "https://pixabay.com/videos/id-40812/",
+      "pageURL": "https://pixabay.com/videos/id-40812/",
+      "photographer": "AlexKopeykin",
+      "user": "AlexKopeykin",
+      "description": "hard work, worker, tractor, road, builder, work, workers, building, engineer, repair, helmet, industry, hard",
+      "tags": "hard work, worker, tractor, road, builder, work, workers, building, engineer, repair, helmet, industry, hard",
+      "type": "film",
+      "duration_meta": 16,
+      "file_url": "https://cdn.pixabay.com/video/2020/06/01/40812-426920956_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "hard work",
+      "stage": "S1",
+      "duration_actual": 15.6
     }
   ]
 }
