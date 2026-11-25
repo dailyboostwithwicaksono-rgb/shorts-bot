@@ -664,6 +664,25 @@
       "keyword": "planting tree",
       "stage": "S1",
       "duration_actual": 59.7
+    },
+    {
+      "id": 79581,
+      "url": "https://pixabay.com/videos/id-79581/",
+      "pageURL": "https://pixabay.com/videos/id-79581/",
+      "photographer": "Dantegráfico",
+      "user": "Dantegráfico",
+      "description": "social media, safety in jeopardy, cyber bullying, hacker, identity theft, facial scan, internet, privacy, digital technology, data manipulation",
+      "tags": "social media, safety in jeopardy, cyber bullying, hacker, identity theft, facial scan, internet, privacy, digital technology, data manipulation",
+      "type": "film",
+      "duration_meta": 30,
+      "file_url": "https://cdn.pixabay.com/video/2021/06/29/79581-569653331_large.mp4",
+      "file_label": "large",
+      "width": 1920,
+      "height": 1080,
+      "source": "pixabay",
+      "keyword": "authentic identity",
+      "stage": "S3",
+      "duration_actual": 30.015
     }
   ]
 }
