@@ -4,7 +4,9 @@
 >
 > **Kebijakan & produk platform berubah sering.** Selalu verifikasi langkah, izin/scope, batasan, dan persyaratan review di dokumentasi resmi terbaru sebelum eksekusi. Jangan menganggap panduan ini sebagai jaminan approval atau stabilitas API.
 >
-> **Update 2026-11-25:** untuk **Instagram Reels + TikTok** sudah ada integrasi nyata lewat **WoopSocial**: set `PUBLISH_TARGETS=woopsocial` dan `WOOPSOCIAL_API_KEY`. Publisher `scripts/publish_woopsocial.py` meng-upload video lalu **publish langsung** (`PUBLISH_NOW`, tanpa jadwal) memakai metadata dari `out/manifest.json`. Bagian TikTok/Meta/X di bawah tetap merujuk ke **API langsung** (masih formatter/stub).
+> **Update 2026-11-25:** untuk **Instagram Reels + TikTok** sudah ada integrasi nyata lewat **WoopSocial**: set `PUBLISH_TARGETS=woopsocial` dan `WOOPSOCIAL_API_KEY`. Publisher `scripts/publish_woopsocial.py` meng-upload video lalu **publish langsung** (`PUBLISH_NOW`, tanpa jadwal) memakai metadata dari `out/manifest.json`.
+>
+> **Update 2026-11-25 (Buffer):** target `buffer` memakai GraphQL API Buffer (`https://api.buffer.com`, Bearer `BUFFER_API_KEY`) dan **publish langsung** (`shareNow`) ke channel `facebook` + `threads`. Buffer **tidak punya endpoint upload media**: `scripts/publish_buffer.py` menghosting video sebagai GitHub Release asset publik dan mengirim URL-nya di `assets[].video.url`. Link Google Drive tidak memenuhi syarat (bukan direct/public). Bagian TikTok/Meta/X di bawah tetap merujuk ke **API langsung** (masih formatter/stub).
 
 ## 0. Kesiapan umum (berlaku untuk semua platform)
 
@@ -186,6 +188,7 @@ Scope sensitif dan memerlukan persetujuan; set minimal yang relevan sering menca
 2. Dry-run semua target yang diinginkan:
    - PowerShell: `$env:PUBLISH_TARGETS='youtube,tiktok,meta,x'; $env:PUBLISH_DRY_RUN='1'; python scripts/publish.py`
    - WoopSocial (nyata, tanpa publish): `$env:PUBLISH_TARGETS='woopsocial'; $env:PUBLISH_DRY_RUN='1'; python scripts/publish.py` — mengecek akun + `posts_validate` dengan media uji. Bila library kosong, video di-upload hanya untuk validasi; **tidak ada post yang dibuat**.
+   - Buffer (nyata, tanpa publish): `$env:PUBLISH_TARGETS='buffer'; $env:PUBLISH_DRY_RUN='1'; python scripts/publish.py` — query akun/channel + susun payload GraphQL; **tidak upload asset dan tidak membuat post**.
 3. Untuk uji gagal-parsial (terkontrol): set `PUBLISH_FAIL_FAST=0` (hanya relevan saat bukan dry-run/ada kegagalan nyata).
 4. **Jangan** mengaktifkan publish nyata ke platform baru sebelum: akses/approval disetujui, kredensial valid, implementasi API selesai & diuji terisolasi, dan kepatuhan konten terverifikasi.
 

@@ -41,6 +41,13 @@ def main() -> None:
                 except Exception as exc:  # noqa: BLE001
                     raise RuntimeError(f"modul publisher WoopSocial tidak tersedia: {exc}") from exc
                 res = publish_woopsocial(content, dry_run=dry_run)
+            elif target == "buffer":
+                # Buffer: GraphQL createPost (shareNow) ke channel aktif (Facebook/Threads).
+                try:
+                    from publish_buffer import publish_buffer
+                except Exception as exc:  # noqa: BLE001
+                    raise RuntimeError(f"modul publisher Buffer tidak tersedia: {exc}") from exc
+                res = publish_buffer(content, dry_run=dry_run)
             elif target in ("tiktok", "meta", "x"):
                 # Fase 4: stub/dry-run terbatas bila akses/API belum siap
                 try:

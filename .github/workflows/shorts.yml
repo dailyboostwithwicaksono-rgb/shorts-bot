@@ -105,7 +105,7 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           # Workflow utama: YouTube + WoopSocial (hardcode, tidak bergantung variable repo).
-          PUBLISH_TARGETS: youtube,woopsocial
+          PUBLISH_TARGETS: youtube,woopsocial,buffer
           PUBLISH_DRY_RUN: ${{ vars.PUBLISH_DRY_RUN || '0' }}
           PUBLISH_FAIL_FAST: ${{ vars.PUBLISH_FAIL_FAST || '1' }}
           # WoopSocial: publish langsung (PUBLISH_NOW) ke IG Reels + TikTok.
@@ -114,6 +114,15 @@ jobs:
           WOOPSOCIAL_IG_ACCOUNT_ID: '199150343760642048'
           WOOPSOCIAL_TIKTOK_ACCOUNT_ID: '199150530960818176'
           WOOPSOCIAL_PLATFORMS: instagram,tiktok
+          # Buffer: Facebook Page + Threads, publish langsung (shareNow).
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_ORGANIZATION_ID: '67966ea2f0cdace9b4192336'
+          BUFFER_SERVICES: facebook,threads
+          BUFFER_MODE: shareNow
+          BUFFER_RELEASE_TAG: media
+          BUFFER_ASSET_TTL_HOURS: '6'
+          # GitHub token untuk menghosting video sebagai Release asset publik.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Kredensial platform lain (opsional, saat target diaktifkan)
           TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
           META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
