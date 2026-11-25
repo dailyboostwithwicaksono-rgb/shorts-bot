@@ -531,6 +531,25 @@
       "keyword": "first step",
       "stage": "S1",
       "duration_actual": 37.137
+    },
+    {
+      "id": 101697,
+      "url": "https://pixabay.com/videos/id-101697/",
+      "pageURL": "https://pixabay.com/videos/id-101697/",
+      "photographer": "KlausHausmann",
+      "user": "KlausHausmann",
+      "description": "corona, covid 19, corona virus, disinfectant, hand disinfection, hygiene, medicine, virus, bacteria, health, healthcare, hospital, rotation, move",
+      "tags": "corona, covid 19, corona virus, disinfectant, hand disinfection, hygiene, medicine, virus, bacteria, health, healthcare, hospital, rotation, move",
+      "type": "film",
+      "duration_meta": 30,
+      "file_url": "https://cdn.pixabay.com/video/2021/12/16/101697-658820065_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "hands moving",
+      "stage": "S1",
+      "duration_actual": 30.015
     }
   ]
 }
