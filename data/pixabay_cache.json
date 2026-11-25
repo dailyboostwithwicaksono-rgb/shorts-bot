@@ -588,6 +588,25 @@
       "keyword": "inspiration",
       "stage": "S1",
       "duration_actual": 52.185
+    },
+    {
+      "id": 2402,
+      "url": "https://pixabay.com/videos/id-2402/",
+      "pageURL": "https://pixabay.com/videos/id-2402/",
+      "photographer": "tmeier1964",
+      "user": "tmeier1964",
+      "description": "fair, crowd, ride, fairground, folk festival",
+      "tags": "fair, crowd, ride, fairground, folk festival",
+      "type": "film",
+      "duration_meta": 40,
+      "file_url": "https://cdn.pixabay.com/video/2016/03/07/2402-158039828_large.mp4",
+      "file_label": "large",
+      "width": 1920,
+      "height": 1080,
+      "source": "pixabay",
+      "keyword": "crowd watching",
+      "stage": "S3",
+      "duration_actual": 40.0
     }
   ]
 }
