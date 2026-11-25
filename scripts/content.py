@@ -1,5 +1,6 @@
 """Kontrak konten kanonik berbasis artefak render (out/)."""
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -8,6 +9,17 @@ from common import ROOT
 
 OUT_DIR = ROOT / "out"
 MANIFEST_PATH = OUT_DIR / "manifest.json"
+
+
+def _strip_leading_title(text: str, title: str) -> str:
+    """Buang pengulangan judul di awal deskripsi (fallback AI sering mengulang)."""
+    title = (title or "").strip()
+    if not title or not text:
+        return text
+    match = re.match(r"^\s*" + re.escape(title) + r"\s*", text, re.IGNORECASE)
+    if match:
+        return text[match.end() :].lstrip()
+    return text
 
 
 @dataclass
@@ -33,7 +45,7 @@ class CanonicalContent:
     def description(self) -> str:
         desc = self.manifest.get("description")
         if desc:
-            return str(desc)
+            return _strip_leading_title(str(desc), self.title)
         hashtags = self.manifest.get("hashtags") or []
         return f"{self.caption}\n\n{' '.join(str(h) for h in hashtags)}".strip()
 

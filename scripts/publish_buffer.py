@@ -122,7 +122,8 @@ def _format_text(content: CanonicalContent, service: str) -> str:
 
     `manifest.caption` sengaja dipakai sebagai alias judul oleh `plan.py`, jadi
     bukan sumber deskripsi. Memakainya membuat caption Threads/fb hanya mengulang
-    judul. Sumber konten adalah `manifest.description` (lihat publish_woopsocial).
+    judul. Sumber konten adalah `manifest.description`; `CanonicalContent.description`
+    juga membuang judul yang diulang di awal deskripsi oleh fallback AI.
     """
     title = (content.title or "").strip()
     body = re.sub(r"[ \t]{2,}", " ", (content.description or "").strip())

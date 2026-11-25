@@ -67,7 +67,7 @@ Masalah umum: `401/403` berarti kunci salah/perlu di-rotate; `tidak ada akun ...
 - Resolusi channel dilakukan otomatis lewat `BUFFER_SERVICES=facebook,threads`, jadi ID tidak perlu di-hardcode di kode.
 - Perilaku: `schedulingType: automatic`, `mode: shareNow` (publish langsung). Kuota harian Facebook = 35 post, jadi 5x/hari aman.
 - Facebook wajib membawa `metadata.facebook.type`; default `reel` (video 9:16), bisa diganti lewat `BUFFER_FACEBOOK_POST_TYPE` (`post`/`reel`/`story`).
-- Teks: Facebook memakai `title + description` lengkap (maks 2200 karakter); Threads memakai `title + description` yang dipotong aman di 500 karakter. `manifest.caption` adalah alias judul dari `plan.py`, jadi **tidak** dipakai sebagai isi deskripsi — penyebab caption Threads sebelumnya hanya judul yang terulang.
+- Teks: Facebook memakai `title + description` lengkap (maks 2200 karakter); Threads memakai `title + description` yang dipotong aman di 500 karakter. `manifest.caption` adalah alias judul dari `plan.py`, jadi **tidak** dipakai sebagai isi deskripsi. Judul yang terulang di awal `description` (fallback AI) juga dibuang otomatis oleh `CanonicalContent.description`, sehingga judul tampil sekali.
 
 ### Media: wajib URL publik
 
@@ -120,7 +120,7 @@ Di GitHub Actions, `GH_TOKEN` diambil otomatis dari `secrets.GITHUB_TOKEN`. Bila
 | `channel ... belum terhubung; dilewati` | Channel belum di-add di Buffer UI, atau nama di `BUFFER_SERVICES` salah. Tambahkan channel lalu jalankan ulang. |
 | `URL media tidak bisa diakses publik` | Host tidak direct/HTTPS atau repo private. Pakai Release asset dari repo public, atau `BUFFER_VIDEO_URL` yang benar-benar publik. |
 | `InvalidInputError: Facebook posts require a type (post, story, or reel)` | Payload Facebook belum punya `metadata.facebook.type`. Sudah ditambahkan; default `reel`. Cek `BUFFER_FACEBOOK_POST_TYPE` bila diubah ke nilai di luar daftar. |
-| Caption Threads/Facebook hanya mengulang judul | `manifest.caption` memang alias judul. Publisher sekarang mengambil `manifest.description` sebagai isi; Facebook ~2200 char, Threads 500 char. |
+| Caption Threads/Facebook mengulang judul 2x | `manifest.caption` adalah alias judul, dan fallback AI kadang mengulang judul di awal `description`. `CanonicalContent.description` sekarang membuang judul di awal deskripsi; Facebook ~2200 char, Threads 500 char. |
 | `needs_approval` | Channel mengharuskan approval; buka Buffer UI dan setujui post. API tetap menyimpan post sebagai draft. |
 | `429 Too Many Requests` | Penuhi `Retry-After`; kurangi frekuensi atau gunakan jadwal Buffer. |
 | Video 9:16 di Facebook | Dikirim sebagai `metadata.facebook.type: reel` (default), sehingga tampil sebagai Reel. |
