@@ -1,6 +1,6 @@
 # shorts-bot
 
-Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar video dari **Pixabay** (dipilih relevan via kata kunci AI, filter metadata oleh kode) dengan gaya visual konsisten (grayscale + overlay + band ber-gradasi), musik latar dari **Freetouse API** (non-premium, tema calm/motivasi), arsip ke Google Drive, lalu upload ke YouTube Shorts. Proses utama berjalan di **GitHub Actions** (bisa juga dijalankan **lokal**, lihat [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)).
+Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar video dari **Pixabay** (dipilih relevan via kata kunci AI, filter metadata oleh kode) dengan gaya visual konsisten (grayscale + overlay + band ber-gradasi), musik latar dari **Freetouse API** (non-premium, tema calm/motivasi), arsip opsional ke Google Drive, lalu publish ke YouTube Shorts, Instagram Reels, TikTok, Facebook, dan Threads. Proses utama berjalan di **GitHub Actions** (bisa juga dijalankan **lokal**, lihat [docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)).
 
 ## Ringkasan
 - **Latar**: video dari **Pixabay Video API** (`PIXABAY_API_KEY`). AI (teks saja, 1 langkah) menghasilkan **1–3 kata kunci** dari isi quote → kode mencari & memfilter metadata (tanpa animasi, durasi ≥ quote dengan pelonggaran bertahap, kualitas progresif **tanpa upscale** F1 → F2 → semua, prefer `large`) → ambil hingga 3 kandidat → **pilih 1 acak (kode)**. Jika kosong, fallback ke cache keberhasilan di `data/pixabay_cache.json` (di-commit). Pexels dinonaktifkan.
@@ -110,9 +110,9 @@ Saat status **Testing**, refresh token bisa kedaluwarsa ~7 hari (`invalid_grant`
 - **OAuth user cap**: untuk app yang meminta scope sensitif/terbatas yang belum disetujui, jumlah pengguna yang bisa memberi izin dibatasi sepanjang masa proyek (tidak bisa di-reset). Untuk pemakaian **hanya oleh akunmu sendiri**, ini praktis tidak masalah — jangan memberi akses ke pengguna lain. Layar “unverified app” dapat muncul bila scope belum disetujui.
 
 ## Secrets & Variables (GitHub Actions)
-Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `PIXABAY_API_KEY`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`, `WOOPSOCIAL_API_KEY` (untuk target `woopsocial`).
+Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `PIXABAY_API_KEY`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`, `WOOPSOCIAL_API_KEY` (target `woopsocial`), `BUFFER_API_KEY` (target `buffer`; `GITHUB_TOKEN` otomatis untuk Release asset).
 
-Workflow saat ini meng-hardcode `PUBLISH_TARGETS: youtube,woopsocial,buffer` serta ID proyek/akun WoopSocial dan ID organisasi Buffer (terkutip sebagai string). Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`nvidia/nemotron-3.5-lightning:free`), `GEMINI_MODEL` (`gemini-3.5-flash-lite`), `YT_PRIVACY` (`public`/`unlisted`), `PUBLISH_DRY_RUN` (default `0`), `PUBLISH_FAIL_FAST` (default `1`), `WOOPSOCIAL_PLATFORMS` (default `instagram,tiktok`), `WOOPSOCIAL_LINK` (default `-`), `BUFFER_SERVICES` (default `facebook,threads`), `BUFFER_MODE` (default `shareNow`), `BUFFER_RELEASE_TAG` (default `media`), `BUFFER_ASSET_TTL_HOURS` (default `6`).
+Workflow saat ini meng-hardcode `PUBLISH_TARGETS: youtube,woopsocial,buffer` serta ID proyek/akun WoopSocial dan ID organisasi Buffer (terkutip sebagai string). Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`nvidia/nemotron-3.5-lightning:free`), `GEMINI_MODEL` (`gemini-3.5-flash-lite`), `YT_PRIVACY` (`public`/`unlisted`), `PUBLISH_DRY_RUN` (default `0`), `PUBLISH_FAIL_FAST` (default `1`), `WOOPSOCIAL_PLATFORMS` (default `instagram,tiktok`), `WOOPSOCIAL_LINK` (default `-`), `BUFFER_SERVICES` (default `facebook,threads`), `BUFFER_MODE` (default `shareNow`), `BUFFER_RELEASE_TAG` (default `media`), `BUFFER_ASSET_TTL_HOURS` (default `6`), `ARCHIVE_DRIVE` (default `1`; set `0` untuk melewati arsip Google Drive/OAuth).
 
 Title dan pembuka deskripsi dibuat oleh provider AI aktif (`AI_PROVIDER`, dengan retry dan fallback ke provider lain yang punya key) untuk **semua mode** (`list`/`famous`/`custom`). Bila semua provider gagal, title tetap dipakai sebagai pembuka deskripsi.
 
@@ -126,6 +126,8 @@ Secrets opsional (multi-platform): WoopSocial `WOOPSOCIAL_API_KEY` (sudah diimpl
 
 ## Menjalankan di lokal (detail, bertahap)
 Panduan lengkap (untuk pemula, termasuk instalasi ffmpeg, env, penjadwalan lokal, dan **cek krusial saat error/gagal**): **[docs/RUNNING_LOCAL.md](docs/RUNNING_LOCAL.md)**.
+
+Panduan publish via API tanpa Google OAuth (WoopSocial untuk IG/TikTok, Buffer untuk Facebook/Threads, serta cara melewati arsip Drive): **[docs/WOOPSOCIAL_BUFFER_GUIDE.md](docs/WOOPSOCIAL_BUFFER_GUIDE.md)**. Google OAuth tetap diperlukan untuk YouTube dan arsip Drive; keduanya bisa dimatikan bila tidak dipakai.
 
 Ringkas: pasang dependensi Python & ffmpeg → set `PIXABAY_API_KEY` (dan AI key jika perlu) dengan internet aktif → `python scripts/plan.py` → `python scripts/render.py` → ambil `out/final.mp4`, `out/caption.txt` (nama legacy; isinya **title**) dan `out/description.txt` (deskripsi siap tempel) untuk **upload manual** ke YouTube. Latar dari Pixabay API (cache fallback di `data/pixabay_cache.json`); musik diambil otomatis dari Freetouse API (non-premium, tema calm/motivasi, durasi memadai) dan diunduh saat run. File media tidak di-commit; metadata pemakaian tersimpan di `data/used_videos.jsonl` dan `data/used_music.jsonl`.
 

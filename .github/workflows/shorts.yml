@@ -91,6 +91,8 @@ jobs:
         run: python scripts/render.py
 
       - name: Arsipkan hasil ke Drive (OAuth user)
+        # Set repository variable ARCHIVE_DRIVE=0 untuk memakai alur tanpa Google Drive/OAuth.
+        if: vars.ARCHIVE_DRIVE != '0'
         env:
           TZ: Asia/Jakarta
           GDRIVE_OUTPUTS_FOLDER_ID: ${{ secrets.GDRIVE_OUTPUTS_FOLDER_ID }}
