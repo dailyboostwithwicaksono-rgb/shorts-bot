@@ -11,6 +11,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 concurrency:
   group: pages
@@ -28,5 +29,22 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
+      # upload-pages-artifact berhasil, tetapi daftar artifact di API bisa
+      # belum terisi saat deploy-pages menanyakannya (race condition). Tunggu dulu.
+      - name: Tunggu artifact github-pages terdaftar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 24); do
+            count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?name=github-pages" --jq '.total_count' || echo 0)
+            if [ "$count" -ge 1 ]; then
+              echo "Artifact github-pages sudah terlihat (percobaan $i)."
+              exit 0
+            fi
+            echo "Artifact belum terlihat (percobaan $i/24); tunggu 5 detik..."
+            sleep 5
+          done
+          echo "Artifact github-pages tidak muncul di API setelah 2 menit." >&2
+          exit 1
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.1
