@@ -10,6 +10,7 @@ Env:
 - BUFFER_ORGANIZATION_ID: opsional, default organisasi utama.
 - BUFFER_SERVICES       : opsional, default `facebook,threads`.
 - BUFFER_MODE           : opsional, default `shareNow` (atau `customScheduled`).
+- BUFFER_FACEBOOK_POST_TYPE: opsional, default `reel` (`post`/`reel`/`story`).
 - BUFFER_DUE_AT         : wajib bila mode `customScheduled` (ISO 8601 UTC).
 - BUFFER_VIDEO_URL      : opsional; bila diisi, upload Release dilewati.
 - BUFFER_RELEASE_TAG    : opsional, default `media`.
@@ -41,7 +42,9 @@ GH_API = "https://api.github.com"
 GH_UPLOAD = "https://uploads.github.com"
 DEFAULT_ORG_ID = "67966ea2f0cdace9b4192336"
 DEFAULT_SERVICES = ("facebook", "threads")
-TEXT_LIMIT = 500  # batas aman Threads; Facebook lebih longgar.
+THREADS_TEXT_LIMIT = 500
+FACEBOOK_TEXT_LIMIT = 2200
+FACEBOOK_POST_TYPES = ("post", "reel", "story")
 
 QUERY_CHANNELS = """
 query BufferChannels($organizationId: OrganizationId!) {
@@ -102,14 +105,45 @@ def _requested_services() -> list[str]:
     return result or list(DEFAULT_SERVICES)
 
 
-def _format_text(content: CanonicalContent) -> str:
-    """Judul + caption kanonik, dipotong aman untuk Threads."""
+def _facebook_post_type() -> str:
+    raw = (os.getenv("BUFFER_FACEBOOK_POST_TYPE") or "reel").strip().lower()
+    if not raw:
+        raw = "reel"
+    if raw not in FACEBOOK_POST_TYPES:
+        raise RuntimeError(
+            "BUFFER_FACEBOOK_POST_TYPE tidak dikenal: "
+            f"{raw} (pilih: {', '.join(FACEBOOK_POST_TYPES)})"
+        )
+    return raw
+
+
+def _format_text(content: CanonicalContent, service: str) -> str:
+    """Judul + deskripsi kanonik, dipotong sesuai batas masing-masing channel.
+
+    `manifest.caption` sengaja dipakai sebagai alias judul oleh `plan.py`, jadi
+    bukan sumber deskripsi. Memakainya membuat caption Threads/fb hanya mengulang
+    judul. Sumber konten adalah `manifest.description` (lihat publish_woopsocial).
+    """
     title = (content.title or "").strip()
-    caption = (content.caption or "").strip()
-    text = f"{title}\n\n{caption}".strip() if title else caption
-    if len(text) > TEXT_LIMIT:
-        text = text[: TEXT_LIMIT - 3].rstrip() + "..."
-    return text
+    body = re.sub(r"[ \t]{2,}", " ", (content.description or "").strip())
+    if not body:
+        body = (content.caption or "").strip()
+    if body == title:
+        body = ""
+
+    tags = " ".join(content.hashtags or [])
+    suffix = ""
+    if tags and tags not in body:
+        suffix = f"\n\n{tags}"
+
+    limit = THREADS_TEXT_LIMIT if service == "threads" else FACEBOOK_TEXT_LIMIT
+    prefix = f"{title}\n\n" if title else ""
+    room = limit - len(prefix) - len(suffix) - 3  # 3 karakter untuk elipsis
+    if room < 40:
+        return (prefix + suffix)[:limit].strip()
+    if len(body) > room:
+        body = body[:room].rstrip() + "..."
+    return (prefix + body + suffix).strip()
 
 
 class BufferClient:
@@ -306,6 +340,7 @@ def publish_buffer(content: CanonicalContent, dry_run: bool = False) -> PublishR
     mode = (os.getenv("BUFFER_MODE") or "shareNow").strip() or "shareNow"
     if mode not in ("shareNow", "customScheduled", "addToQueue", "shareNext"):
         raise RuntimeError(f"BUFFER_MODE tidak dikenal: {mode}")
+    fb_post_type = _facebook_post_type()
 
     client = BufferClient(api_key)
     available = client.channels(organization_id)
@@ -324,7 +359,7 @@ def publish_buffer(content: CanonicalContent, dry_run: bool = False) -> PublishR
     if not channels:
         raise RuntimeError("Tidak ada channel Buffer yang aktif untuk target: " + ", ".join(services))
 
-    text = _format_text(content)
+    texts = {service: _format_text(content, service) for service in channels}
     video_url = "<URL Release asset dibuat saat eksekusi>"
     if dry_run:
         explicit = (os.getenv("BUFFER_VIDEO_URL") or "").strip()
@@ -340,12 +375,14 @@ def publish_buffer(content: CanonicalContent, dry_run: bool = False) -> PublishR
         if not channel:
             continue
         payload: dict = {
-            "text": text,
+            "text": texts[service],
             "channelId": channel["id"],
             "schedulingType": "automatic",
             "mode": mode,
             "assets": [{"video": {"url": video_url}}],
         }
+        if service == "facebook":
+            payload["metadata"] = {"facebook": {"type": fb_post_type}}
         if mode == "customScheduled":
             due_at = (os.getenv("BUFFER_DUE_AT") or "").strip()
             if not due_at:
@@ -356,9 +393,10 @@ def publish_buffer(content: CanonicalContent, dry_run: bool = False) -> PublishR
     summary = {
         "dry_run": dry_run,
         "mode": mode,
+        "facebookPostType": fb_post_type,
         "organizationId": organization_id,
         "videoUrl": video_url,
-        "text": text,
+        "texts": texts,
         "payloads": payloads,
         "results": [],
     }

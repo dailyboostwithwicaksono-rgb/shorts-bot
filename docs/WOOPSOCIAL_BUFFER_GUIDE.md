@@ -25,7 +25,7 @@ Semua kunci hanya boleh disimpan sebagai **GitHub Repository Secret** dan/atau `
 | `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN` | Google OAuth user | target `youtube` + arsip Drive |
 | `GDRIVE_OUTPUTS_FOLDER_ID` | Folder tujuan arsip | arsip Drive |
 
-Repository variables yang dipakai (opsional): `ARCHIVE_DRIVE` (default `1`; set `0` untuk melewati arsip Drive), `PUBLISH_DRY_RUN`, `PUBLISH_FAIL_FAST`. Target, project ID, dan akun WoopSocial/Buffer sudah di-hardcode di workflow agar tidak bergantung pada variable yang salah ketik.
+Repository variables yang dipakai (opsional): `ARCHIVE_DRIVE` (default `1`; set `0` untuk melewati arsip Drive), `PUBLISH_DRY_RUN`, `PUBLISH_FAIL_FAST`, `BUFFER_FACEBOOK_POST_TYPE` (default `reel`). Target default `youtube,woopsocial,buffer` dan ID akun/project sudah di-hardcode di workflow agar tidak bergantung pada variable yang salah ketik. Untuk **manual run** yang hanya ingin mengulang sebagian, isi input `publish_targets` (mis. `buffer`) agar target lain tidak publish dobel.
 
 ## 3. WoopSocial (Instagram Reels + TikTok)
 
@@ -66,6 +66,8 @@ Masalah umum: `401/403` berarti kunci salah/perlu di-rotate; `tidak ada akun ...
 - Channel aktif: Facebook Page `Daily Boost with Wicaksono` → `6b0703908541f09ecb9ebcea`; Threads `dailyboostwithwicaksono` → `6b0709f78541f09ecb9f594a`.
 - Resolusi channel dilakukan otomatis lewat `BUFFER_SERVICES=facebook,threads`, jadi ID tidak perlu di-hardcode di kode.
 - Perilaku: `schedulingType: automatic`, `mode: shareNow` (publish langsung). Kuota harian Facebook = 35 post, jadi 5x/hari aman.
+- Facebook wajib membawa `metadata.facebook.type`; default `reel` (video 9:16), bisa diganti lewat `BUFFER_FACEBOOK_POST_TYPE` (`post`/`reel`/`story`).
+- Teks: Facebook memakai `title + description` lengkap (maks 2200 karakter); Threads memakai `title + description` yang dipotong aman di 500 karakter. `manifest.caption` adalah alias judul dari `plan.py`, jadi **tidak** dipakai sebagai isi deskripsi — penyebab caption Threads sebelumnya hanya judul yang terulang.
 
 ### Media: wajib URL publik
 
@@ -102,7 +104,7 @@ Log payload ada di `work/buffer_*.json` (tanpa token).
 $env:PUBLISH_TARGETS='buffer'; $env:PUBLISH_DRY_RUN='0'; $env:GH_TOKEN='<PAT dengan izin repo>'; python scripts/publish.py
 ```
 
-Di GitHub Actions, `GH_TOKEN` diambil otomatis dari `secrets.GITHUB_TOKEN`. Log yang diharapkan:
+Di GitHub Actions, `GH_TOKEN` diambil otomatis dari `secrets.GITHUB_TOKEN`. Bila sebagian target sudah sukses lalu run gagal di target lain, jalankan ulang lewat *Run workflow* dengan input `publish_targets=buffer` agar YouTube/WoopSocial/Threads tidak terbit lagi. Log yang diharapkan:
 
 ```text
 [ok] Buffer facebook: post <id> status=sending
@@ -117,9 +119,11 @@ Di GitHub Actions, `GH_TOKEN` diambil otomatis dari `secrets.GITHUB_TOKEN`. Log 
 | `401 Unauthorized` | `BUFFER_API_KEY` salah/ter-rotate. Perbarui Secret GitHub. |
 | `channel ... belum terhubung; dilewati` | Channel belum di-add di Buffer UI, atau nama di `BUFFER_SERVICES` salah. Tambahkan channel lalu jalankan ulang. |
 | `URL media tidak bisa diakses publik` | Host tidak direct/HTTPS atau repo private. Pakai Release asset dari repo public, atau `BUFFER_VIDEO_URL` yang benar-benar publik. |
+| `InvalidInputError: Facebook posts require a type (post, story, or reel)` | Payload Facebook belum punya `metadata.facebook.type`. Sudah ditambahkan; default `reel`. Cek `BUFFER_FACEBOOK_POST_TYPE` bila diubah ke nilai di luar daftar. |
+| Caption Threads/Facebook hanya mengulang judul | `manifest.caption` memang alias judul. Publisher sekarang mengambil `manifest.description` sebagai isi; Facebook ~2200 char, Threads 500 char. |
 | `needs_approval` | Channel mengharuskan approval; buka Buffer UI dan setujui post. API tetap menyimpan post sebagai draft. |
 | `429 Too Many Requests` | Penuhi `Retry-After`; kurangi frekuensi atau gunakan jadwal Buffer. |
-| Video 9:16 di Facebook | Facebook akan menampilkannya sebagai Reel (perilaku normal). |
+| Video 9:16 di Facebook | Dikirim sebagai `metadata.facebook.type: reel` (default), sehingga tampil sebagai Reel. |
 
 ## 5. Melewati arsip Google Drive
 

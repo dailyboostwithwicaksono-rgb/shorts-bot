@@ -36,6 +36,11 @@ on:
           - id
           - en
         default: auto
+      publish_targets:
+        description: 'Target publish manual; kosongkan untuk youtube,woopsocial,buffer'
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -106,8 +111,8 @@ jobs:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-          # Workflow utama: YouTube + WoopSocial (hardcode, tidak bergantung variable repo).
-          PUBLISH_TARGETS: youtube,woopsocial,buffer
+          # Default semua target; manual run bisa isi `publish_targets` (mis. `buffer`) agar tidak duplikat target lain.
+          PUBLISH_TARGETS: ${{ inputs.publish_targets || 'youtube,woopsocial,buffer' }}
           PUBLISH_DRY_RUN: ${{ vars.PUBLISH_DRY_RUN || '0' }}
           PUBLISH_FAIL_FAST: ${{ vars.PUBLISH_FAIL_FAST || '1' }}
           # WoopSocial: publish langsung (PUBLISH_NOW) ke IG Reels + TikTok.
@@ -121,6 +126,7 @@ jobs:
           BUFFER_ORGANIZATION_ID: '67966ea2f0cdace9b4192336'
           BUFFER_SERVICES: facebook,threads
           BUFFER_MODE: shareNow
+          BUFFER_FACEBOOK_POST_TYPE: reel
           BUFFER_RELEASE_TAG: media
           BUFFER_ASSET_TTL_HOURS: '6'
           # GitHub token untuk menghosting video sebagai Release asset publik.
