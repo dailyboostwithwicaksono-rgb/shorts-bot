@@ -493,6 +493,25 @@
       "keyword": "hands starting",
       "stage": "S1",
       "duration_actual": 51.433
+    },
+    {
+      "id": 384240,
+      "url": "https://pixabay.com/videos/id-384240/",
+      "pageURL": "https://pixabay.com/videos/id-384240/",
+      "photographer": "Eryliaa",
+      "user": "Eryliaa",
+      "description": "switzerland, swiss, rural road, autumn meadows, golden grass, fall landscape, countryside, hills, nature, open landscape, peaceful journey, idyllic, clean road, scenic drive, travel, europe, 4k video, 4k footage, ultra hd",
+      "tags": "switzerland, swiss, rural road, autumn meadows, golden grass, fall landscape, countryside, hills, nature, open landscape, peaceful journey, idyllic, clean road, scenic drive, travel, europe, 4k video, 4k footage, ultra hd",
+      "type": "film",
+      "duration_meta": 29,
+      "file_url": "https://cdn.pixabay.com/video/2026/10/21/384240_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "open road",
+      "stage": "S1",
+      "duration_actual": 29.997
     }
   ]
 }
