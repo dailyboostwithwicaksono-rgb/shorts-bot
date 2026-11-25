@@ -512,6 +512,25 @@
       "keyword": "open road",
       "stage": "S1",
       "duration_actual": 29.997
+    },
+    {
+      "id": 185451,
+      "url": "https://pixabay.com/videos/id-185451/",
+      "pageURL": "https://pixabay.com/videos/id-185451/",
+      "photographer": "KIMDAEJEUNG",
+      "user": "KIMDAEJEUNG",
+      "description": "brook, morning, fog, stepping stone",
+      "tags": "brook, morning, fog, stepping stone",
+      "type": "film",
+      "duration_meta": 37,
+      "file_url": "https://cdn.pixabay.com/video/2023/10/17/185451-875362711_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "first step",
+      "stage": "S1",
+      "duration_actual": 37.137
     }
   ]
 }
