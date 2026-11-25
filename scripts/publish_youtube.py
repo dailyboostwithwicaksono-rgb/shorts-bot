@@ -89,11 +89,12 @@ def resumable_upload(token: str, video: Path, metadata: dict) -> str:
     raise SystemExit("Upload selesai tanpa response video ID.")
 
 
-def publish_youtube(content: CanonicalContent, dry_run: bool = False) -> PublishResult:
+def publish_youtube(content: CanonicalContent, dry_run: bool = False, token_env: str | None = None) -> PublishResult:
     metadata = format_youtube_metadata(content)
     if dry_run:
-        return PublishResult(target="youtube", status="dry_run", message="dry-run: metadata disiapkan, upload dilewati")
-    token = get_access_token()
+        env_name = (token_env or os.getenv("YT_REFRESH_TOKEN_ENV") or "YT_REFRESH_TOKEN").strip() or "YT_REFRESH_TOKEN"
+        return PublishResult(target="youtube", status="dry_run", message=f"dry-run: metadata disiapkan, upload dilewati (token env: {env_name})")
+    token = get_access_token(token_env)
     video_id = resumable_upload(token, content.video_path, metadata)
     url = f"https://www.youtube.com/shorts/{video_id}"
     print(f"[ok] YouTube video ID: {video_id}")

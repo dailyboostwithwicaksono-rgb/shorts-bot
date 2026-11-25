@@ -62,7 +62,7 @@ Keduanya berbagi tujuan akhir (video Shorts siap publikasi), tetapi **berbeda ko
 ### 4.2 Trigger & Konfigurasi
 
 Dari `shorts.yml`:
-- **Schedule (UTC):** `0 20 * * *` (03:00 WIB) dan `0 11 * * *` (18:00 WIB).
+- **Schedule (UTC):** 5x/hari interval tetap 4j48m mulai 19:00 WIB → `0 12 * * *`, `48 16 * * *`, `36 21 * * *`, `24 2 * * *`, `12 7 * * *` (WIB: 19.00, 23.48, 04.36, 09.24, 14.12).
 - **Manual dispatch:** input `mode` (`list|famous|custom`), `quote_text`, `quote_author`, `quote_language`.
 - **Concurrency:** group `shorts-bot`, `cancel-in-progress: false`.
 - **Permissions:** `contents: write` (untuk commit metadata/log).

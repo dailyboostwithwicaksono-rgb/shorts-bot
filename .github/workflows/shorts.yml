@@ -1,10 +1,14 @@
 name: shorts-bot
 
 on:
-  # Cron dalam UTC. 20:00 UTC = 03:00 WIB; 11:00 UTC = 18:00 WIB.
+  # Cron dalam UTC. 5x/hari, interval tetap 4j48m (=24j/5), mulai 19:00 WIB.
+  # WIB 19:00, 23:48, 04:36, 09:24, 14:12 -> UTC 12:00, 16:48, 21:36, 02:24, 07:12.
   schedule:
-    - cron: '0 20 * * *'
-    - cron: '0 11 * * *'
+    - cron: '0 12 * * *'
+    - cron: '48 16 * * *'
+    - cron: '36 21 * * *'
+    - cron: '24 2 * * *'
+    - cron: '12 7 * * *'
   workflow_dispatch:
     inputs:
       mode:
@@ -104,6 +108,10 @@ jobs:
           PUBLISH_TARGETS: ${{ vars.PUBLISH_TARGETS || 'youtube' }}
           PUBLISH_DRY_RUN: ${{ vars.PUBLISH_DRY_RUN || '0' }}
           PUBLISH_FAIL_FAST: ${{ vars.PUBLISH_FAIL_FAST || '1' }}
+          # WoopSocial: publish langsung ke IG Reels + TikTok bila target `woopsocial` diaktifkan.
+          WOOPSOCIAL_API_KEY: ${{ secrets.WOOPSOCIAL_API_KEY }}
+          WOOPSOCIAL_PROJECT_ID: ${{ vars.WOOPSOCIAL_PROJECT_ID || '' }}
+          WOOPSOCIAL_PLATFORMS: ${{ vars.WOOPSOCIAL_PLATFORMS || 'instagram,tiktok' }}
           # Kredensial platform lain (opsional, saat target diaktifkan)
           TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
           META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}

@@ -1,12 +1,15 @@
-"""Ambil YouTube OAuth refresh token SEKALI di laptop, lalu simpan ke GitHub Secret.
+"""Ambil YouTube OAuth refresh token SEKALI di laptop, lalu simpan ke .env/GitHub Secret.
 
 Jalankan:
     copy .env.example .env
     isi YT_CLIENT_ID dan YT_CLIENT_SECRET
     python scripts/get_refresh_token.py
+    # untuk channel lain (tidak menimpa default):
+    python scripts/get_refresh_token.py --save-key YT_REFRESH_TOKEN_CH2
 
-Browser akan terbuka; setelah izin diberikan, token muncul di terminal.
+Browser akan terbuka; setelah izin diberikan, token disimpan ke key .env yang dipilih.
 """
+import argparse
 import http.server
 import os
 import secrets
@@ -61,6 +64,16 @@ def _copy_to_clipboard(value: str) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Ambil YouTube OAuth refresh token dan simpan ke .env.")
+    parser.add_argument(
+        "--save-key",
+        default="YT_REFRESH_TOKEN",
+        help="Nama env key di .env untuk menyimpan refresh token (default: YT_REFRESH_TOKEN). "
+             "Contoh channel 2: --save-key YT_REFRESH_TOKEN_CH2",
+    )
+    args = parser.parse_args()
+    save_key = (args.save_key or "YT_REFRESH_TOKEN").strip() or "YT_REFRESH_TOKEN"
+
     local = _read_env()
     client_id = os.getenv("YT_CLIENT_ID") or local.get("YT_CLIENT_ID")
     client_secret = os.getenv("YT_CLIENT_SECRET") or local.get("YT_CLIENT_SECRET")
@@ -126,13 +139,17 @@ def main() -> None:
 
     refresh_token = tokens.get("refresh_token", "")
     if refresh_token:
-        _save_env_value("YT_REFRESH_TOKEN", refresh_token)
+        _save_env_value(save_key, refresh_token)
         _copy_to_clipboard(refresh_token)
         print(
-            f"\n[ok] Refresh token tersimpan di .env dan clipboard "
+            f"\n[ok] Refresh token tersimpan di .env sebagai {save_key} dan clipboard "
             f"(panjang {len(refresh_token)} karakter, tidak ditampilkan)."
         )
-        print("Tempel sebagai GitHub Secret YT_REFRESH_TOKEN.\n")
+        if save_key == "YT_REFRESH_TOKEN":
+            print("Tempel sebagai GitHub Secret YT_REFRESH_TOKEN (default/channel 1).\n")
+        else:
+            print(f"Simpan {save_key} di .env untuk channel/profil tersebut. "
+                  f"Untuk publish pakai env: YT_REFRESH_TOKEN_ENV={save_key} (token default YT_REFRESH_TOKEN tidak diubah).\n")
     else:
         print("\n[warn] Google tidak mengembalikan refresh_token. Periksa consent screen.\n")
     print(

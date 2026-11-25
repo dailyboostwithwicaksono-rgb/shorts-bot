@@ -3,8 +3,11 @@
 import os
 import sys
 
+from common import ROOT, load_dotenv
 from content import load_canonical_content
 from publish_youtube import publish_youtube, PublishResult
+
+load_dotenv(ROOT / ".env")
 
 
 def _parse_targets(raw: str | None) -> list[str]:
@@ -19,6 +22,9 @@ def main() -> None:
     targets = _parse_targets(os.getenv("PUBLISH_TARGETS"))
     dry_run = (os.getenv("PUBLISH_DRY_RUN") or "").strip().lower() in ("1", "true", "yes", "on")
     fail_fast = (os.getenv("PUBLISH_FAIL_FAST") or "1").strip().lower() not in ("0", "false", "no", "off")
+    yt_token_env = (os.getenv("YT_REFRESH_TOKEN_ENV") or "YT_REFRESH_TOKEN").strip() or "YT_REFRESH_TOKEN"
+    if "youtube" in targets:
+        print(f"[info] YouTube token env: {yt_token_env}")
 
     content = load_canonical_content()
     results: list[PublishResult] = []
@@ -27,7 +33,14 @@ def main() -> None:
     for target in targets:
         try:
             if target == "youtube":
-                res = publish_youtube(content, dry_run=dry_run)
+                res = publish_youtube(content, dry_run=dry_run, token_env=yt_token_env)
+            elif target == "woopsocial":
+                # WoopSocial: upload + publish langsung (PUBLISH_NOW) ke IG Reels/TikTok.
+                try:
+                    from publish_woopsocial import publish_woopsocial
+                except Exception as exc:  # noqa: BLE001
+                    raise RuntimeError(f"modul publisher WoopSocial tidak tersedia: {exc}") from exc
+                res = publish_woopsocial(content, dry_run=dry_run)
             elif target in ("tiktok", "meta", "x"):
                 # Fase 4: stub/dry-run terbatas bila akses/API belum siap
                 try:

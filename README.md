@@ -12,7 +12,7 @@ Automasi YouTube Shorts bertema **quotes**: teks quote di atas latar video dari 
 
 **Penyimpanan/media (GitHub Actions):** file video & audio latar/musik **diunduh saat run** ke folder kerja (`work/`) untuk dirender, **tidak di-commit** (ephemeral; `work/`, `out/`, `render_plan.json` di-`.gitignore`) agar tidak menambah storage repo. Hanya log/metadata di atas yang disimpan di repo; artifact run hanya menyimpan log kecil singkat.
 
-Jadwal: **03.00 dan 18.00 WIB** (cron `0 20 * * *` dan `0 11 * * *` UTC, `workflow_dispatch` tersedia). Jadwal GitHub Actions bisa tertunda.
+Jadwal: **5x sehari**, interval tetap **4 jam 48 menit**, mulai **19.00 WIB**: 19.00, 23.48, 04.36, 09.24, 14.12 WIB (UTC 12.00, 16.48, 21.36, 02.24, 07.12). `workflow_dispatch` tetap tersedia. Jadwal GitHub Actions bisa tertunda.
 
 ## Mode konten
 - **`list` (default, jadwal/manual)**: baca `data/quotes.json`, pilih berurutan berdasarkan `id` menaik (entri pertama yang belum tercatat di `data/used_quotes.jsonl`). Jika semua sudah terpakai → **loop dari awal**. Judul dan **pembuka deskripsi dibuat Gemini**; jika Gemini gagal, pembuka deskripsi memakai title.
@@ -70,8 +70,9 @@ Latar dipilih otomatis dari **Pixabay Video API** (`PIXABAY_API_KEY`) berdasarka
 - **Kontrak konten:** distribusi membaca konten kanonik dari artefak render (`out/manifest.json`, `out/final.mp4`). Judul ada di `manifest.title`; `out/caption.txt` adalah **nama file legacy** yang kini berisi title, sedangkan deskripsi ada di `out/description.txt` / `manifest.description`.
 - **Arsip:** `scripts/archive_drive.py` tetap mengarsipkan `out/*` ke Drive (target Google terpisah).
 - **Publish (dispatcher):** `scripts/publish.py` mem-publish ke target aktif via `PUBLISH_TARGETS` (default: `youtube`, perilaku sama seperti sebelumnya). Opsi: `PUBLISH_DRY_RUN=1` (formatter/validasi tanpa upload nyata), `PUBLISH_FAIL_FAST` (default `1`, gagal cepat; `0` untuk lanjut parsial) dengan ringkasan hasil per target.
-- **Platform tambahan (kerangka):** formatter + stub/dry-run untuk **TikTok, Meta, X** tersedia (`PUBLISH_TARGETS=youtube,tiktok,meta,x`). Publish **nyata** ke platform tersebut bertahap dan memerlukan akun/app, izin/API, kredensial, serta implementasi API masing-masing; tanpa itu gunakan dry-run atau target akan gagal/ditolak dengan pesan jelas (tidak ada publish palsu).
-- **Secrets/env per platform (opsional, saat diaktifkan):** TikTok `TIKTOK_ACCESS_TOKEN`; Meta `META_ACCESS_TOKEN`, `META_IG_USER_ID`; X `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`. YouTube/Drive tetap memakai kredensial Google (`YT_*`, `GDRIVE_OUTPUTS_FOLDER_ID`).
+- **WoopSocial (aktif):** target `woopsocial` (`PUBLISH_TARGETS=youtube,woopsocial`) meng-upload `out/final.mp4` lalu **publish langsung** (`PUBLISH_NOW`, tanpa jadwal) ke Instagram Reels + TikTok. Metadata memakai `out/manifest.json` yang sudah dihasilkan AI. Kunci: `WOOPSOCIAL_API_KEY`; opsi: `WOOPSOCIAL_PLATFORMS`, `WOOPSOCIAL_PROJECT_ID`, `WOOPSOCIAL_IG_ACCOUNT_ID`, `WOOPSOCIAL_TIKTOK_ACCOUNT_ID`, `WOOPSOCIAL_LINK` (default `-`). Dry-run memakai media uji; bila library kosong, video di-upload hanya untuk `posts_validate` dan **post tidak dibuat**. Log post nyata ada di `work/woopsocial/`.
+- **Platform tambahan (kerangka API langsung):** formatter + stub/dry-run untuk **TikTok, Meta, X** tetap tersedia (`PUBLISH_TARGETS=youtube,tiktok,meta,x`). Publish nyata lewat API langsung masih bertahap; untuk IG/TikTok pakai target `woopsocial` di atas.
+- **Secrets/env per platform (opsional, saat diaktifkan):** WoopSocial `WOOPSOCIAL_API_KEY`; TikTok `TIKTOK_ACCESS_TOKEN`; Meta `META_ACCESS_TOKEN`, `META_IG_USER_ID`; X `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`. YouTube/Drive tetap memakai kredensial Google (`YT_*`, `GDRIVE_OUTPUTS_FOLDER_ID`).
 
 ## Musik Freetouse (API)
 Musik diambil otomatis dari **Freetouse Public API** (tanpa API key). Sistem memilih track **non-premium** yang dapat dipakai (`is_premium == false`, `status == 1`, MP3 ada) dengan tema/mood cocok untuk short motivasi/calm (inspirational/motivational/calm/uplifting/ambient/hopeful/peaceful/piano/cinematic/nature, dll.) dan durasi memadai (prefer `>= 60s` dan `>= durasi video`). Atribusi judul, artis, dan URL track (best-effort) otomatis masuk deskripsi. Metadata setiap musik yang dipakai dicatat di `data/used_music.jsonl`. Cek syarat lisensi di https://freetouse.com/license.
@@ -108,18 +109,18 @@ Saat status **Testing**, refresh token bisa kedaluwarsa ~7 hari (`invalid_grant`
 - **OAuth user cap**: untuk app yang meminta scope sensitif/terbatas yang belum disetujui, jumlah pengguna yang bisa memberi izin dibatasi sepanjang masa proyek (tidak bisa di-reset). Untuk pemakaian **hanya oleh akunmu sendiri**, ini praktis tidak masalah — jangan memberi akses ke pengguna lain. Layar “unverified app” dapat muncul bila scope belum disetujui.
 
 ## Secrets & Variables (GitHub Actions)
-Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `PIXABAY_API_KEY`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`.
+Secrets: `OPENROUTER_API_KEY` (atau Gemini/DeepSeek), `PIXABAY_API_KEY`, `GDRIVE_OUTPUTS_FOLDER_ID`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`, `WOOPSOCIAL_API_KEY` (untuk target `woopsocial`).
 
-Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`nvidia/nemotron-3.5-lightning:free`), `GEMINI_MODEL` (`gemini-flash-lite-latest`), `YT_PRIVACY` (`public`/`unlisted`), `PUBLISH_TARGETS` (default `youtube`), `PUBLISH_DRY_RUN` (default `0`), `PUBLISH_FAIL_FAST` (default `1`).
+Variables (opsional): `AI_PROVIDER` (`openrouter`), `OPENROUTER_MODEL` (`nvidia/nemotron-3.5-lightning:free`), `GEMINI_MODEL` (`gemini-flash-lite-latest`), `YT_PRIVACY` (`public`/`unlisted`), `PUBLISH_TARGETS` (default `youtube`; tambahkan `woopsocial` untuk IG Reels + TikTok), `PUBLISH_DRY_RUN` (default `0`), `PUBLISH_FAIL_FAST` (default `1`), `WOOPSOCIAL_PLATFORMS` (default `instagram,tiktok`), `WOOPSOCIAL_PROJECT_ID`, `WOOPSOCIAL_LINK` (default `-`).
 
 Title dan pembuka deskripsi dibuat oleh provider AI aktif (`AI_PROVIDER`, dengan retry dan fallback ke provider lain yang punya key) untuk **semua mode** (`list`/`famous`/`custom`). Bila semua provider gagal, title tetap dipakai sebagai pembuka deskripsi.
 
-Secrets opsional (multi-platform, saat target diaktifkan & implementasi API siap): TikTok `TIKTOK_ACCESS_TOKEN`; Meta `META_ACCESS_TOKEN`, `META_IG_USER_ID`; X `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`.
+Secrets opsional (multi-platform): WoopSocial `WOOPSOCIAL_API_KEY` (sudah diimplementasikan, publish langsung); untuk API langsung TikTok `TIKTOK_ACCESS_TOKEN`; Meta `META_ACCESS_TOKEN`, `META_IG_USER_ID`; X `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET` (masih kerangka/dry-run).
 
 > Catatan: musik diambil dari Freetouse API (tanpa key/Drive/rclone), sehingga `GDRIVE_SA_JSON` dan `GDRIVE_MUSIC_FOLDER_ID` tidak diperlukan untuk alur musik saat ini.
 
 ## Menjalankan di GitHub Actions
-- Otomatis: jadwal 03.00 & 18.00 WIB (`mode=list`).
+- Otomatis: 5x sehari pukul 19.00, 23.48, 04.36, 09.24, 14.12 WIB (`mode=list`).
 - Manual: **Actions → shorts-bot → Run workflow** (pilih `mode`: `list`/`famous`/`custom`).
 
 ## Menjalankan di lokal (detail, bertahap)
@@ -129,10 +130,10 @@ Ringkas: pasang dependensi Python & ffmpeg → set `PIXABAY_API_KEY` (dan AI key
 
 ## Maintenance
 - **Token OAuth**: jika app **Testing** → refresh token kedaluwarsa ~7 hari (`invalid_grant`), regenerate & update `YT_REFRESH_TOKEN`. Jika sudah **Production** → tidak ada kedaluwarsa 7 hari, namun token tetap bisa invalid (dicabut/alasan keamanan) — siapkan cara regenerate. Untuk alur lokal *upload manual* (tanpa arsip/upload otomatis), OAuth user tidak diperlukan.
-- **Actions (1–2×/minggu)**: cek run terjadwal sukses; jadwal bisa telat. Jika gagal, periksa langkah merah (Pixabay/Freetouse API atau rate limit/koneksi, AI, token/quota YouTube/Drive arsip, commit log/metadata). Workflow butuh **Read and write permissions** untuk auto-commit log/metadata.
-- **Stok quotes**: pastikan `data/quotes.json` cukup; mode `list` loop jika habis, namun tetap baik menambah variasi.
+- **Actions (harian)**: dengan 5 run/hari, cek run terjadwal lebih sering; jadwal bisa telat. Jika gagal, periksa langkah merah (Pixabay/Freetouse API atau rate limit/koneksi, AI, token/quota YouTube/Drive arsip, WoopSocial, commit log/metadata). Workflow butuh **Read and write permissions** untuk auto-commit log/metadata.
+- **Stok quotes**: `data/quotes.json` sekarang berisi **500 quote** (id 1–500); mode `list` memilih id menaik yang belum terpakai dan loop jika habis.
 - **Cache latar & metadata**: `data/pixabay_cache.json` membantu fallback latar; metadata pemakaian video/musik tersimpan di `data/used_videos.jsonl` dan `data/used_music.jsonl` (di-commit). Arsip output di Drive menambah kuota Drive (file media tidak di-commit ke repo).
-- **YouTube API quota**: 2 upload/hari umumnya aman; cek jika menaikkan frekuensi.
+- **YouTube API quota**: sekarang 5 upload/hari; pantau kuota harian (default 10.000 unit, upload video memakai ~1.600 unit) dan siapkan fallback jika kuota habis.
 - **AI**: model `:free` dapat berubah ketersediaan/rate limit; ganti `OPENROUTER_MODEL` bila perlu. Title/deskripsi memakai AI aktif di semua mode; keyword latar punya fallback heuristik.
 - **Repo dormant**: jadwal dapat dinonaktifkan jika repo lama tidak aktif — jalankan manual/commit kecil untuk mengaktifkan kembali.
 

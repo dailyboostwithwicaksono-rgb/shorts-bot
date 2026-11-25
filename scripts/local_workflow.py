@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
-"""Local (non-GitHub) video workflow: prepare media, caption/metadata, deterministic render, archive/reset.
+"""Local (non-GitHub) video workflow.
 
-- prepare: resolve/download media into execution/work (seed keywords first; optional AI fallback like GitHub plan).
-- caption: generate caption from caption_styles metadata when missing (AI). If provided, use as-is. May run before/after render.
+Pre-prepare (AI-assisted, status-aware: kosong/draft/valid/publish):
+- quote:      create/verify quote.json (AI fills if kosong, checks if draft, sets valid).
+- transcript: convert raw TXT -> transcript.json (--input), or verify existing transcript structure.
+- youtube:    create/verify youtube.json metadata.
+- config:     create/verify config.json.
+- bootstrap:  if quote/youtube/config missing or kosong, create them stepwise with AI (quote -> youtube -> config).
+
+Production:
+- prepare: resolve/download media into execution/work (seed keywords first; optional AI fallback).
+- title:   generate title from title_styles metadata when missing (AI). (legacy: caption)
 - render:  deterministic, NO AI. Reads all required data from execution folder and renders video.
 - archive: move execution to archive/<ts>_<label>/ and reset execution from template.
 - reset:   replace execution with template (destructive, no archive).
@@ -235,7 +243,12 @@ def fit_size(parts: list[dict], base: int, max_w: int) -> int:
 
 
 def render_text_block(lines_parts: list[list[dict]], author_text: str | None, y_center: int,
-                      out_path: Path, style: dict, w: int, h: int) -> None:
+                      out_path: Path, style: dict, w: int, h: int,
+                      visible_lines: set[int] | None = None,
+                      show_author: bool | None = None) -> None:
+    """Render block text. visible_lines (0-based indices into lines_parts) controls which lines are drawn;
+    layout is always computed from the full lines_parts so positions stay stable for progressive reveal.
+    show_author defaults to True when author_text is present."""
     q_size = int(style.get("quote_font_size", 51))
     a_size = int(style.get("author_font_size", 28))
     max_w = int(style.get("max_text_width", 920))
@@ -244,6 +257,8 @@ def render_text_block(lines_parts: list[list[dict]], author_text: str | None, y_
     a_color = hex_to_rgb(style.get("author_color", "#DDDDDD"))
     line_h = max(1, int(round(q_size * spacing)))
     has_author = bool(author_text)
+    draw_author = has_author if show_author is None else (bool(show_author) and has_author)
+    visible = None if visible_lines is None else set(visible_lines)
 
     total_h = q_size + (len(lines_parts) - 1) * line_h if lines_parts else 0
     gap = int(round(line_h * 0.9))
@@ -256,25 +271,26 @@ def render_text_block(lines_parts: list[list[dict]], author_text: str | None, y_
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     y = top + q_size // 2
-    for parts in lines_parts:
-        size = fit_size(parts, q_size, max_w)
-        qf = ImageFont.truetype(font_path("Montserrat-LightItalic.ttf"), size)
-        ef = ImageFont.truetype(font_path("Montserrat-SemiBoldItalic.ttf"), size)
-        tw = measure_parts(parts, size)
-        x = (w - tw) / 2.0
-        bbox = draw.textbbox((0, 0), "Ag", font=qf)
-        th = bbox[3] - bbox[1]
-        yy = int(round(y - th / 2))
-        for part in parts:
-            txt = part.get("text", "")
-            if not txt:
-                continue
-            f = ef if part.get("emphasis") else qf
-            draw.text((x, yy), txt, font=f, fill=(*q_color, 255))
-            x += text_width(draw, txt, f)
+    for i, parts in enumerate(lines_parts):
+        if visible is None or i in visible:
+            size = fit_size(parts, q_size, max_w)
+            qf = ImageFont.truetype(font_path("Montserrat-LightItalic.ttf"), size)
+            ef = ImageFont.truetype(font_path("Montserrat-SemiBoldItalic.ttf"), size)
+            tw = measure_parts(parts, size)
+            x = (w - tw) / 2.0
+            bbox = draw.textbbox((0, 0), "Ag", font=qf)
+            th = bbox[3] - bbox[1]
+            yy = int(round(y - th / 2))
+            for part in parts:
+                txt = part.get("text", "")
+                if not txt:
+                    continue
+                f = ef if part.get("emphasis") else qf
+                draw.text((x, yy), txt, font=f, fill=(*q_color, 255))
+                x += text_width(draw, txt, f)
         y += line_h
 
-    if has_author:
+    if draw_author:
         if lines_parts:
             ay = top + q_size + (len(lines_parts) - 1) * line_h + gap + a_size // 2
         else:
@@ -378,8 +394,11 @@ def cmd_render(exec_dir: Path) -> None:
             "d_end": en + intro,
             "lines_parts": lines_parts,
             "author": s.get("author"),
-            "video_keyword": str(s.get("video_keyword") or "").strip(),
+            "video_keyword": s.get("video_keyword", ""),
             "raw_lines": raw_lines,
+            "reveals": s.get("reveals"),
+            "progressive_reveal": s.get("progressive_reveal"),
+            "line_reveal_interval": s.get("line_reveal_interval"),
         })
     if not segments:
         fail("Tidak ada segmen narasi valid di transcript.json")
@@ -426,13 +445,59 @@ def cmd_render(exec_dir: Path) -> None:
         render_band(style, band_png, W, H)
 
         text_fade = float(transcript.get("text_fade_seconds", 0.35))
+        reveal_ratio_cfg = transcript.get("text_reveal_visible_ratio")
+        default_line_interval = float(transcript.get("line_reveal_interval", 1.0) or 1.0)
+        progressive_default = bool(transcript.get("progressive_reveal", False))
         text_inputs: list[dict] = []
         for i, seg in enumerate(segments):
-            png = tmp / f"seg_{i:03d}.png"
-            render_text_block(seg["lines_parts"], seg.get("author"), 960, png, style, W, H)
-            st = max(0.0, float(seg.get("d_start", seg["start"])))
-            en = min(total_dur, float(seg.get("d_end", seg["end"])))
-            text_inputs.append({"png": str(png), "start": st, "end": en, "fi": text_fade, "fo": text_fade})
+            seg_st = max(0.0, float(seg.get("d_start", seg["start"])))
+            seg_en = min(total_dur, float(seg.get("d_end", seg["end"])))
+            seg_dur = max(0.1, seg_en - seg_st)
+            line_parts = seg.get("lines_parts") or []
+            author = seg.get("author")
+            n_lines = len(line_parts)
+
+            # Progressive reveal: lines appear one-by-one, stay until segment ends, then all disappear.
+            reveals_raw = seg.get("reveals")
+            has_reveals = isinstance(reveals_raw, list) and len(reveals_raw) > 0
+            progressive = has_reveals or bool(seg.get("progressive_reveal", progressive_default)) or ("line_reveal_interval" in seg)
+
+            if not progressive or n_lines <= 1:
+                png = tmp / f"seg_{i:03d}.png"
+                render_text_block(line_parts, author, 960, png, style, W, H)
+                text_inputs.append({"png": str(png), "start": seg_st, "end": seg_en, "fi": text_fade, "fo": text_fade})
+                continue
+
+            reveals: list[float] = []
+            if has_reveals:
+                for v in reveals_raw[:n_lines]:
+                    try:
+                        reveals.append(max(0.0, float(v)))
+                    except Exception:
+                        reveals.append(0.0)
+            while len(reveals) < n_lines:
+                idx_r = len(reveals)
+                if idx_r == 0:
+                    reveals.append(0.0)
+                else:
+                    interval = float(seg.get("line_reveal_interval", default_line_interval) or default_line_interval)
+                    max_t = max(0.0, seg_dur - text_fade - 0.1)
+                    candidate = reveals[idx_r - 1] + max(0.2, interval)
+                    reveals.append(min(candidate, max_t))
+
+            for li in range(n_lines):
+                png = tmp / f"seg_{i:03d}_l{li:02d}.png"
+                show_author = bool(author) and (li == n_lines - 1)
+                render_text_block(line_parts, author if show_author else None, 960, png, style, W, H,
+                                  visible_lines={li}, show_author=show_author)
+                reveal_t = float(reveals[li])
+                if isinstance(reveal_ratio_cfg, (int, float)) and not isinstance(reveal_ratio_cfg, bool):
+                    reveal_ratio = min(0.95, max(0.05, float(reveal_ratio_cfg)))
+                else:
+                    reveal_ratio = round(random.uniform(0.5, 0.7), 2)
+                li_start = seg_st + reveal_t - (text_fade * reveal_ratio)
+                li_start = max(seg_st, min(seg_en - 0.05, li_start))
+                text_inputs.append({"png": str(png), "start": li_start, "end": seg_en, "fi": text_fade, "fo": text_fade})
 
         card_png = tmp / "card.png"
         card_lines_parts: list[list[dict]] = []
@@ -642,10 +707,11 @@ def cmd_render(exec_dir: Path) -> None:
         tags = yt.get("tags") or hashtags
         title = str(yt.get("title") or "").strip()
         description = str(yt.get("description") or "").strip()
-        caption = str(yt.get("caption") or description or "").strip()
+        # "caption" is legacy alias for title; keep caption.txt for compat
+        caption = str(yt.get("caption") or title or description or "").strip()
         privacy = str(yt.get("privacy") or "private")
 
-        (out_dir / "caption.txt").write_text(caption + "\n", encoding="utf-8")
+        (out_dir / "caption.txt").write_text((title or caption) + "\n", encoding="utf-8")
         (out_dir / "description.txt").write_text(description + "\n", encoding="utf-8")
 
         manifest = {
@@ -748,10 +814,26 @@ def segment_plain_text(segment: dict) -> str:
     return " ".join(parts).strip()
 
 
+def video_keyword_values(seg: dict) -> list[str]:
+    """Normalisasi video_keyword menjadi list string (mendukung string atau array string)."""
+    raw = seg.get("video_keyword")
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        out: list[str] = []
+        for x in raw:
+            s = str(x or "").strip()
+            if s:
+                out.append(s)
+        return out
+    s = str(raw or "").strip()
+    return [s] if s else []
+
+
 def is_video_keep(seg: dict) -> bool:
     """True jika segmen meminta melanjutkan video/klip segmen sebelumnya (tanpa ganti)."""
-    v = str(seg.get("video_keyword") or "").strip().lower()
-    return v in {"keep", "continue", "same", "hold"}
+    vals = [v.strip().lower() for v in video_keyword_values(seg)]
+    return len(vals) == 1 and vals[0] in {"keep", "continue", "same", "hold"}
 
 
 def ai_english_video_keyword(source_text: str, purpose: str, quote: dict) -> str:
@@ -891,24 +973,24 @@ def cmd_prepare(exec_dir: Path) -> None:
                     seg = segs[seg_idx] if seg_idx < len(segs) and isinstance(segs[seg_idx], dict) else {}
                     seg_text = segment_plain_text(seg)
                     emph = segment_emphasis_texts(seg)
-                    manual_kw = str(seg.get("video_keyword") or "").strip()
-                    if is_video_keep(seg):
-                        manual_kw = ""  # segmen 0 tidak boleh keep; jaga-jaga
+                    manual_kws = [] if is_video_keep(seg) else video_keyword_values(seg)
 
                     candidates: list[tuple[str, str]] = []  # (keyword, label)
-                    if manual_kw:
+                    if manual_kws:
                         # prioritas utama: frasa spesifik video_keyword -> AI terjemahkan/cari keyword visual EN
-                        if allow_ai:
-                            kw_m = ai_english_video_keyword(
-                                manual_kw,
-                                "terjemahkan dan utamakan frasa spesifik video_keyword ini menjadi 1 keyword visual video stok (Bahasa Inggris, 2-5 kata); ini instruksi visual spesifik yang diprioritaskan di atas tafsir transkrip",
-                                quote,
-                            )
-                            if kw_m:
-                                candidates.append((kw_m, "video_keyword-ai"))
+                        for mk in manual_kws:
+                            if allow_ai:
+                                kw_m = ai_english_video_keyword(
+                                    mk,
+                                    "terjemahkan dan utamakan frasa spesifik video_keyword ini menjadi 1 keyword visual video stok (Bahasa Inggris, 2-5 kata); ini instruksi visual spesifik yang diprioritaskan di atas tafsir transkrip",
+                                    quote,
+                                )
+                                if kw_m:
+                                    candidates.append((kw_m, "video_keyword-ai"))
                         # fallback: pakai teks asli jika AI tidak tersedia/gagal
                         if not candidates:
-                            candidates.append((manual_kw, "video_keyword-raw"))
+                            for mk in manual_kws:
+                                candidates.append((mk, "video_keyword-raw"))
                     elif emph and allow_ai:
                         kw_e = ai_english_video_keyword(
                             "; ".join(emph),
@@ -921,7 +1003,7 @@ def cmd_prepare(exec_dir: Path) -> None:
                         # tanpa AI, pakai emphasis mentah (best-effort) lalu fallback pool
                         candidates.append((" ".join(emph)[:80], "emphasis-raw"))
 
-                    if not manual_kw and allow_ai:
+                    if not manual_kws and allow_ai:
                         # langkah 3: tafsir AI dari transkrip segmen (jika belum ter-cover / sebagai fallback bermakna)
                         if seg_text:
                             kw_t = ai_english_video_keyword(
@@ -1052,17 +1134,17 @@ def cmd_prepare(exec_dir: Path) -> None:
         info("Tidak ada perubahan config (sudah resolved).")
 
 
-# ---------- caption / metadata (local, AI-assisted when missing) ----------
+# ---------- title / metadata (local, AI-assisted when missing) ----------
+
+from title_meta import build_title_prompt, load_title_styles, select_title_style
+
 
 def is_provided_text(v: Any) -> bool:
     return isinstance(v, str) and bool(v.strip())
 
 
-from caption_meta import build_caption_prompt, load_caption_styles, select_caption_style
 
-
-
-def cmd_caption(exec_dir: Path) -> None:
+def cmd_title(exec_dir: Path) -> None:
     for name in ["quote.json", "youtube.json"]:
         if not (exec_dir / name).exists():
             fail(f"File wajib tidak ditemukan: {exec_dir / name}")
@@ -1072,48 +1154,66 @@ def cmd_caption(exec_dir: Path) -> None:
     yt = read_json_file(yt_path)
     transcript = read_json_file(exec_dir / "transcript.json") if (exec_dir / "transcript.json").exists() else None
 
-    # Pemeriksaan: jika caption disediakan, langsung gunakan (tidak diubah)
-    if is_provided_text(yt.get("caption")):
-        ok(f"Caption sudah disediakan di youtube.json (caption_source={yt.get('caption_source','user/existing')}), tidak diubah.")
+    # Migrasi legacy: caption -> title jika title kosong
+    if not is_provided_text(yt.get("title")) and is_provided_text(yt.get("caption")):
+        yt["title"] = str(yt.get("caption")).strip()
+        yt.setdefault("title_source", yt.get("caption_source", "migrated_from_caption"))
+        info("Migrasi legacy: youtube.json.caption -> youtube.json.title")
+
+    # Pemeriksaan: jika title disediakan, langsung gunakan (tidak diubah)
+    if is_provided_text(yt.get("title")):
+        ok(f"Title sudah disediakan di youtube.json (title_source={yt.get('title_source', yt.get('caption_source','user/existing'))}), tidak diubah.")
         return
 
     try:
-        styles = load_caption_styles(exec_dir)
+        styles = load_title_styles(exec_dir)
     except Exception as e:
-        fail(f"Gagal memuat caption styles: {e}")
+        fail(f"Gagal memuat title styles: {e}")
 
-    preferred = str(yt.get("caption_style") or yt.get("preferred_caption_style") or "").strip()
+    preferred = str(
+        yt.get("title_style") or yt.get("preferred_title_style")
+        or yt.get("caption_style") or yt.get("preferred_caption_style") or ""
+    ).strip()
     try:
-        selected_style = select_caption_style(styles, yt)
+        selected_style = select_title_style(styles, yt)
     except Exception as e:
-        fail(f"Gagal memilih gaya caption: {e}")
+        fail(f"Gagal memilih gaya title: {e}")
     if preferred:
         pref = preferred.lower()
         sid = str(selected_style.get("id") or "").strip().lower()
         sname = str(selected_style.get("name") or "").strip().lower()
         if pref != sid and pref != sname:
-            warn(f"Preferred caption style '{preferred}' tidak ditemukan, memilih gaya secara acak.")
-    info(f"Caption belum disediakan. Menghasilkan caption dengan AI (gaya: {selected_style.get('id','?')} — dipilih acak/preferensi, 1 gaya)...")
+            warn(f"Preferred title style '{preferred}' tidak ditemukan, memilih gaya secara acak.")
+    info(f"Title belum disediakan. Menghasilkan title dengan AI (gaya: {selected_style.get('id','?')} — dipilih acak/preferensi, 1 gaya)...")
     try:
         from ai import generate_plan  # noqa: E402
     except Exception as e:
         fail(f"Modul AI tidak tersedia: {e}")
 
-    prompt = build_caption_prompt(styles, selected_style, quote, transcript, yt)
+    prompt = build_title_prompt(styles, selected_style, quote, transcript, yt)
     try:
         result = generate_plan(prompt, [])
     except Exception as e:
-        fail(f"Gagal generate caption (AI): {e}")
+        fail(f"Gagal generate title (AI): {e}")
 
-    caption = str((result or {}).get("caption") or "").strip()
-    if not caption:
-        fail("AI tidak mengembalikan caption yang valid.")
+    title = str((result or {}).get("title") or (result or {}).get("caption") or "").strip()
+    if not title:
+        fail("AI tidak mengembalikan title yang valid.")
 
     style_id = str((result or {}).get("style_id") or "").strip()
     style_name = str((result or {}).get("style_name") or "").strip()
     reason = str((result or {}).get("reason") or "").strip()
 
-    yt["caption"] = caption
+    yt["title"] = title
+    yt["title_source"] = "ai"
+    if style_id:
+        yt["title_style_id"] = style_id
+    if style_name:
+        yt["title_style_name"] = style_name
+    if reason:
+        yt["title_reason"] = reason
+    # Sinkron legacy keys untuk kompatibilitas
+    yt["caption"] = title
     yt["caption_source"] = "ai"
     if style_id:
         yt["caption_style_id"] = style_id
@@ -1122,28 +1222,485 @@ def cmd_caption(exec_dir: Path) -> None:
     if reason:
         yt["caption_reason"] = reason
     write_json_file(yt_path, yt)
-    ok(f"Caption (AI, style={style_id or '?'}) ditulis ke {yt_path}")
+    ok(f"Title (AI, style={style_id or '?'}) ditulis ke {yt_path}")
 
     # Jika output sudah ada (post-render), sinkronkan
     out_dir = resolve_exec_path(exec_dir, (read_json_file(exec_dir / "config.json").get("paths") or {}).get("out_dir", "out")) if (exec_dir / "config.json").exists() else (exec_dir / "out")
     out_dir = out_dir or (exec_dir / "out")
     try:
         if (out_dir / "caption.txt").exists() or (out_dir / "manifest.json").exists() or (out_dir / "description.txt").exists():
-            (out_dir / "caption.txt").write_text(caption + "\n", encoding="utf-8")
+            (out_dir / "caption.txt").write_text(title + "\n", encoding="utf-8")
             description = str(yt.get("description") or "").strip()
             (out_dir / "description.txt").write_text(description + "\n", encoding="utf-8")
             if (out_dir / "manifest.json").exists():
                 manifest = read_json_file(out_dir / "manifest.json")
-                manifest["caption"] = caption
+                manifest["title"] = title
+                manifest["caption"] = title
+                manifest["title_source"] = "ai"
                 manifest["caption_source"] = "ai"
                 if style_id:
+                    manifest["title_style_id"] = style_id
                     manifest["caption_style_id"] = style_id
                 if style_name:
+                    manifest["title_style_name"] = style_name
                     manifest["caption_style_name"] = style_name
                 write_json_file(out_dir / "manifest.json", manifest)
             info(f"Output diperbarui: {out_dir / 'caption.txt'}, {out_dir / 'description.txt'}, {out_dir / 'manifest.json'}")
     except Exception as e:
         warn(f"Gagal sinkronkan output: {e}")
+
+
+# Backward-compatible alias
+cmd_caption = cmd_title
+
+
+# ---------- pre-prepare: status-aware AI verify/create (local) ----------
+
+STATUS_KOSONG = "kosong"
+STATUS_DRAFT = "draft"
+STATUS_VALID = "valid"
+STATUS_PUBLISH = "publish"
+STATUS_VALUES = {STATUS_KOSONG, STATUS_DRAFT, STATUS_VALID, STATUS_PUBLISH}
+
+
+def normalize_status(value: Any) -> str:
+    s = str(value or "").strip().lower()
+    return s if s in STATUS_VALUES else STATUS_KOSONG
+
+
+def file_is_missing_or_empty(path: Path) -> bool:
+    if not path.exists():
+        return True
+    try:
+        if path.stat().st_size == 0:
+            return True
+        data = read_json_file(path)
+    except Exception:
+        return True
+    if not isinstance(data, dict):
+        return True
+    # kosong if explicitly marked kosong or has no meaningful content keys besides status/notes
+    st = normalize_status(data.get("status"))
+    if st == STATUS_KOSONG:
+        # allow explicit kosong
+        meaningful = {k: v for k, v in data.items() if k not in {"status", "notes"}}
+        if not meaningful:
+            return True
+    return False
+
+
+def ai_json(prompt: str) -> dict:
+    try:
+        from ai import generate_plan  # noqa: E402
+    except Exception as e:
+        fail(f"Modul AI tidak tersedia: {e}")
+    try:
+        result = generate_plan(prompt, [])
+    except Exception as e:
+        fail(f"Gagal memanggil AI: {e}")
+    if not isinstance(result, dict):
+        fail("AI tidak mengembalikan JSON object yang valid.")
+    return result
+
+
+def ensure_exec_dir(exec_dir: Path) -> None:
+    if not exec_dir.exists():
+        exec_dir.mkdir(parents=True, exist_ok=True)
+        info(f"Folder eksekusi dibuat: {exec_dir}")
+
+
+def load_or_empty(path: Path) -> dict:
+    if not path.exists():
+        return {"status": STATUS_KOSONG}
+    try:
+        data = read_json_file(path)
+        return data if isinstance(data, dict) else {"status": STATUS_KOSONG}
+    except Exception:
+        return {"status": STATUS_KOSONG}
+
+
+def save_status_file(path: Path, data: dict) -> None:
+    if "status" not in data:
+        data["status"] = STATUS_DRAFT
+    write_json_file(path, data)
+
+
+def transcript_is_ready(exec_dir: Path) -> bool:
+    tpath = exec_dir / "transcript.json"
+    if not tpath.exists():
+        return False
+    try:
+        tdata = read_json_file(tpath)
+    except Exception:
+        return False
+    return isinstance(tdata, dict) and isinstance(tdata.get("segments"), list) and len(tdata.get("segments")) > 0
+
+
+def _quote_is_complete(q: dict) -> tuple[bool, list[str]]:
+    missing = []
+    if not is_provided_text(q.get("author")):
+        missing.append("author")
+    if not is_provided_text(q.get("language")):
+        missing.append("language")
+    lines = q.get("lines")
+    if not isinstance(lines, list) or not [str(x).strip() for x in lines if str(x).strip()]:
+        missing.append("lines")
+    if q.get("id") in (None, ""):
+        missing.append("id")
+    return (len(missing) == 0, missing)
+
+
+def _youtube_is_complete(y: dict) -> tuple[bool, list[str]]:
+    missing = []
+    for k in ["title", "description"]:
+        if not is_provided_text(y.get(k)):
+            missing.append(k)
+    tags = y.get("hashtags") or y.get("tags")
+    if not isinstance(tags, list) or not [str(x).strip() for x in tags if str(x).strip()]:
+        missing.append("hashtags/tags")
+    return (len(missing) == 0, missing)
+
+
+def _config_is_complete(c: dict) -> tuple[bool, list[str]]:
+    missing = []
+    if not isinstance(c.get("render"), dict):
+        missing.append("render")
+    if not isinstance(c.get("visual"), dict):
+        missing.append("visual")
+    if not isinstance(c.get("audio"), dict):
+        missing.append("audio")
+    if not isinstance(c.get("media"), dict):
+        missing.append("media")
+    if not isinstance(c.get("paths"), dict):
+        missing.append("paths")
+    return (len(missing) == 0, missing)
+
+
+def cmd_quote(exec_dir: Path) -> None:
+    ensure_exec_dir(exec_dir)
+    path = exec_dir / "quote.json"
+    q = load_or_empty(path)
+    status = normalize_status(q.get("status"))
+    complete, missing = _quote_is_complete(q)
+
+    if status == STATUS_PUBLISH:
+        ok(f"quote.json status=publish, tidak diubah. ({path})")
+        return
+    if status == STATUS_VALID and complete:
+        ok(f"quote.json sudah valid dan lengkap. ({path})")
+        return
+
+    # kosong / missing / draft / incomplete -> AI create or verify
+    mode = "create" if (not path.exists() or status == STATUS_KOSONG or not complete and status != STATUS_DRAFT) else "verify"
+    # if draft but incomplete, still verify/fill
+    if status == STATUS_DRAFT:
+        mode = "verify"
+    if not path.exists() or status == STATUS_KOSONG:
+        mode = "create"
+
+    info(f"quote.json: status={status}, complete={complete}, missing={missing} -> mode={mode} (AI)")
+    prompt = f"""Kamu asisten produksi konten Shorts. Tugas: {mode.upper()} file quote.json untuk workflow lokal.
+
+Mode:
+- create: buat isi quote.json lengkap dan berkualitas dari nol (atau dari data yang ada).
+- verify: periksa kelengkapan, perbaiki field yang kurang/tidak konsisten, pertahankan maksud user.
+
+Aturan:
+- Balas HANYA JSON object valid.
+- Field wajib: status, id, author, language, lines, emphasis, notes.
+- status harus "valid" setelah kamu periksa/buat.
+- language gunakan kode singkat (id/en).
+- lines adalah array string (1-4 baris, singkat, kuat).
+- emphasis adalah array string frasa yang ditekankan (boleh kosong tapi usahakan relevan).
+- Jangan menambah field aneh selain yang perlu.
+
+Data saat ini:
+{json.dumps(q, ensure_ascii=False, indent=2)}
+"""
+    result = ai_json(prompt)
+    # normalize/guard
+    out = dict(q)
+    out.update({k: result.get(k) for k in ["id","author","language","lines","emphasis","notes"] if k in result})
+    if "status" in result:
+        out["status"] = normalize_status(result.get("status"))
+    # enforce required shapes
+    if not isinstance(out.get("lines"), list):
+        out["lines"] = q.get("lines") if isinstance(q.get("lines"), list) else []
+    if not isinstance(out.get("emphasis"), list):
+        out["emphasis"] = q.get("emphasis") if isinstance(q.get("emphasis"), list) else []
+    complete2, missing2 = _quote_is_complete(out)
+    out["status"] = STATUS_VALID if complete2 else STATUS_DRAFT
+    save_status_file(path, out)
+    if complete2:
+        ok(f"quote.json disimpan status=valid: {path}")
+    else:
+        warn(f"quote.json disimpan status=draft, masih kurang: {missing2} ({path})")
+
+
+def cmd_youtube_meta(exec_dir: Path) -> None:
+    ensure_exec_dir(exec_dir)
+    path = exec_dir / "youtube.json"
+    y = load_or_empty(path)
+    status = normalize_status(y.get("status"))
+    complete, missing = _youtube_is_complete(y)
+    quote = read_json_file(exec_dir / "quote.json") if (exec_dir / "quote.json").exists() else {}
+    transcript = read_json_file(exec_dir / "transcript.json") if (exec_dir / "transcript.json").exists() else {}
+
+    if status == STATUS_PUBLISH:
+        ok(f"youtube.json status=publish, tidak diubah. ({path})")
+        return
+    if status == STATUS_VALID and complete:
+        ok(f"youtube.json sudah valid dan lengkap. ({path})")
+        return
+
+    if not transcript_is_ready(exec_dir):
+        warn("transcript.json belum siap/lengkap. Pembuatan/verifikasi youtube.json membutuhkan konteks transkrip agar seluruh properties selaras.")
+        fail("Tunda youtube.json: konversi/verifikasi transcript dulu, lalu jalankan lagi command youtube.")
+
+    mode = "verify" if status == STATUS_DRAFT else "create"
+    if path.exists() and status not in (STATUS_KOSONG,) and complete is False and status == STATUS_DRAFT:
+        mode = "verify"
+    if not path.exists() or status == STATUS_KOSONG:
+        mode = "create"
+
+    info(f"youtube.json: status={status}, complete={complete}, missing={missing} -> mode={mode} (AI)")
+    prompt = f"""Kamu asisten metadata YouTube Shorts. Tugas: {mode.upper()} file youtube.json.
+
+Aturan:
+- Balas HANYA JSON object valid.
+- Field penting: status,title,description,hashtags,tags,privacy,categoryId,defaultLanguage,defaultAudioLanguage,madeForKids,title_style,title_source,notes.
+- status harus "valid" setelah kamu periksa/buat.
+- Gunakan konteks quote dan transcript. Seluruh properties youtube.json harus mempertimbangkan transkrip (narasi, hook, nada, isi), tidak hanya quote. Jangan mengarang fakta berbahaya.
+- hashtags array string mulai dengan #. tags array string tanpa #.
+- privacy default "private" kecuali user sudah menetapkan.
+
+Data saat ini:
+{json.dumps(y, ensure_ascii=False, indent=2)}
+
+Konteks quote:
+{json.dumps(quote, ensure_ascii=False, indent=2)}
+
+Konteks transcript (ringkas boleh):
+{json.dumps(transcript, ensure_ascii=False)[:4000]}
+"""
+    result = ai_json(prompt)
+    out = dict(y)
+    for k in ["title","description","hashtags","tags","privacy","categoryId","defaultLanguage","defaultAudioLanguage","madeForKids","title_style","title_source","notes","caption","caption_source"]:
+        if k in result:
+            out[k] = result.get(k)
+    if "status" in result:
+        out["status"] = normalize_status(result.get("status"))
+    # sync caption legacy
+    if is_provided_text(out.get("title")) and not is_provided_text(out.get("caption")):
+        out["caption"] = out.get("title")
+    complete2, missing2 = _youtube_is_complete(out)
+    out["status"] = STATUS_VALID if complete2 else STATUS_DRAFT
+    save_status_file(path, out)
+    if complete2:
+        ok(f"youtube.json disimpan status=valid: {path}")
+    else:
+        warn(f"youtube.json disimpan status=draft, masih kurang: {missing2} ({path})")
+
+
+def _default_config() -> dict:
+    # minimal sane default; prepare/render may fill more
+    tpl = TEMPLATE_DIR / "config.json"
+    if tpl.exists():
+        try:
+            d = read_json_file(tpl)
+            if isinstance(d, dict):
+                d = dict(d)
+                d["status"] = STATUS_DRAFT
+                return d
+        except Exception:
+            pass
+    return {
+        "status": STATUS_DRAFT,
+        "render": {"width":1080,"height":1920,"fps":30,"crf":20,"preset":"medium","audio_bitrate":"192k"},
+        "visual": {"slowdown":1.3,"xfade_duration":0.5,"background_count":3},
+        "audio": {"narration_music_volume":0.1,"card_music_volume":0.26,"music_fade_out":1.5},
+        "media": {"backgrounds": {"source":"pixabay","mode":"per_segment","seed_keywords":[],"allow_ai_keywords_fallback":True,"resolved_files":[]},
+                  "music": {"source":"freetouse","seed_query":"calm inspirational ambient","allow_ai_fallback":False,"resolved_file":"work/music.mp3"}},
+        "paths": {"voiceover":"vo/vo.mp3","work_dir":"work","out_dir":"out"}
+    }
+
+
+def cmd_config(exec_dir: Path) -> None:
+    ensure_exec_dir(exec_dir)
+    path = exec_dir / "config.json"
+    c = load_or_empty(path)
+    status = normalize_status(c.get("status"))
+    complete, missing = _config_is_complete(c)
+    quote = read_json_file(exec_dir / "quote.json") if (exec_dir / "quote.json").exists() else {}
+    transcript = read_json_file(exec_dir / "transcript.json") if (exec_dir / "transcript.json").exists() else {}
+
+    if status == STATUS_PUBLISH:
+        ok(f"config.json status=publish, tidak diubah. ({path})")
+        return
+    if status == STATUS_VALID and complete:
+        ok(f"config.json sudah valid dan lengkap. ({path})")
+        return
+
+    if not path.exists() or status == STATUS_KOSONG:
+        mode = "create"
+    else:
+        mode = "verify"
+
+    info(f"config.json: status={status}, complete={complete}, missing={missing} -> mode={mode} (AI)")
+    base = c if c and c.get("status") != STATUS_KOSONG else _default_config()
+    prompt = f"""Kamu asisten konfigurasi render Shorts lokal. Tugas: {mode.upper()} file config.json.
+
+Aturan:
+- Balas HANYA JSON object valid.
+- Pertahankan struktur penting: status, render, visual, audio, media, paths, notes (opsional).
+- status harus "valid" setelah kamu periksa/buat.
+- Jangan mengisi resolved_files/resolved_file dengan file khayalan; boleh kosong atau tetap path placeholder work/... jika belum ada. Prepare yang akan resolve media.
+- Pastikan paths.voiceover/work_dir/out_dir ada.
+
+Data saat ini/base:
+{json.dumps(base, ensure_ascii=False, indent=2)}
+
+Konteks quote:
+{json.dumps(quote, ensure_ascii=False, indent=2)}
+
+Konteks transcript:
+{json.dumps(transcript, ensure_ascii=False)[:4000]}
+"""
+    result = ai_json(prompt)
+    out = dict(base)
+    # merge top-level known keys
+    for k in ["render","visual","audio","media","paths","notes","status"]:
+        if k in result:
+            out[k] = result.get(k)
+    complete2, missing2 = _config_is_complete(out)
+    out["status"] = STATUS_VALID if complete2 else STATUS_DRAFT
+    save_status_file(path, out)
+    if complete2:
+        ok(f"config.json disimpan status=valid: {path}")
+    else:
+        warn(f"config.json disimpan status=draft, masih kurang: {missing2} ({path})")
+
+
+def cmd_transcript(exec_dir: Path, input_path: str | None = None) -> None:
+    ensure_exec_dir(exec_dir)
+    path = exec_dir / "transcript.json"
+
+    # If raw input provided, convert using vo_txt_to_transcript.py
+    if input_path:
+        in_p = Path(input_path)
+        if not in_p.is_absolute():
+            in_p = (ROOT / in_p).resolve()
+        if not in_p.exists():
+            fail(f"Input transcript tidak ditemukan: {in_p}")
+        # Use converter script
+        cmd = [sys.executable, str(ROOT / "scripts" / "vo_txt_to_transcript.py"), str(in_p), str(path)]
+        info(f"Konversi transcript: {in_p} -> {path}")
+        subprocess.run(cmd, check=True)
+        t = read_json_file(path)
+        if isinstance(t, dict):
+            t["status"] = STATUS_DRAFT  # needs user review/timing check
+            save_status_file(path, t)
+        ok(f"transcript.json dibuat dari input (status=draft): {path}")
+        return
+
+    t = load_or_empty(path)
+    status = normalize_status(t.get("status"))
+    segs = t.get("segments")
+    has_segments = isinstance(segs, list) and len(segs) > 0
+    if status == STATUS_PUBLISH:
+        ok(f"transcript.json status=publish, tidak diubah. ({path})")
+        return
+    if status == STATUS_VALID and has_segments:
+        ok(f"transcript.json sudah valid. ({path})")
+        return
+    if not has_segments:
+        warn(f"transcript.json belum ada/segments kosong. Siapkan file TXT lalu jalankan: python scripts/local_workflow.py transcript --dir {exec_dir} --input <file.txt>")
+        if not path.exists():
+            # create minimal draft placeholder
+            save_status_file(path, {"status": STATUS_KOSONG, "voiceover_file": "vo/vo.mp3", "segments": [], "notes": "Siapkan transcript TXT lalu convert."})
+        return
+
+    # verify draft transcript structure with AI (lightweight)
+    info(f"transcript.json: status={status}, segments={len(segs)} -> verify (AI)")
+    quote = read_json_file(exec_dir / "quote.json") if (exec_dir / "quote.json").exists() else {}
+    prompt = f"""Kamu asisten transcript Shorts. Tugas: VERIFY struktur transcript.json untuk render lokal.
+
+Aturan:
+- Balas HANYA JSON object valid.
+- Pertahankan segments/lines/reveals/timing apa adanya kecuali jelas rusak.
+- Pastikan field penting ada: status, voiceover_file, text_fade_seconds, line_reveal_interval, intro_backsound_seconds, segments, card.
+- status harus "valid" jika struktur layak, atau "draft" jika masih ada masalah.
+- Jangan mengubah makna teks; boleh perbaiki struktur JSON/field hilang.
+
+Data transcript:
+{json.dumps(t, ensure_ascii=False)[:12000]}
+
+Konteks quote:
+{json.dumps(quote, ensure_ascii=False, indent=2)}
+"""
+    result = ai_json(prompt)
+    out = dict(t)
+    for k in ["voiceover_file","text_fade_seconds","progressive_reveal","line_reveal_interval","intro_backsound_seconds","segments","card","notes","status"]:
+        if k in result:
+            out[k] = result.get(k)
+    segs2 = out.get("segments")
+    ok_struct = isinstance(segs2, list) and len(segs2) > 0
+    out["status"] = STATUS_VALID if ok_struct and normalize_status(out.get("status")) == STATUS_VALID else (STATUS_VALID if ok_struct else STATUS_DRAFT)
+    save_status_file(path, out)
+    ok(f"transcript.json disimpan status={out['status']}: {path}")
+
+
+def cmd_bootstrap(exec_dir: Path) -> None:
+    """Create missing/kosong quote/youtube/config stepwise with AI before prepare.
+
+    Partial cases are supported: files that already exist and are not kosong are kept
+    as context; only missing/kosong files are created. Example: only quote.json exists
+    -> youtube.json and config.json are created.
+    """
+    ensure_exec_dir(exec_dir)
+    info("Bootstrap lokal: quote -> youtube -> config (AI, sebelum prepare)")
+    info("Kondisi: file yang sudah ada & tidak kosong dipakai sebagai konteks; yang belum ada/kosong dibuat.")
+
+    # quote
+    qpath = exec_dir / "quote.json"
+    if not qpath.exists() or file_is_missing_or_empty(qpath):
+        info("quote.json belum ada/kosong -> create")
+        if not qpath.exists():
+            save_status_file(qpath, {"status": STATUS_KOSONG})
+        cmd_quote(exec_dir)
+    else:
+        info("quote.json sudah ada -> dipakai sebagai konteks (lewati create).")
+
+    # transcript readiness: youtube/config harus mempertimbangkan transkrip
+    t_ready = transcript_is_ready(exec_dir)
+
+    # youtube
+    ypath = exec_dir / "youtube.json"
+    if not ypath.exists() or file_is_missing_or_empty(ypath):
+        if not t_ready:
+            warn("youtube.json belum ada/kosong, tapi transcript.json belum siap. Pembuatan youtube.json ditunda agar seluruh properties mempertimbangkan transkrip. Jalankan konversi/verifikasi transcript dulu, lalu jalankan bootstrap/youtube lagi.")
+        else:
+            info("youtube.json belum ada/kosong -> create (pakai konteks quote + transcript)")
+            if not ypath.exists():
+                save_status_file(ypath, {"status": STATUS_KOSONG})
+            cmd_youtube_meta(exec_dir)
+    else:
+        info("youtube.json sudah ada -> lewati create.")
+
+    # config
+    cpath = exec_dir / "config.json"
+    if not cpath.exists() or file_is_missing_or_empty(cpath):
+        if not t_ready:
+            warn("config.json belum ada/kosong, tapi transcript.json belum siap. Pembuatan config.json ditunda agar dapat mempertimbangkan transkrip. Jalankan konversi/verifikasi transcript dulu, lalu jalankan bootstrap/config lagi.")
+        else:
+            info("config.json belum ada/kosong -> create (pakai konteks quote + transcript)")
+            if not cpath.exists():
+                save_status_file(cpath, {"status": STATUS_KOSONG})
+            cmd_config(exec_dir)
+    else:
+        info("config.json sudah ada -> lewati create.")
+
+    ok("Bootstrap selesai. Lanjutkan: transcript (jika perlu) -> prepare -> title (opsional) -> render.")
 
 
 # ---------- archive / reset ----------
@@ -1198,24 +1755,42 @@ def cmd_reset(exec_dir: Path) -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Local video workflow (prepare/caption/render/archive/reset)")
-    ap.add_argument("command", choices=["prepare", "caption", "render", "archive", "reset"], help="Perintah")
+    ap = argparse.ArgumentParser(description="Local video workflow (pre-prepare AI verify/create + prepare/title/render/archive/reset)")
+    ap.add_argument(
+        "command",
+        choices=[
+            "quote", "transcript", "youtube", "config", "bootstrap",
+            "prepare", "title", "caption", "render", "archive", "reset",
+        ],
+        help="Perintah. Pre-prepare: quote/transcript/youtube/config/bootstrap. caption = alias legacy untuk title.",
+    )
     ap.add_argument("--dir", default=str(DEFAULT_EXEC_DIR), help="Folder eksekusi (default: local/execution)")
     ap.add_argument("--label", default=None, help="Label arsip (untuk archive)")
+    ap.add_argument("--input", default=None, help="Input file mentah (untuk transcript, mis. vo.txt)")
     args = ap.parse_args()
 
     exec_dir = Path(args.dir)
     if not exec_dir.is_absolute():
         exec_dir = (ROOT / exec_dir).resolve()
 
-    if args.command == "prepare":
+    if args.command == "quote":
+        cmd_quote(exec_dir)
+    elif args.command == "transcript":
+        cmd_transcript(exec_dir, input_path=args.input)
+    elif args.command == "youtube":
+        cmd_youtube_meta(exec_dir)
+    elif args.command == "config":
+        cmd_config(exec_dir)
+    elif args.command == "bootstrap":
+        cmd_bootstrap(exec_dir)
+    elif args.command == "prepare":
         if not exec_dir.exists():
             fail(f"Folder eksekusi tidak ditemukan: {exec_dir}")
         cmd_prepare(exec_dir)
-    elif args.command == "caption":
+    elif args.command in ("title", "caption"):
         if not exec_dir.exists():
             fail(f"Folder eksekusi tidak ditemukan: {exec_dir}")
-        cmd_caption(exec_dir)
+        cmd_title(exec_dir)
     elif args.command == "render":
         if not exec_dir.exists():
             fail(f"Folder eksekusi tidak ditemukan: {exec_dir}")

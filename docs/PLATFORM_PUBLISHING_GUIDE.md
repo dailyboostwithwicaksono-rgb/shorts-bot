@@ -3,6 +3,8 @@
 > **Status penting (baca dulu):** dokumen ini adalah panduan **bertahap dan konservatif** untuk menyiapkan integrasi publish otomatis ke platform tambahan di atas kerangka yang sudah ada di repo ini (`scripts/publish.py` dispatcher, `PUBLISH_TARGETS`, formatter/stub). Saat ini publish **nyata** untuk TikTok/Meta/X **belum diimplementasikan** di kode (tersedia formatter + dry-run); implementasi API dilakukan bertahap setelah akses disetujui.
 >
 > **Kebijakan & produk platform berubah sering.** Selalu verifikasi langkah, izin/scope, batasan, dan persyaratan review di dokumentasi resmi terbaru sebelum eksekusi. Jangan menganggap panduan ini sebagai jaminan approval atau stabilitas API.
+>
+> **Update 2026-11-25:** untuk **Instagram Reels + TikTok** sudah ada integrasi nyata lewat **WoopSocial**: set `PUBLISH_TARGETS=woopsocial` dan `WOOPSOCIAL_API_KEY`. Publisher `scripts/publish_woopsocial.py` meng-upload video lalu **publish langsung** (`PUBLISH_NOW`, tanpa jadwal) memakai metadata dari `out/manifest.json`. Bagian TikTok/Meta/X di bawah tetap merujuk ke **API langsung** (masih formatter/stub).
 
 ## 0. Kesiapan umum (berlaku untuk semua platform)
 
@@ -183,6 +185,7 @@ Scope sensitif dan memerlukan persetujuan; set minimal yang relevan sering menca
 1. Pastikan artefak render ada (`out/final.mp4`, `out/manifest.json`).
 2. Dry-run semua target yang diinginkan:
    - PowerShell: `$env:PUBLISH_TARGETS='youtube,tiktok,meta,x'; $env:PUBLISH_DRY_RUN='1'; python scripts/publish.py`
+   - WoopSocial (nyata, tanpa publish): `$env:PUBLISH_TARGETS='woopsocial'; $env:PUBLISH_DRY_RUN='1'; python scripts/publish.py` — mengecek akun + `posts_validate` dengan media uji. Bila library kosong, video di-upload hanya untuk validasi; **tidak ada post yang dibuat**.
 3. Untuk uji gagal-parsial (terkontrol): set `PUBLISH_FAIL_FAST=0` (hanya relevan saat bukan dry-run/ada kegagalan nyata).
 4. **Jangan** mengaktifkan publish nyata ke platform baru sebelum: akses/approval disetujui, kredensial valid, implementasi API selesai & diuji terisolasi, dan kepatuhan konten terverifikasi.
 
