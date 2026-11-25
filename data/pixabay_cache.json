@@ -626,6 +626,25 @@
       "keyword": "walking boots",
       "stage": "S1",
       "duration_actual": 59.993
+    },
+    {
+      "id": 3451,
+      "url": "https://pixabay.com/videos/id-3451/",
+      "pageURL": "https://pixabay.com/videos/id-3451/",
+      "photographer": "Nova_27",
+      "user": "Nova_27",
+      "description": "camera, retro, old, taking photos, flea market, photo camera",
+      "tags": "camera, retro, old, taking photos, flea market, photo camera",
+      "type": "film",
+      "duration_meta": 74,
+      "file_url": "https://cdn.pixabay.com/video/2016/06/11/3451-170348491_large.mp4",
+      "file_label": "large",
+      "width": 1920,
+      "height": 1080,
+      "source": "pixabay",
+      "keyword": "taking action",
+      "stage": "S3",
+      "duration_actual": 73.962
     }
   ]
 }
