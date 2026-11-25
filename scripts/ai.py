@@ -62,7 +62,10 @@ def _openrouter(prompt: str, images_b64: list[str]) -> dict:
             {"role": "user", "content": [{"type": "text", "text": prompt}]},
         ],
         "temperature": 0.85,
-        "max_tokens": 1500,
+        "max_tokens": 4000,
+        # Model ini reasoning by default; tanpa ini seluruh token habis di
+        # reasoning dan `content` jadi null -> "Respons AI bukan JSON valid".
+        "reasoning": {"enabled": False},
     }
     r = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
