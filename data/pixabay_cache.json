@@ -816,6 +816,25 @@
       "keyword": "solo walking",
       "stage": "S1",
       "duration_actual": 31.273
+    },
+    {
+      "id": 106963,
+      "url": "https://pixabay.com/videos/id-106963/",
+      "pageURL": "https://pixabay.com/videos/id-106963/",
+      "photographer": "Kaffeesüchtig",
+      "user": "Kaffeesüchtig",
+      "description": "clouds, heaven, stormy, spring clouds, timewarp, wind, time lapse, timelapse, blue, more beautiful, sunny, day, cloud, sky, air, beautiful, minimalist",
+      "tags": "clouds, heaven, stormy, spring clouds, timewarp, wind, time lapse, timelapse, blue, more beautiful, sunny, day, cloud, sky, air, beautiful, minimalist",
+      "type": "film",
+      "duration_meta": 25,
+      "file_url": "https://cdn.pixabay.com/video/2022/02/06/106963-674268857_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "minimalist",
+      "stage": "S1",
+      "duration_actual": 25.002
     }
   ]
 }
