@@ -873,6 +873,25 @@
       "keyword": "discipline",
       "stage": "S3",
       "duration_actual": 30.313
+    },
+    {
+      "id": 384550,
+      "url": "https://pixabay.com/videos/id-384550/",
+      "pageURL": "https://pixabay.com/videos/id-384550/",
+      "photographer": "KIMDAEJEUNG",
+      "user": "KIMDAEJEUNG",
+      "description": "republic of korea, nature, landscape, wind",
+      "tags": "republic of korea, nature, landscape, wind",
+      "type": "film",
+      "duration_meta": 27,
+      "file_url": "https://cdn.pixabay.com/video/2026/10/22/384550_large.mp4",
+      "file_label": "large",
+      "width": 3840,
+      "height": 2160,
+      "source": "pixabay",
+      "keyword": "nature",
+      "stage": "S1",
+      "duration_actual": 27.16
     }
   ]
 }
